@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\WinApiFramework">
+      <UniqueIdentifier>{e3bb5029-4925-45be-8c22-2bed26c96f45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\WinApiFramework">
+      <UniqueIdentifier>{1d608254-ab42-4a92-8c46-8ceed668c18b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WinApiFramework.cpp">
+      <Filter>Source Files\WinApiFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="WinApiWindowControls.cpp">
+      <Filter>Source Files\WinApiFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="WinApiWindow.cpp">
+      <Filter>Source Files\WinApiFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse.cpp">
+      <Filter>Source Files\WinApiFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyboard.cpp">
+      <Filter>Source Files\WinApiFramework</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="WinApiWindow.h">
+      <Filter>Header Files\WinApiFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="WinApiWindowControls.h">
+      <Filter>Header Files\WinApiFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowInclude.h">
+      <Filter>Header Files\WinApiFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="WinApiFramework.h">
+      <Filter>Header Files\WinApiFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
+      <Filter>Header Files\WinApiFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard.h">
+      <Filter>Header Files\WinApiFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics.h">
+      <Filter>Header Files\WinApiFramework</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
