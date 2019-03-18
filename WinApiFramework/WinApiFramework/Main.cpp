@@ -316,6 +316,7 @@ void FreeTimeProcess()
 	{
 		mainForm->pb1->SetState(ProgressBar::BarState::Pause);
 		mainForm->MainWindow->SetCaption(L"caption1");
+		mainForm->MainWindow->SetCaption(L"TestBranch");
 	}
 
 	/*i++;
