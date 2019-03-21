@@ -210,31 +210,31 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	case WM_LBUTTONDOWN:
-		mouse.LeftPressedEvent();
+		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::LeftPress));
 		break;
 	case WM_RBUTTONDOWN:
-		mouse.RightPressedEvent();
+		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::RightPress));
 		break;
 	case WM_LBUTTONUP:
-		mouse.LeftRelasedEvent();
+		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::LeftRelase));
 		break;
 	case WM_RBUTTONUP:
-		mouse.RightRelasedEvent();
+		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::RightRelase));
 		break;
 	case WM_MBUTTONDOWN:
-		mouse.MiddlePressedEvent();
+		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::MiddlePress));
 		break;
 	case WM_MBUTTONUP:
-		mouse.MiddleRelasedEvent();
+		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::MiddleRelase));
 		break;
 	case WM_MOUSEWHEEL:
 		if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
 		{
-			mouse.WeelUpEvent();
+			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WeelUp));
 		}
 		else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
 		{
-			mouse.WeelDownEvent();
+			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WeelDown));
 		}
 
 

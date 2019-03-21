@@ -74,7 +74,7 @@ namespace WinApiFramework
 	{
 		// -- fields -- //
 	private:
-		std::wstring caption = L"Default";
+		std::wstring caption;
 	public:
 		struct Config : public WindowControl::Config
 		{
@@ -167,7 +167,6 @@ namespace WinApiFramework
 	class CheckBox : public WindowControl
 	{
 		// -- fields -- //
-		// CheckBox structs & enums
 	public:
 		enum BoxState
 		{
@@ -423,6 +422,7 @@ namespace WinApiFramework
 		void SetStep(unsigned int step);
 		void SetPosition(unsigned int position);
 		void SetState(BarState state);
+		void StepIt();
 
 
 		// -- property fields -- //

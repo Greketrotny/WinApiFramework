@@ -1,7 +1,7 @@
 #include "WinApiFramework.h"
 #include <vector>
 
-#include <CommCtrl.h>
+//#include <CommCtrl.h>
 
 #pragma comment(linker,"\"/manifestdependency:type='win32' \
 name='Microsoft.Windows.Common-controls' version='6.0.0.0' \

@@ -671,6 +671,10 @@ void ProgressBar::SetState(ProgressBar::BarState state)
 
 	barState = state;
 }
+void ProgressBar::StepIt()
+{
+	SetPosition(position + step);
+}
 // [CLASS] ProgressBar -------------------------|
 
 

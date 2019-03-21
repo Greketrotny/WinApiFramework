@@ -178,13 +178,6 @@ public:
 		MainForm *form = nullptr;
 		MainWindowEH(MainForm *f) { form = f; }
 
-		void HandleEvent(Window::Event event) override
-		{
-			if (event.type == 1)
-			{
-
-			}
-		}
 		void Move() override
 		{
 			WriteData();

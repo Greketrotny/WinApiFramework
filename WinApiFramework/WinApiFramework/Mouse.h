@@ -2,6 +2,7 @@
 #define MOUSE_H
 
 #include <queue>
+#include <vector>
 
 
 namespace WinApiFramework
@@ -34,13 +35,17 @@ namespace WinApiFramework
 				Invalid
 			};
 			Type type;
-			int x, y;
+			int x = 0, y = 0;
 
 			Event()
 			{
 				type = Invalid;
 				x = 0;
 				y = 0;
+			}
+			Event(Type type)
+			{
+				this->type = type;
 			}
 			Event(Type type, int x, int y)
 			{
@@ -50,36 +55,30 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		std::queue<Event> mouseEvents;
+		std::queue<Event> events;
 		const unsigned short buffLength = 64u;
 
 
 		// -- constructor -- //
 	public:
 		Mouse();
-		Mouse(const Mouse &mouse) = delete;
+		Mouse(const Mouse& mouse) = delete;
+		Mouse(const Mouse&& mouse) = delete;
 	private:
 		~Mouse();
 
 
 		// -- operators -- //
 	public:
-		Mouse& operator=(const Mouse &mouse) = delete;
+		Mouse& operator=(const Mouse& mouse) = delete;
+		Mouse& operator=(const Mouse&& mouse) = delete;
 
 
 		// -- methods -- //
 	private:
 		void Move(int x, int y);
-		void LeftPressedEvent();
-		void LeftRelasedEvent();
-		void RightPressedEvent();
-		void RightRelasedEvent();
-		void MiddlePressedEvent();
-		void MiddleRelasedEvent();
-		void WeelUpEvent();
-		void WeelDownEvent();
-		void TrimEventBuffer();
 	public:
+		void PushEvent(Mouse::Event newEvent);
 		Event GetEvent();
 		void ClearEventBuffer();
 
