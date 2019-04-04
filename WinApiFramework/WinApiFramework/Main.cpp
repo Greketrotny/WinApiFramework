@@ -146,7 +146,7 @@ public:
 		pbc.rect.width = 300;
 		pbc.rect.height = 20;
 		pbc.position = 25;
-		pbc.maxValue = 2000;
+		pbc.maxValue = 100;
 		pb1 = new ProgressBar(pbc);
 		MainWindow->AddControl(pb1);
 	}
@@ -296,28 +296,24 @@ MainForm *mainForm = nullptr;
 
 void FreeTimeProcess()
 {
-	static int i = 0;
+	static std::wstring str = L"";
+	Keyboard::CharEvent ev = mainForm->MainWindow->Keyboard.GetCharEvent();
+	if (ev.type != Keyboard::CharEvent::Type::Invalid)
+	{
+		if (ev.type == Keyboard::CharEvent::Type::CharInput)
+		{
+			str += ev.character;
+		}
+		mainForm->MainWindow->SetCaption(str);
+	}
+	
+	Keyboard::KeyEvent kev = mainForm->MainWindow->Keyboard.GetKeyEvent();
+	if (kev.type == Keyboard::KeyEvent::Type::Press)
+	{
+		mainForm->button1->SetCaption(std::to_wstring(kev.key));
+	}
+	
 	Sleep(10);
-
-
-	if (mainForm->pb1->Position < 1000)
-	{
-		mainForm->pb1->SetPosition(i);
-		i++;
-	}
-	else
-	{
-		mainForm->pb1->SetState(ProgressBar::BarState::Pause);
-	}
-
-	/*i++;
-	if (i == 200)
-	{
-		delete mainForm->button1;
-		mainForm->cb1->DisableControl();
-		mainForm->button3->DisableControl();
-		mainForm->label2->DisableControl();
-	}*/
 }
 
 

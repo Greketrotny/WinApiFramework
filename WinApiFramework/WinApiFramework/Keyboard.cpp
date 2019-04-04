@@ -15,13 +15,13 @@ Keyboard::~Keyboard()
 }
 
 // methods
-void Keyboard::KeyPress(const unsigned char &key)
+void Keyboard::KeyPress(Keyboard::Key key)
 {
 	keys[key] = true;
 	keyEvents.push(KeyEvent(Keyboard::KeyEvent::Type::Press, key));
 	TrimKeyBuffer();
 }
-void Keyboard::KeyRelase(const unsigned char &key)
+void Keyboard::KeyRelase(Keyboard::Key key)
 {
 	keys[key] = false;
 	keyEvents.push(KeyEvent(Keyboard::KeyEvent::Type::Relase, key));
@@ -48,13 +48,21 @@ void Keyboard::TrimCharBuffer()
 }
 
 
-bool Keyboard::KeyPressed(const unsigned char &key) const
+bool Keyboard::KeyPressed(Keyboard::Key key) const
 {
 	return keys[key];
 }
-bool Keyboard::KeyRelased(const unsigned char &key) const
+bool Keyboard::KeyPressed(unsigned char key) const
+{
+	return keys[key];
+}
+bool Keyboard::KeyRelased(Keyboard::Key key) const
 {
 	return !keys[key];
+}
+bool Keyboard::KeyRelased(unsigned char key) const
+{
+	return keys[key];
 }
 void Keyboard::ClearBuffers()
 {

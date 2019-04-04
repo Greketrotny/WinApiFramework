@@ -160,17 +160,20 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_SYSKEYDOWN:
 		if (!(lParam & 0x40000000) || keyboard.autorepeat)
 		{
-			keyboard.KeyPress((unsigned char)wParam);
+			keyboard.KeyPress((Keyboard::Key)wParam);
 		}
 		break;
 
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
-		keyboard.KeyRelase((unsigned char)(wParam));
+		keyboard.KeyRelase((Keyboard::Key)(wParam));
 		break;
 
 	case WM_CHAR:
-		keyboard.CharInput((wchar_t)wParam);
+		if (!(lParam & 0x40000000) || keyboard.autorepeat)
+		{
+			keyboard.CharInput((wchar_t)wParam);
+		}
 		break;
 
 
