@@ -47,7 +47,6 @@ void Keyboard::TrimCharBuffer()
 	}
 }
 
-
 bool Keyboard::KeyPressed(Keyboard::Key key) const
 {
 	return keys[key];

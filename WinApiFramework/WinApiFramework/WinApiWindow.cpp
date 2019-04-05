@@ -40,12 +40,10 @@ void Window::ControlsStorage::RemoveControl(WindowControl* oldControl)
 
 // -- constructor -- //
 Window::Window()
-	:Mouse(mouse),
-	Keyboard(keyboard),
-	WndHandle(hWindow),
+	:WndHandle(hWindow),
 	IsMainWindow(isMainWindow),
 	IsEnabled(isEnabled),
-	IsFocused(isFocused),
+	IsActivated(isActivated),
 	IsMinimized(isMinimized),
 	Id(window_id),
 	X(rect.x), Y(rect.y),
@@ -102,6 +100,19 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			PostQuitMessage(0);
 		break;
 
+	case WM_ACTIVATE:
+		if (wParam & WA_INACTIVE)
+		{
+			isActivated = false;
+			PushEvent(Window::Event::Type::Activate);
+		}			
+		else
+		{
+			isActivated = true;
+			PushEvent(Window::Event::Type::Deactivate);
+		}
+		break;
+
 		// on window controls events //
 	case WM_COMMAND:
 	case WM_NOTIFY:
@@ -153,93 +164,41 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		mmi->ptMaxTrackSize.y = sizeRect.maxHeight;
 	}
 	break;
+	
 
+	//	// Mouse events //
+	//case WM_MOUSEMOVE:
+	//{
+	//	const POINTS pt = MAKEPOINTS(lParam);
 
-	// Keyboard events //
-	case WM_KEYDOWN:
-	case WM_SYSKEYDOWN:
-		if (!(lParam & 0x40000000) || keyboard.autorepeat)
-		{
-			keyboard.KeyPress((Keyboard::Key)wParam);
-		}
-		break;
-
-	case WM_KEYUP:
-	case WM_SYSKEYUP:
-		keyboard.KeyRelase((Keyboard::Key)(wParam));
-		break;
-
-	case WM_CHAR:
-		if (!(lParam & 0x40000000) || keyboard.autorepeat)
-		{
-			keyboard.CharInput((wchar_t)wParam);
-		}
-		break;
-
-
-		// Mouse events //
-	case WM_MOUSEMOVE:
-	{
-		const POINTS pt = MAKEPOINTS(lParam);
-
-		if (pt.x > (int)0 && pt.x < (int)rect.width && pt.y >(int)0 && pt.y < (int)rect.height)
-		{
-			mouse.Move(pt.x, pt.y);
-			if (!mouse.onWindow)
-			{
-				//SetCapture(hWindow);
-				mouse.onWindow = true;
-			}
-		}
-		else
-		{
-			if (wParam & (MK_LBUTTON | MK_RBUTTON))
-			{
-				/*pt.x = (0 > pt.x) ? 0 : pt.x;
-				pt.x = ((int)windowRect.width < pt.x) ? (int)windowRect.width : pt.x;
-				pt.y = (0 > pt.y) ? 0 : pt.y;
-				pt.y = ((int)windowRect.height < y) ? (int)windowRect.height : y;*/
-				mouse.Move(pt.x, pt.y);
-			}
-			else
-			{
-				//ReleaseCapture();
-				mouse.onWindow = false;
-				mouse.isLeftPressed = false;
-				mouse.isRightPressed = false;
-				mouse.isMiddlePressed = false;
-			}
-		}
-		break;
-	}
-	case WM_LBUTTONDOWN:
-		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::LeftPress));
-		break;
-	case WM_RBUTTONDOWN:
-		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::RightPress));
-		break;
-	case WM_LBUTTONUP:
-		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::LeftRelase));
-		break;
-	case WM_RBUTTONUP:
-		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::RightRelase));
-		break;
-	case WM_MBUTTONDOWN:
-		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::MiddlePress));
-		break;
-	case WM_MBUTTONUP:
-		mouse.PushEvent(Mouse::Event(Mouse::Event::Type::MiddleRelase));
-		break;
-	case WM_MOUSEWHEEL:
-		if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
-		{
-			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WeelUp));
-		}
-		else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
-		{
-			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WeelDown));
-		}
-
+	//	if (pt.x > 2 && pt.x < (int)rect.width - 2 && pt.y > 2 && pt.y < (int)rect.height - 2)
+	//	{
+	//		if (!mouseOnWindow)
+	//		{
+	//			SetCapture(hWindow);
+	//			mouseOnWindow = true;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		if (wParam & (MK_LBUTTON | MK_RBUTTON))
+	//		{
+	//			/*pt.x = (0 > pt.x) ? 0 : pt.x;
+	//			pt.x = ((int)windowRect.width < pt.x) ? (int)windowRect.width : pt.x;
+	//			pt.y = (0 > pt.y) ? 0 : pt.y;
+	//			pt.y = ((int)windowRect.height < y) ? (int)windowRect.height : y;*/
+	//		}
+	//		else
+	//		{
+	//			ReleaseCapture();
+	//			mouseOnWindow = false;
+	//			Framework::Mouse.isLeftPressed = false;
+	//			Framework::Mouse.isRightPressed = false;
+	//			Framework::Mouse.isMiddlePressed = false;
+	//		}
+	//	}
+	//	break;
+	//}
 
 		// default event process //
 	default:
@@ -450,11 +409,11 @@ int Window::ShowMessageBox(std::wstring text, std::wstring caption, UINT message
 	return MessageBoxW(hWindow, text.c_str(), caption.c_str(), message_box_style);
 }
 
-unsigned int Window::GetXPos() const
+unsigned int Window::GetX() const
 {
 	return rect.x;
 }
-unsigned int Window::GetYPos() const
+unsigned int Window::GetY() const
 {
 	return rect.y;
 }

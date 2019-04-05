@@ -1,5 +1,6 @@
 #include "WinApiFramework.h"
 #include <vector>
+#include <windowsx.h>
 
 //#include <CommCtrl.h>
 
@@ -16,6 +17,11 @@ const HINSTANCE& Framework::ProgramInstance(hProgramInstance);
 std::vector<Window*> Framework::windows;
 Window* Framework::mainWindow = nullptr;
 void(*Framework::FreeTimeProcess)() = nullptr;
+HHOOK Framework::InputHook = SetWindowsHookEx(WH_GETMESSAGE, Framework::InputProcedure, NULL, GetThreadId(GetCurrentThread()));
+Mouse Framework::mouse;
+Keyboard Framework::keyboard;
+Mouse& Framework::Mouse(Framework::mouse);
+Keyboard& Framework::Keyboard(Framework::keyboard);
 
 
 // -- methods -- //
@@ -31,6 +37,84 @@ LRESULT WINAPI Framework::WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LP
 		}
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
+{
+	if (code >= 0 && code == HC_ACTION)
+	{
+		MSG *msg;
+		msg = (MSG*)lParam;
+
+		switch (msg->message)
+		{
+			// Keyboard events //
+		case WM_KEYDOWN:
+		case WM_SYSKEYDOWN:
+			if (!(msg->lParam & 0x40000000) || keyboard.autorepeat)
+			{
+				keyboard.KeyPress((Keyboard::Key)msg->wParam);
+			}
+			break;
+
+		case WM_KEYUP:
+		case WM_SYSKEYUP:
+			keyboard.KeyRelase((Keyboard::Key)(msg->wParam));
+			break;
+
+		case WM_CHAR:
+			if (!(msg->lParam & 0x40000000) || keyboard.autorepeat)
+			{
+				keyboard.CharInput((wchar_t)msg->wParam);
+			}
+			break;
+
+
+			// Mouse events //
+		case WM_MOUSEMOVE:
+		{
+			//const POINTS pt = MAKEPOINTS(msg->lParam);
+			POINT pt;
+			GetCursorPos(&pt);
+			mouse.Move(pt.x, pt.y);
+			break;
+		}
+		case WM_LBUTTONDOWN:
+			mouse.isLeftPressed = true;
+			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::LeftPress));
+			break;
+		case WM_RBUTTONDOWN:
+			mouse.isRightPressed = true;
+			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::RightPress));
+			break;
+		case WM_LBUTTONUP:
+			mouse.isLeftPressed = false;
+			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::LeftRelase));
+			break;
+		case WM_RBUTTONUP:
+			mouse.isRightPressed = false;
+			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::RightRelase));
+			break;
+		case WM_MBUTTONDOWN:
+			mouse.isMiddlePressed = true;
+			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::MiddlePress));
+			break;
+		case WM_MBUTTONUP:
+			mouse.isMiddlePressed = false;
+			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::MiddleRelase));
+			break;
+		case WM_MOUSEWHEEL:
+			if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
+			{
+				mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WeelUp));
+			}
+			else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
+			{
+				mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WeelDown));
+			}
+			break;
+		}
+	}
+	return CallNextHookEx(InputHook, code, wParam, lParam);
 }
 
 void Framework::AddWindow(Window *newWindow)

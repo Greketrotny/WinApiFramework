@@ -3,8 +3,8 @@
 
 #include "WindowInclude.h"
 
-#include "Mouse.h"
-#include "Keyboard.h"
+//#include "Mouse.h"
+//#include "Keyboard.h"
 #include "WinApiWindowControls.h"
 
 #include <string>
@@ -25,8 +25,9 @@ namespace WinApiFramework
 		unsigned int window_id;
 		bool isMainWindow = false;
 		bool isEnabled = true;
-		bool isFocused = true;
+		bool isActivated = true;
 		bool isMinimized = false;
+		bool mouseOnWindow = false;
 
 	public:
 		enum Position
@@ -53,6 +54,8 @@ namespace WinApiFramework
 				Resize,
 				Enable,
 				Disable,
+				Activate,
+				Deactivate,
 				ControlAdd,
 				ControlRemove,
 				CaptionChange,
@@ -177,9 +180,6 @@ namespace WinApiFramework
 		Events events;
 		ControlsStorage controls;
 
-		Mouse mouse;
-		Keyboard keyboard;
-
 
 		// -- constructors -- //
 	private:
@@ -224,8 +224,8 @@ namespace WinApiFramework
 			UINT message_box_style = 0
 		);
 
-		unsigned int GetXPos() const;
-		unsigned int GetYPos() const;
+		unsigned int GetX() const;
+		unsigned int GetY() const;
 		unsigned int GetWidth() const;
 		unsigned int GetHeight() const;
 		const HWND& GetWindowHandle() const;
@@ -237,12 +237,10 @@ namespace WinApiFramework
 
 		// -- property fields -- //
 	public:
-		Mouse& Mouse;
-		Keyboard& Keyboard;
 		const HWND& WndHandle;
 		const bool& IsMainWindow;
 		const bool& IsEnabled;
-		const bool& IsFocused;
+		const bool& IsActivated;
 		const bool& IsMinimized;
 		const unsigned int& Id;
 		const int& X;

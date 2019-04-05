@@ -5,6 +5,9 @@
 #include "WinApiWindow.h"
 #include "WinApiWindowControls.h"
 
+#include "Mouse.h"
+#include "Keyboard.h"
+
 //#pragma comment (lib, "comct132.lib")
 
 #include <CommCtrl.h>
@@ -20,20 +23,27 @@ namespace WinApiFramework
 		static std::vector<Window*> windows;
 		static Window* mainWindow;
 		static void(*FreeTimeProcess)();
+		static HHOOK InputHook;
+		static Mouse mouse;
+		static Keyboard keyboard;
+
 
 		// -- constructor -- //
 	public:
 		Framework(const Framework &framework) = delete;
 		Framework(const Framework &&framework) = delete;
 
+
 		// -- operators -- //
 	public:
 		Framework& operator=(const Framework &framework) = delete;
 		Framework& operator=(const Framework &&framework) = delete;
 
+
 		// -- methods -- //
 	private:
 		static LRESULT WINAPI WinApiProcedure(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+		static LRESULT WINAPI InputProcedure(int code, WPARAM wParam, LPARAM lParam);
 
 		static void AddWindow(Window *addWindow);
 		static void RemoveWindow(Window *oldWindow);
@@ -51,7 +61,10 @@ namespace WinApiFramework
 
 
 		// -- property fields -- //
+	public:
 		static const HINSTANCE &ProgramInstance;
+		static Mouse &Mouse;
+		static Keyboard &Keyboard;
 
 
 		// -- friend relationship -- //

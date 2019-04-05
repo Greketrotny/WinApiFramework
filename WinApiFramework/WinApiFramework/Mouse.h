@@ -2,7 +2,6 @@
 #define MOUSE_H
 
 #include <queue>
-#include <vector>
 
 
 namespace WinApiFramework
@@ -15,7 +14,6 @@ namespace WinApiFramework
 		bool isLeftPressed = false;
 		bool isRightPressed = false;
 		bool isMiddlePressed = false;
-		bool onWindow = false;
 
 	public:
 		struct Event
@@ -90,10 +88,10 @@ namespace WinApiFramework
 		const bool& LeftPressed;
 		const bool& RightPressed;
 		const bool& MiddlePressed;
-		const bool& IsOnWindow;
 
 		// -- friend statements -- //
 		friend class Window;
+		friend class Framework;
 	};
 }
 #endif // !MOUSE_H

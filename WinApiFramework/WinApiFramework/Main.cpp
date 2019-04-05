@@ -19,6 +19,7 @@ class MainForm
 {
 public:
 	Window *MainWindow = nullptr;
+	Window *SecondWindow = nullptr;
 	Button *button1 = nullptr, *button2 = nullptr, *button3 = nullptr;
 	CheckBox *cb1, *cb2, *cb3, *cb4;
 	Label *mainLabel, *label2;
@@ -42,6 +43,11 @@ public:
 		wc.sizeRect.maxHeight = 800;
 		MainWindow = new Window(wc);
 		MainWindow->SetEventHandler(new MainWindowEH(this));
+
+		wc.rect.x = 50;
+		wc.rect.y = 50;
+		wc.position = Window::Position::Custom;
+		SecondWindow = new Window(wc);
 
 		// button1
 		Button::Config bc;
@@ -297,7 +303,7 @@ MainForm *mainForm = nullptr;
 void FreeTimeProcess()
 {
 	static std::wstring str = L"";
-	Keyboard::CharEvent ev = mainForm->MainWindow->Keyboard.GetCharEvent();
+	Keyboard::CharEvent ev = Framework::Keyboard.GetCharEvent();
 	if (ev.type != Keyboard::CharEvent::Type::Invalid)
 	{
 		if (ev.type == Keyboard::CharEvent::Type::CharInput)
@@ -307,11 +313,30 @@ void FreeTimeProcess()
 		mainForm->MainWindow->SetCaption(str);
 	}
 	
-	Keyboard::KeyEvent kev = mainForm->MainWindow->Keyboard.GetKeyEvent();
+	Keyboard::KeyEvent kev = Framework::Keyboard.GetKeyEvent();
 	if (kev.type == Keyboard::KeyEvent::Type::Press)
 	{
 		mainForm->button1->SetCaption(std::to_wstring(kev.key));
 	}
+
+	Mouse::Event mev = Framework::Mouse.GetEvent();
+	if (mev.type != Mouse::Event::Type::Invalid)
+	{
+		if (mev.type == Mouse::Event::Type::Move)
+		{
+			mainForm->button2->SetCaption(std::to_wstring(Framework::Mouse.X));
+		}
+		if (mev.type == Mouse::Event::Type::LeftPress)
+		{
+			mainForm->button3->SetCaption(L"Mouse left pressed!");
+		}
+	}
+
+	std::wstring buttonStates = L"";
+	if (Framework::Mouse.LeftPressed) buttonStates += L"left pressed\n";
+	if (Framework::Mouse.RightPressed) buttonStates += L"right pressed\n";
+	if (Framework::Mouse.MiddlePressed) buttonStates += L"Middle pressed\n";
+	mainForm->button3->SetCaption(buttonStates);
 	
 	Sleep(10);
 }

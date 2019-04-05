@@ -2,6 +2,7 @@
 #define KEYBOARD_H
 
 #include <queue>
+#include "WindowInclude.h"
 
 
 namespace WinApiFramework
@@ -28,7 +29,6 @@ namespace WinApiFramework
 			friend class Keyboard;
 		};
 		Keys keys;
-
 
 	public:
 		struct CharEvent
@@ -200,6 +200,7 @@ namespace WinApiFramework
 
 		bool autorepeat = true;
 		const unsigned short buffLength = 16u;
+		HHOOK keysHook = NULL;
 
 
 		// -- constructors -- //
@@ -249,6 +250,7 @@ namespace WinApiFramework
 
 		// -- friend statements -- //
 		friend class Window;
+		friend class Framework;
 	};
 }
 

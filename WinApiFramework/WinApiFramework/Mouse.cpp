@@ -8,8 +8,7 @@ Mouse::Mouse()
 	Y(y),
 	LeftPressed(isLeftPressed),
 	RightPressed(isRightPressed),
-	MiddlePressed(isMiddlePressed),
-	IsOnWindow(onWindow)
+	MiddlePressed(isMiddlePressed)
 {
 	x = 0;
 	y = 0;
