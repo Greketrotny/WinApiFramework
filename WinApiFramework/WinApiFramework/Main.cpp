@@ -35,6 +35,7 @@ public:
 		Window::Config wc;
 		wc.caption = L"WinApiFramework development";
 		wc.position = Window::Position::Center;
+		wc.startStyle = Window::StartStyle::Maximized;
 		wc.rect.width = 1000;
 		wc.rect.height = 600;
 		wc.sizeRect.minWidth = 300;
@@ -47,7 +48,8 @@ public:
 		wc.rect.x = 50;
 		wc.rect.y = 50;
 		wc.position = Window::Position::Custom;
-		SecondWindow = new Window(wc);
+		wc.startStyle = Window::StartStyle::Maximized;
+		//SecondWindow = new Window(wc);
 
 		// button1
 		Button::Config bc;
@@ -113,12 +115,12 @@ public:
 		lc.textAlignment = Label::Center;
 		lc.caption = L"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris et orci ac erat scelerisque suscipit in eget libero. Fusce suscipit ornare risus, sit amet convallis lorem aliquam at. Cras tellus dui, sagittis nec semper vitae, facilisis ut odio. In aliquet metus lectus, eget maximus sem suscipit et. Sed tempor eros vel ultrices convallis. Maecenas nec volutpat mi. Vestibulum lectus ante, aliquet ut consequat sit amet, pretium at augue. Nulla luctus erat id pretium luctus. Sed dignissim augue ut efficitur suscipit. Vivamus eget aliquet elit. Nulla sagittis condimentum sapien eget sagittis. Sed lobortis, enim tempus hendrerit lobortis, justo sem laoreet justo, in interdum mauris nibh quis velit. Pellentesque in dui faucibus, interdum nibh ac, tincidunt leo. Pellentesque faucibus turpis at ligula egestas tincidunt. Praesent eu interdum mauris, nec commodo elit. Nam sodales odio est.";
 		mainLabel = new Label(lc);
-		//MainWindow->AddControl(mainLabel);
+		MainWindow->AddControl(mainLabel);
 
 		lc.caption = L"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris et orci ac erat scelerisque suscipit in eget libero. Fusce suscipit ornare risus, sit amet convallis lorem aliquam at. Cras tellus dui, sagittis nec semper vitae, facilisis ut odio. In aliquet metus lectus, eget maximus sem suscipit et. Sed tempor eros vel ultrices convallis. Maecenas nec volutpat mi. Vestibulum lectus ante, aliquet ut consequat sit amet, pretium at augue. Nulla luctus erat id pretium luctus. Sed dignissim augue ut efficitur suscipit. Vivamus eget aliquet elit. Nulla sagittis condimentum sapien eget sagittis. Sed lobortis, enim tempus hendrerit lobortis, justo sem laoreet justo, in interdum mauris nibh quis velit. Pellentesque in dui faucibus, interdum nibh ac, tincidunt leo. Pellentesque faucibus turpis at ligula egestas tincidunt. Praesent eu interdum mauris, nec commodo elit. Nam sodales odio est.";
 		lc.rect.x = 700;
 		label2 = new Label(lc);
-		//MainWindow->AddControl(label2);
+		MainWindow->AddControl(label2);
 
 		mainLabel->SetTextAligment(Label::Right);
 
@@ -202,8 +204,7 @@ public:
 				std::to_wstring(form->MainWindow->Height) + L"]");
 		}
 	};
-
-
+	
 	struct ControlEventHandler
 	{
 		MainForm *form = nullptr;
@@ -312,7 +313,7 @@ void FreeTimeProcess()
 		}
 		mainForm->MainWindow->SetCaption(str);
 	}
-	
+
 	Keyboard::KeyEvent kev = Framework::Keyboard.GetKeyEvent();
 	if (kev.type == Keyboard::KeyEvent::Type::Press)
 	{
@@ -324,11 +325,27 @@ void FreeTimeProcess()
 	{
 		if (mev.type == Mouse::Event::Type::Move)
 		{
-			mainForm->button2->SetCaption(std::to_wstring(Framework::Mouse.X));
+			std::wstring position = L"[x: ";
+			position += std::to_wstring(Framework::Mouse.X);
+			position += L",  y: ";
+			position += std::to_wstring(Framework::Mouse.Y);
+			position += L"]";
+			mainForm->button2->SetCaption(position);
 		}
 		if (mev.type == Mouse::Event::Type::LeftPress)
 		{
 			mainForm->button3->SetCaption(L"Mouse left pressed!");
+			mainForm->MainWindow->EnableResize();
+			//Framework::Mouse.SetCursorType(Mouse::Cursor::Wait);
+		}
+		if (mev.type == Mouse::Event::Type::RightPress)
+		{
+			mainForm->MainWindow->DisableResize();
+			mainForm->MainWindow->Minimize();
+		}
+		if (mev.type == Mouse::Event::Type::MiddlePress)
+		{
+			mainForm->MainWindow->Maximize();
 		}
 	}
 

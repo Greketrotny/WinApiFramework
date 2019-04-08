@@ -67,7 +67,7 @@ Window::Window(Window::Config config)
 	CreateAndRegisterWindowClass();
 
 	// create window
-	CreateWinApiWindow();
+	CreateWinApiWindow(config);
 }
 Window::~Window()
 {
@@ -89,30 +89,6 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
-		// base events //
-	case WM_CLOSE:
-		events.PushEvent(Window::Event(Event::Type::Close));
-		DestroyWindow(hWindow);
-		hWindow = NULL;
-		break;
-	case WM_DESTROY:
-		if (this == Framework::mainWindow)
-			PostQuitMessage(0);
-		break;
-
-	case WM_ACTIVATE:
-		if (wParam & WA_INACTIVE)
-		{
-			isActivated = false;
-			PushEvent(Window::Event::Type::Activate);
-		}			
-		else
-		{
-			isActivated = true;
-			PushEvent(Window::Event::Type::Deactivate);
-		}
-		break;
-
 		// on window controls events //
 	case WM_COMMAND:
 	case WM_NOTIFY:
@@ -126,7 +102,32 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 
+		// base events //
+	case WM_CLOSE:
+		events.PushEvent(Window::Event(Event::Type::Close));
+		DestroyWindow(hWindow);
+		hWindow = NULL;
+		break;
+	case WM_DESTROY:
+		if (this == Framework::mainWindow)
+			PostQuitMessage(0);
+		break;
+
+
 		// window properties events //
+	case WM_ACTIVATE:
+		if (wParam & WA_INACTIVE)
+		{
+			isActivated = false;
+			PushEvent(Window::Event::Type::Activate);
+		}			
+		else
+		{
+			isActivated = true;
+			PushEvent(Window::Event::Type::Deactivate);
+		}
+		break;
+
 	case WM_MOVE:
 	{
 		RECT r;
@@ -218,7 +219,7 @@ bool Window::CreateAndRegisterWindowClass()
 	wc.cbSize = (sizeof(WNDCLASSEX));
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
-	wc.style = CS_HREDRAW | CS_VREDRAW;
+	wc.style = 0;
 	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -232,16 +233,22 @@ bool Window::CreateAndRegisterWindowClass()
 	}
 	return true;
 }
-bool Window::CreateWinApiWindow()
+bool Window::CreateWinApiWindow(Window::Config config)
 {
-	// setup rect like user specified
+	// set start window style
+	if (config.startStyle == Window::StartStyle::Maximized)
+		windowStyle |= WS_MAXIMIZE;
+	else if (config.startStyle == Window::StartStyle::Minimized)
+		windowStyle |= WS_MINIMIZE;
+
+	// setup window rect
 	RECT r;
 	if (position == Position::Custom)
 	{
 		r = { (LONG)rect.x, (LONG)rect.y,
 			(LONG)(rect.x + rect.width), (LONG)(rect.y + rect.height) };
 
-		AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, FALSE);
+		AdjustWindowRect(&r, windowStyle, FALSE);
 	}
 	else if (position == Position::Center)
 	{
@@ -253,7 +260,7 @@ bool Window::CreateWinApiWindow()
 		r.right = r.left + rect.width;
 		r.bottom = r.top + rect.height;
 
-		AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, FALSE);
+		AdjustWindowRect(&r, windowStyle, FALSE);
 
 		rect.x = r.left;
 		rect.y = r.top;
@@ -268,7 +275,7 @@ bool Window::CreateWinApiWindow()
 
 	// create window
 	hWindow = CreateWindow(window_class_name.c_str(), caption.c_str(),
-		WS_OVERLAPPEDWINDOW/*WS_SYSMENU | WS_CAPTION | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX*/,
+		windowStyle,
 		r.left, r.top, r.right - r.left, r.bottom - r.top,
 		nullptr, nullptr, Framework::hProgramInstance, nullptr);
 
@@ -280,7 +287,7 @@ bool Window::CreateWinApiWindow()
 
 	SetCaption(GetCaption());
 
-	ShowWindow(hWindow, SW_SHOWDEFAULT);
+	ShowWindow(hWindow, SW_SHOW);
 	UpdateWindow(hWindow);
 	return true;
 }
@@ -400,6 +407,66 @@ void Window::DisableWindow()
 
 	events.PushEvent(Window::Event(Event::Type::Disable));
 }
+void Window::EnableResize()
+{
+	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = windowStyle | WS_SIZEBOX;
+	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+
+	events.PushEvent(Window::Event::Type::EnableResize);
+}
+void Window::DisableResize()
+{
+	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = windowStyle & (~WS_SIZEBOX);
+	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+
+	events.PushEvent(Window::Event::Type::DisableResize);
+}
+void Window::EnableMaximizeBox()
+{
+	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = windowStyle | WS_MAXIMIZEBOX;
+	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+
+	events.PushEvent(Window::Event::Type::EnableMaximizeBox);
+}
+void Window::DisableMaximizeBox()
+{
+	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = windowStyle & (~WS_MAXIMIZEBOX);
+	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+
+	events.PushEvent(Window::Event::Type::DisableMaximizeBox);
+}
+void Window::EnableMinimizeBox()
+{
+	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = windowStyle | WS_MINIMIZEBOX;
+	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+
+	events.PushEvent(Window::Event::Type::EnableMinimizeBox);
+}
+void Window::DisableMinimizeBox()
+{
+	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = windowStyle & (~WS_MINIMIZEBOX);
+	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+
+	events.PushEvent(Window::Event::Type::DisableMinimizeBox);
+}
+void Window::ActivateWindow()
+{
+	SetActiveWindow(hWindow);	
+}
+void Window::Maximize()
+{
+	ShowWindow(hWindow, SW_MAXIMIZE);
+}
+void Window::Minimize()
+{
+	ShowWindow(hWindow, SW_MINIMIZE);
+}
 void Window::SetEventHandler(Window::EventHandler *eh)
 {
 	this->events.eventHandler = eh;
@@ -432,6 +499,14 @@ const HWND& Window::GetWindowHandle() const
 const std::wstring& Window::GetCaption() const
 {
 	return caption;
+}
+int Window::GetMouseX() const
+{
+	return Framework::Mouse.X - this->X;
+}
+int Window::GetMouseY() const
+{
+	return Framework::Mouse.Y - this->Y;
 }
 
 void Window::AddControl(WindowControl* newControl)

@@ -22,6 +22,7 @@ namespace WinApiFramework
 		HWND hWindow = NULL;
 		std::wstring window_class_name = L"WindowClassName";
 		std::wstring caption = L"Default caption";
+		LONG windowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_BORDER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
 		unsigned int window_id;
 		bool isMainWindow = false;
 		bool isEnabled = true;
@@ -35,6 +36,12 @@ namespace WinApiFramework
 			Center,
 			Custom,
 			Default
+		};
+		enum StartStyle
+		{
+			Minimized,
+			Maximized,
+			Normal
 		};
 		struct Rect
 		{
@@ -56,6 +63,12 @@ namespace WinApiFramework
 				Disable,
 				Activate,
 				Deactivate,
+				EnableResize,
+				DisableResize,
+				EnableMaximizeBox,
+				DisableMaximizeBox,
+				EnableMinimizeBox,
+				DisableMinimizeBox,
 				ControlAdd,
 				ControlRemove,
 				CaptionChange,
@@ -77,19 +90,35 @@ namespace WinApiFramework
 		{
 			virtual void HandleEvent(Window::Event event)
 			{
-				if (event.type == Window::Event::Type::Move)			Move();
-				if (event.type == Window::Event::Type::Resize)			Resize();
-				if (event.type == Window::Event::Type::Enable)			Enable();
-				if (event.type == Window::Event::Type::Disable)			Disable();
-				if (event.type == Window::Event::Type::ControlAdd)		ControlAdd();
-				if (event.type == Window::Event::Type::ControlRemove)	ControlRemove();
-				if (event.type == Window::Event::Type::CaptionChange)	CaptionChange();
-				if (event.type == Window::Event::Type::Close)			Close();
+				if (event.type == Window::Event::Type::Move)				Move();
+				if (event.type == Window::Event::Type::Resize)				Resize();
+				if (event.type == Window::Event::Type::Enable)				Enable();
+				if (event.type == Window::Event::Type::Disable)				Disable();
+				if (event.type == Window::Event::Type::Activate)			Activate();
+				if (event.type == Window::Event::Type::Deactivate)			Deactivate();
+				if (event.type == Window::Event::Type::EnableResize)		EnableResize();
+				if (event.type == Window::Event::Type::DisableResize)		DisableResize();
+				if (event.type == Window::Event::Type::EnableMaximizeBox)	EnableMaximizeBox();
+				if (event.type == Window::Event::Type::DisableMaximizeBox)	DisableMaximizeBox();
+				if (event.type == Window::Event::Type::EnableMinimizeBox)	EnableMinimizeBox();
+				if (event.type == Window::Event::Type::DisableMinimizeBox)	DisableMinimizeBox();
+				if (event.type == Window::Event::Type::ControlAdd)			ControlAdd();
+				if (event.type == Window::Event::Type::ControlRemove)		ControlRemove();
+				if (event.type == Window::Event::Type::CaptionChange)		CaptionChange();
+				if (event.type == Window::Event::Type::Close)				Close();
 			}
 			virtual void Move() {};
 			virtual void Resize() {};
 			virtual void Enable() {};
 			virtual void Disable() {};
+			virtual void Activate() {};
+			virtual void Deactivate() {};
+			virtual void EnableResize() {};
+			virtual void DisableResize() {};
+			virtual void EnableMaximizeBox() {};
+			virtual void DisableMaximizeBox() {};
+			virtual void EnableMinimizeBox() {};
+			virtual void DisableMinimizeBox() {};
 			virtual void ControlAdd() {};
 			virtual void ControlRemove() {};
 			virtual void CaptionChange() {};
@@ -97,7 +126,8 @@ namespace WinApiFramework
 		};
 		struct Config
 		{
-			Position position = Center;
+			Position position = Position::Center;
+			StartStyle startStyle = StartStyle::Normal;
 			Rect rect;
 			std::wstring caption = L"default";
 			SizeRect sizeRect;
@@ -187,7 +217,7 @@ namespace WinApiFramework
 	public:
 		Window(const Window &wnd) = delete;
 		Window(const Window &&wnd) = delete;
-		Window(Config specifier);
+		Window(Config config);
 		~Window();
 
 
@@ -201,7 +231,7 @@ namespace WinApiFramework
 	private:
 		LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 		bool CreateAndRegisterWindowClass();
-		bool CreateWinApiWindow();
+		bool CreateWinApiWindow(Config config);
 	public:
 		void PushEvent(Event newEvent);
 		Event GetEvent();
@@ -216,6 +246,15 @@ namespace WinApiFramework
 		void SetAsMainWindow();
 		void EnableWindow();
 		void DisableWindow();
+		void EnableResize();
+		void DisableResize();
+		void EnableMaximizeBox();
+		void DisableMaximizeBox();
+		void EnableMinimizeBox();
+		void DisableMinimizeBox();
+		void ActivateWindow();
+		void Maximize();
+		void Minimize();
 		void SetEventHandler(Window::EventHandler *eventHandler);
 		int ShowMessageBox
 		(
@@ -230,6 +269,8 @@ namespace WinApiFramework
 		unsigned int GetHeight() const;
 		const HWND& GetWindowHandle() const;
 		const std::wstring& GetCaption() const;
+		int GetMouseX() const;
+		int GetMouseY() const;
 
 		void AddControl(WindowControl* newControl);
 		void RemoveControl(WindowControl* oldControl);

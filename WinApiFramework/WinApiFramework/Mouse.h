@@ -14,6 +14,7 @@ namespace WinApiFramework
 		bool isLeftPressed = false;
 		bool isRightPressed = false;
 		bool isMiddlePressed = false;
+		bool isVisible = true;
 
 	public:
 		struct Event
@@ -30,6 +31,7 @@ namespace WinApiFramework
 				WeelUp,
 				WeelDown,
 				Move,
+				CursorChanged,
 				Invalid
 			};
 			Type type;
@@ -51,6 +53,23 @@ namespace WinApiFramework
 				this->x = x;
 				this->y = y;
 			}
+		};
+		enum Cursor
+		{
+			Arrow,
+			IBeam,
+			Wait,
+			Cross,
+			UpArrow,
+			Size,
+			Icon,
+			SizeNWSE,
+			SizeNESW,
+			SizeWE,
+			SizeNS,
+			SizeALL,
+			Hand,
+			Help
 		};
 	private:
 		std::queue<Event> events;
@@ -79,6 +98,10 @@ namespace WinApiFramework
 		void PushEvent(Mouse::Event newEvent);
 		Event GetEvent();
 		void ClearEventBuffer();
+		void SetCursorPosition(int x, int y);
+		void ShowCursor();
+		void HideCursor();
+		void SetCursorType(Mouse::Cursor cursorType);
 
 
 		// -- property fields -- //

@@ -1,4 +1,5 @@
 #include "Mouse.h"
+#include "WindowInclude.h"
 
 using namespace WinApiFramework;
 
@@ -54,4 +55,48 @@ Mouse::Event Mouse::GetEvent()
 void Mouse::ClearEventBuffer()
 {
 	events = std::queue<Event>();
+}
+void Mouse::SetCursorPosition(int x, int y)
+{
+	SetCursorPos(x, y);
+	Move(x, y);
+}
+void Mouse::ShowCursor()
+{
+	if (!isVisible)
+	{
+		::ShowCursor(TRUE);
+		isVisible = true;
+	}	
+}
+void Mouse::HideCursor()
+{
+	if (isVisible)
+	{
+		::ShowCursor(FALSE);
+		isVisible = false;
+	}	
+}
+void Mouse::SetCursorType(Mouse::Cursor cursorType)
+{
+	HCURSOR hCursor = NULL;
+
+	switch (cursorType)
+	{
+	case WinApiFramework::Mouse::Arrow:		hCursor = LoadCursor(NULL, IDC_ARROW);		break;
+	case WinApiFramework::Mouse::IBeam:		hCursor = LoadCursor(NULL, IDC_IBEAM);		break;
+	case WinApiFramework::Mouse::Wait:		hCursor = LoadCursor(NULL, IDC_WAIT);		break;
+	case WinApiFramework::Mouse::Cross:		hCursor = LoadCursor(NULL, IDC_CROSS);		break;
+	case WinApiFramework::Mouse::UpArrow:	hCursor = LoadCursor(NULL, IDC_UPARROW);	break;
+	case WinApiFramework::Mouse::Size:		hCursor = LoadCursor(NULL, IDC_SIZE);		break;
+	case WinApiFramework::Mouse::Icon:		hCursor = LoadCursor(NULL, IDC_ICON);		break;
+	case WinApiFramework::Mouse::SizeNWSE:	hCursor = LoadCursor(NULL, IDC_SIZENWSE);	break;
+	case WinApiFramework::Mouse::SizeNESW:	hCursor = LoadCursor(NULL, IDC_SIZENESW);	break;
+	case WinApiFramework::Mouse::SizeWE:	hCursor = LoadCursor(NULL, IDC_SIZEWE);		break;
+	case WinApiFramework::Mouse::SizeNS:	hCursor = LoadCursor(NULL, IDC_SIZENS);		break;
+	case WinApiFramework::Mouse::SizeALL:	hCursor = LoadCursor(NULL, IDC_SIZEALL);	break;
+	case WinApiFramework::Mouse::Hand:		hCursor = LoadCursor(NULL, IDC_HAND);		break;
+	case WinApiFramework::Mouse::Help:		hCursor = LoadCursor(NULL, IDC_HELP);		break;
+	}
+	SetCursor(hCursor);
 }
