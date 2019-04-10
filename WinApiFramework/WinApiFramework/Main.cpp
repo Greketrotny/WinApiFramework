@@ -35,7 +35,7 @@ public:
 		Window::Config wc;
 		wc.caption = L"WinApiFramework development";
 		wc.position = Window::Position::Center;
-		wc.startStyle = Window::StartStyle::Maximized;
+		//wc.startStyle = Window::StartStyle::Maximized;
 		wc.rect.width = 1000;
 		wc.rect.height = 600;
 		wc.sizeRect.minWidth = 300;
@@ -202,6 +202,11 @@ public:
 				L" Dimensions: [" +
 				std::to_wstring(form->MainWindow->Width) + L";" +
 				std::to_wstring(form->MainWindow->Height) + L"]");
+		}
+
+		void Minimize() override
+		{
+			form->MainWindow->SetCaption(L"Minimized");
 		}
 	};
 	

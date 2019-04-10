@@ -100,6 +100,7 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 					return 0;
 			}
 		}
+		return 0;
 		break;
 
 		// base events //
@@ -107,10 +108,12 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		events.PushEvent(Window::Event(Event::Type::Close));
 		DestroyWindow(hWindow);
 		hWindow = NULL;
+		return 0;
 		break;
 	case WM_DESTROY:
 		if (this == Framework::mainWindow)
 			PostQuitMessage(0);
+		return 0;
 		break;
 
 
@@ -119,12 +122,38 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		if (wParam & WA_INACTIVE)
 		{
 			isActivated = false;
-			PushEvent(Window::Event::Type::Activate);
-		}			
+			PushEvent(Window::Event::Type::Deactivate);
+		}
 		else
 		{
 			isActivated = true;
-			PushEvent(Window::Event::Type::Deactivate);
+			PushEvent(Window::Event::Type::Activate);
+		}
+		return 0;
+		break;
+
+	case WM_SHOWWINDOW:
+		if (wParam == TRUE)
+		{
+			PushEvent(Window::Event::Type::Show);
+		}
+		else
+		{
+			PushEvent(Window::Event::Type::Hide);
+		}
+		break;
+
+	case WM_SYSCOMMAND:
+		switch (wParam)
+		{
+		case SC_MAXIMIZE:
+			PushEvent(Window::Event::Type::Maximize);
+			isMinimized = false;
+			break;
+		case SC_MINIMIZE:
+			PushEvent(Window::Event::Type::Minimize);
+			isMinimized = true;
+			break;
 		}
 		break;
 
@@ -139,6 +168,7 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			rect.height = r.bottom - r.top;
 		}
 		events.PushEvent(Window::Event(Window::Event::Type::Move));
+		return 0;
 	}
 	break;
 
@@ -153,6 +183,7 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 			rect.height = r.bottom - r.top;
 		}
 		events.PushEvent(Window::Event(Window::Event::Type::Resize));
+		return 0;
 	}
 	break;
 
@@ -163,15 +194,15 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		mmi->ptMinTrackSize.y = sizeRect.minHeight;
 		mmi->ptMaxTrackSize.x = sizeRect.maxWidth;
 		mmi->ptMaxTrackSize.y = sizeRect.maxHeight;
+		return 0;
 	}
 	break;
-	
+
 
 	//	// Mouse events //
 	//case WM_MOUSEMOVE:
 	//{
 	//	const POINTS pt = MAKEPOINTS(lParam);
-
 	//	if (pt.x > 2 && pt.x < (int)rect.width - 2 && pt.y > 2 && pt.y < (int)rect.height - 2)
 	//	{
 	//		if (!mouseOnWindow)
@@ -201,11 +232,8 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	//	break;
 	//}
 
-		// default event process //
-	default:
-		return 1;	// if the window did't handle message
 	}
-	return 0;		// if did
+	return 1;	// if the window did't handle message
 }
 bool Window::CreateAndRegisterWindowClass()
 {
@@ -335,40 +363,6 @@ void Window::SetDimensions(unsigned int width, unsigned int height)
 
 	events.PushEvent(Window::Event(Event::Type::Resize));
 }
-void Window::SetRect(Window::Config newWindowRect)
-{
-	// reset window rect properties
-	if (newWindowRect.position == Position::Custom)
-	{
-		rect.x = newWindowRect.rect.x;
-		rect.y = newWindowRect.rect.y;
-		rect.width = newWindowRect.rect.width;
-		rect.height = newWindowRect.rect.height;
-	}
-	else if (newWindowRect.position == Position::Center)
-	{
-		unsigned int w = GetSystemMetrics(SM_CXSCREEN);
-		unsigned int h = GetSystemMetrics(SM_CYSCREEN);
-
-		newWindowRect.rect.width = std::min(newWindowRect.rect.width, w);
-		newWindowRect.rect.height = std::min(newWindowRect.rect.height, h);
-
-		rect.x = (w - newWindowRect.rect.width) / 2;
-		rect.y = (h - newWindowRect.rect.height) / 2;
-		rect.width = newWindowRect.rect.width;
-		rect.height = newWindowRect.rect.height;
-	}
-	else if (newWindowRect.position == Position::Default)
-	{
-		rect.x = 100;
-		rect.y = 100;
-		rect.width = newWindowRect.rect.width;
-		rect.height = newWindowRect.rect.height;
-	}
-
-	SetPosition(rect.x, rect.y);
-	SetDimensions(rect.width, rect.height);
-}
 void Window::SetMinSize(unsigned int minWidth, unsigned int minHeight)
 {
 	sizeRect.minWidth = minWidth;
@@ -387,7 +381,7 @@ void Window::SetAsMainWindow()
 {
 	Framework::SetAsMainWindow(this);
 }
-void Window::EnableWindow()
+void Window::Enable()
 {
 	if (isMainWindow) return;
 	if (isEnabled) return;
@@ -397,7 +391,7 @@ void Window::EnableWindow()
 
 	events.PushEvent(Window::Event(Event::Type::Enable));
 }
-void Window::DisableWindow()
+void Window::Disable()
 {
 	if (isMainWindow) return;
 	if (!isEnabled) return;
@@ -455,9 +449,9 @@ void Window::DisableMinimizeBox()
 
 	events.PushEvent(Window::Event::Type::DisableMinimizeBox);
 }
-void Window::ActivateWindow()
+void Window::Activate()
 {
-	SetActiveWindow(hWindow);	
+	SetActiveWindow(hWindow);
 }
 void Window::Maximize()
 {
@@ -466,6 +460,14 @@ void Window::Maximize()
 void Window::Minimize()
 {
 	ShowWindow(hWindow, SW_MINIMIZE);
+}
+void Window::Show()
+{
+	ShowWindow(hWindow, SW_SHOW);
+}
+void Window::Hide()
+{
+	ShowWindow(hWindow, SW_HIDE);
 }
 void Window::SetEventHandler(Window::EventHandler *eh)
 {

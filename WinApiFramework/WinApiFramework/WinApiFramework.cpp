@@ -105,11 +105,11 @@ LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
 		case WM_MOUSEWHEEL:
 			if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
 			{
-				mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WeelUp));
+				mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WheelUp));
 			}
 			else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
 			{
-				mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WeelDown));
+				mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WheelDown));
 			}
 			break;
 		}

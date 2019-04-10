@@ -28,8 +28,8 @@ namespace WinApiFramework
 				RightRelase,
 				MiddlePress,
 				MiddleRelase,
-				WeelUp,
-				WeelDown,
+				WheelUp,
+				WheelDown,
 				Move,
 				CursorChanged,
 				Invalid
@@ -71,9 +71,39 @@ namespace WinApiFramework
 			Hand,
 			Help
 		};
+		struct EventHandler
+		{
+			virtual void HandleEvent(Mouse::Event event)
+			{
+				switch (event.type)
+				{
+				case Mouse::Event::Type::LeftPress:		LeftPress();	break;
+				case Mouse::Event::Type::LeftRelase:	LeftRelase();	break;
+				case Mouse::Event::Type::RightPress:	RightPress();	break;
+				case Mouse::Event::Type::RightRelase:	RightRelase();	break;
+				case Mouse::Event::Type::MiddlePress:	MiddlePress();	break;
+				case Mouse::Event::Type::MiddleRelase:	MiddleRelase();	break;
+				case Mouse::Event::Type::WheelUp:		WheelUp();		break;
+				case Mouse::Event::Type::WheelDown:		WheelDown();	break;
+				case Mouse::Event::Type::Move:			Move();			break;
+				case Mouse::Event::Type::CursorChanged:CursorChanged();	break;
+				}
+			}
+			virtual void LeftPress() {};
+			virtual void LeftRelase() {};
+			virtual void RightPress() {};
+			virtual void RightRelase() {};
+			virtual void MiddlePress() {};
+			virtual void MiddleRelase() {};
+			virtual void WheelUp() {};
+			virtual void WheelDown() {};
+			virtual void Move() {};
+			virtual void CursorChanged() {};
+		};
 	private:
 		std::queue<Event> events;
 		const unsigned short buffLength = 64u;
+		EventHandler *eventHandler = nullptr;
 
 
 		// -- constructor -- //
@@ -98,6 +128,7 @@ namespace WinApiFramework
 		void PushEvent(Mouse::Event newEvent);
 		Event GetEvent();
 		void ClearEventBuffer();
+		void SetEventHandler(Mouse::EventHandler *eventHandler);
 		void SetCursorPosition(int x, int y);
 		void ShowCursor();
 		void HideCursor();

@@ -2,9 +2,6 @@
 #define WIN_API_WINDOW
 
 #include "WindowInclude.h"
-
-//#include "Mouse.h"
-//#include "Keyboard.h"
 #include "WinApiWindowControls.h"
 
 #include <string>
@@ -63,6 +60,10 @@ namespace WinApiFramework
 				Disable,
 				Activate,
 				Deactivate,
+				Minimize,
+				Maximize,
+				Show,
+				Hide,
 				EnableResize,
 				DisableResize,
 				EnableMaximizeBox,
@@ -90,22 +91,29 @@ namespace WinApiFramework
 		{
 			virtual void HandleEvent(Window::Event event)
 			{
-				if (event.type == Window::Event::Type::Move)				Move();
-				if (event.type == Window::Event::Type::Resize)				Resize();
-				if (event.type == Window::Event::Type::Enable)				Enable();
-				if (event.type == Window::Event::Type::Disable)				Disable();
-				if (event.type == Window::Event::Type::Activate)			Activate();
-				if (event.type == Window::Event::Type::Deactivate)			Deactivate();
-				if (event.type == Window::Event::Type::EnableResize)		EnableResize();
-				if (event.type == Window::Event::Type::DisableResize)		DisableResize();
-				if (event.type == Window::Event::Type::EnableMaximizeBox)	EnableMaximizeBox();
-				if (event.type == Window::Event::Type::DisableMaximizeBox)	DisableMaximizeBox();
-				if (event.type == Window::Event::Type::EnableMinimizeBox)	EnableMinimizeBox();
-				if (event.type == Window::Event::Type::DisableMinimizeBox)	DisableMinimizeBox();
-				if (event.type == Window::Event::Type::ControlAdd)			ControlAdd();
-				if (event.type == Window::Event::Type::ControlRemove)		ControlRemove();
-				if (event.type == Window::Event::Type::CaptionChange)		CaptionChange();
-				if (event.type == Window::Event::Type::Close)				Close();
+				switch (event.type)
+				{
+				case Window::Event::Type::Move:					Move();					break;
+				case Window::Event::Type::Resize:				Resize();				break;
+				case Window::Event::Type::Enable:				Enable();				break;
+				case Window::Event::Type::Disable:				Disable();				break;
+				case Window::Event::Type::Activate:				Activate();				break;
+				case Window::Event::Type::Deactivate:			Deactivate();			break;
+				case Window::Event::Type::Minimize:				Minimize();				break;
+				case Window::Event::Type::Maximize:				Maximize();				break;
+				case Window::Event::Type::Show:					Show();					break;
+				case Window::Event::Type::Hide:					Hide();					break;
+				case Window::Event::Type::EnableResize:			EnableResize();			break;
+				case Window::Event::Type::DisableResize:		DisableResize();		break;
+				case Window::Event::Type::EnableMaximizeBox:	EnableMaximizeBox();	break;
+				case Window::Event::Type::DisableMaximizeBox:	DisableMaximizeBox();	break;
+				case Window::Event::Type::EnableMinimizeBox:	EnableMinimizeBox();	break;
+				case Window::Event::Type::DisableMinimizeBox:	DisableMinimizeBox();	break;
+				case Window::Event::Type::ControlAdd:			ControlAdd();			break;
+				case Window::Event::Type::ControlRemove:		ControlRemove();		break;
+				case Window::Event::Type::CaptionChange:		CaptionChange();		break;
+				case Window::Event::Type::Close:				Close();				break;
+				}
 			}
 			virtual void Move() {};
 			virtual void Resize() {};
@@ -113,6 +121,10 @@ namespace WinApiFramework
 			virtual void Disable() {};
 			virtual void Activate() {};
 			virtual void Deactivate() {};
+			virtual void Minimize() {};
+			virtual void Maximize() {};
+			virtual void Show() {};
+			virtual void Hide() {};
 			virtual void EnableResize() {};
 			virtual void DisableResize() {};
 			virtual void EnableMaximizeBox() {};
@@ -239,22 +251,23 @@ namespace WinApiFramework
 		void SetCaption(std::wstring new_caption);
 		void SetPosition(unsigned int x, unsigned int y);
 		void SetDimensions(unsigned int width, unsigned int height);
-		void SetRect(Config newWindowRect);
 		void SetMinSize(unsigned int minWidth, unsigned int minHeight);
 		void SetMaxSize(unsigned int maxWidth, unsigned int maxHeight);
 		void SetSizeRect(SizeRect newSizeRect);
 		void SetAsMainWindow();
-		void EnableWindow();
-		void DisableWindow();
+		void Enable();
+		void Disable();
 		void EnableResize();
 		void DisableResize();
 		void EnableMaximizeBox();
 		void DisableMaximizeBox();
 		void EnableMinimizeBox();
 		void DisableMinimizeBox();
-		void ActivateWindow();
+		void Activate();
 		void Maximize();
 		void Minimize();
+		void Show();
+		void Hide();
 		void SetEventHandler(Window::EventHandler *eventHandler);
 		int ShowMessageBox
 		(

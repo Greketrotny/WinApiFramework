@@ -3,6 +3,7 @@
 
 using namespace WinApiFramework;
 
+// [CLASS] Mouse -------------------------------|
 // constructors
 Mouse::Mouse()
 	:X(x),
@@ -22,7 +23,7 @@ Mouse::~Mouse()
 
 }
 
-// methods
+// -- methods -- //
 // private:
 void Mouse::Move(int x, int y)
 {
@@ -55,6 +56,10 @@ Mouse::Event Mouse::GetEvent()
 void Mouse::ClearEventBuffer()
 {
 	events = std::queue<Event>();
+}
+void Mouse::SetEventHandler(Mouse::EventHandler *eh)
+{
+	this->eventHandler = eh;
 }
 void Mouse::SetCursorPosition(int x, int y)
 {
@@ -100,3 +105,4 @@ void Mouse::SetCursorType(Mouse::Cursor cursorType)
 	}
 	SetCursor(hCursor);
 }
+// [CLASS] Mouse -------------------------------|

@@ -2,7 +2,8 @@
 
 using namespace WinApiFramework;
 
-// constructors
+// [CLASS] Keyboard ----------------------------|
+// -- constructor -- //
 Keyboard::Keyboard()
 	:Keys(keys),
 	Autorepeat(autorepeat)
@@ -14,7 +15,7 @@ Keyboard::~Keyboard()
 
 }
 
-// methods
+// -- methods -- //
 void Keyboard::KeyPress(Keyboard::Key key)
 {
 	keys[key] = true;
@@ -113,6 +114,15 @@ void Keyboard::ClearKeyBuffer()
 	keyEvents = std::queue<KeyEvent>();
 }
 
+void Keyboard::SetKeyEventHandler(Keyboard::KeyEventHandler* keh)
+{
+	this->keyEventHandler = keh;
+}
+void Keyboard::SetCharEventHandler(Keyboard::CharEventHandler* ceh)
+{
+	this->charEventHandler = ceh;
+}
+
 
 // Keyboard::Keys struct definition
 Keyboard::Keys::Keys()
@@ -135,3 +145,4 @@ const bool& Keyboard::Keys::operator[](const unsigned char &key) const
 		return keys[key];
 	return keys[0];
 }
+// [CLASS] Keyboard ----------------------------|

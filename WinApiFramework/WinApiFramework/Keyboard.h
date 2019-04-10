@@ -2,8 +2,6 @@
 #define KEYBOARD_H
 
 #include <queue>
-#include "WindowInclude.h"
-
 
 namespace WinApiFramework
 {
@@ -194,13 +192,31 @@ namespace WinApiFramework
 				this->key = key;
 			}
 		};
+		struct KeyEventHandler
+		{
+			virtual void HandleEvent(Keyboard::KeyEvent event)
+			{
+				switch (event.type)
+				{
+				case Keyboard::KeyEvent::Type::Press:	Press(event);	break;
+				case Keyboard::KeyEvent::Type::Relase:	Relase(event);	break;
+				}
+			}
+			virtual void Press(Keyboard::KeyEvent event) {};
+			virtual void Relase(Keyboard::KeyEvent event) {};
+		};
+		struct CharEventHandler
+		{
+			virtual void HandleEvent(Keyboard::CharEvent event) {};
+		};
 	private:
 		std::queue<CharEvent> charEvents;
 		std::queue<KeyEvent> keyEvents;
 
 		bool autorepeat = true;
 		const unsigned short buffLength = 16u;
-		HHOOK keysHook = NULL;
+		KeyEventHandler* keyEventHandler;
+		CharEventHandler* charEventHandler;
 
 
 		// -- constructors -- //
@@ -240,6 +256,8 @@ namespace WinApiFramework
 		bool IsKeyEmpty();
 		void ClearKeyBuffer();
 
+		void SetKeyEventHandler(Keyboard::KeyEventHandler* keyEventHandler);
+		void SetCharEventHandler(Keyboard::CharEventHandler* charEventHandler);
 
 
 		// -- property fields -- //
