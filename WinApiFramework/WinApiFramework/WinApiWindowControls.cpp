@@ -34,10 +34,12 @@ void WindowControl::DestroyControlWindow()
 void WindowControl::EnableControl()
 {
 	::EnableWindow(hControl, TRUE);
+	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Enable));
 }
 void WindowControl::DisableControl()
 {
 	::EnableWindow(hControl, FALSE);
+	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Disable));
 }
 // public:
 void WindowControl::SetPosition(int x, int y)
@@ -49,6 +51,8 @@ void WindowControl::SetPosition(int x, int y)
 		rect.x, rect.y,
 		rect.width, rect.height,
 		0);
+
+	PushBaseEvent(WindowControl::Event::Type::Move);
 }
 void WindowControl::SetDimensions(unsigned int width, unsigned int height)
 {
@@ -59,6 +63,8 @@ void WindowControl::SetDimensions(unsigned int width, unsigned int height)
 		rect.x, rect.y,
 		rect.width, rect.height,
 		0);
+
+	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Resize));
 }
 // [CLASS] WindowConrtol -----------------------|
 
@@ -72,10 +78,10 @@ Button::Button(const Button::Config& config)
 {
 	caption = config.caption;
 }
-Button::Button(const Button::Config &config, Button::EventHandler &eventHandler)
+Button::Button(const Button::Config &config, Button::EventHandler *eventHandler)
 	: Button(config)
 {
-	this->eventHandler = (&eventHandler);
+	this->eventHandler = eventHandler;
 }
 Button::~Button()
 {
@@ -129,18 +135,18 @@ bool Button::CreateControlWindow()
 
 	return true;
 }
+
+// public:
 void Button::PushEvent(Button::Event newEvent)
 {
 	// push event to buffer
 	events.push(newEvent);
-	if (events.size() > buffLength)
+	if (events.size() > eventBuffSize)
 		events.pop();
 
 	// call eventHandler
 	if (eventHandler) eventHandler->HandleEvent(newEvent);
 }
-
-// public:
 Button::Event Button::GetEvent()
 {
 	if (events.size() > 0u)
@@ -197,10 +203,10 @@ CheckBox::CheckBox(const CheckBox::Config& config)
 		this->boxState = UnCheck;
 	}
 }
-CheckBox::CheckBox(const CheckBox::Config& config, CheckBox::EventHandler &eh)
+CheckBox::CheckBox(const CheckBox::Config& config, CheckBox::EventHandler *eh)
 	: CheckBox(config)
 {
-	this->eventHandler = &eh;
+	this->eventHandler = eh;
 }
 CheckBox::~CheckBox()
 {
@@ -270,17 +276,17 @@ bool CheckBox::CreateControlWindow()
 
 	return true;
 }
+// public:
 void CheckBox::PushEvent(Event newEvent)
 {
 	// push event to buffer
 	events.push(newEvent);
-	if (events.size() > buffLength)
+	if (events.size() > eventBuffSize)
 		events.pop();
 
 	// call eventHandler
 	if (eventHandler) eventHandler->HandleEvent(newEvent);
 }
-// public:
 CheckBox::Event CheckBox::GetEvent()
 {
 	if (events.size() > 0u)
@@ -309,9 +315,9 @@ void CheckBox::DisableControl()
 	::EnableWindow(hControl, FALSE);
 	PushEvent(CheckBox::Event::Type::Disable);
 }
-void CheckBox::SetEventHandler(CheckBox::EventHandler &eh)
+void CheckBox::SetEventHandler(CheckBox::EventHandler *eh)
 {
-	eventHandler = &eh;
+	eventHandler = eh;
 }
 void CheckBox::SetCaption(std::wstring newCaption)
 {
@@ -354,6 +360,11 @@ Label::Label(const Label::Config& config)
 	rect = config.rect;
 	caption = config.caption;
 	textAlignment = config.textAlignment;
+}
+Label::Label(const Label::Config& config, EventHandler *eh)
+	:Label(config)
+{
+	eventHandler = eh;
 }
 Label::~Label()
 {
@@ -409,6 +420,38 @@ bool Label::CreateControlWindow()
 	return true;
 }
 // public:
+void Label::PushEvent(Label::Event newEvent)
+{
+	// push event to buffer
+	events.push(newEvent);
+	if (events.size() > eventBuffSize)
+		events.pop();
+
+	// call eventHandler
+	if (eventHandler) eventHandler->HandleEvent(newEvent);
+}
+Label::Event Label::GetEvent()
+{
+	if (events.size() > 0u)
+	{
+		Label::Event e = events.front();
+		events.pop();
+		return e;
+	}
+	else
+	{
+		return Label::Event();
+	}
+}
+void Label::ClearEventBuffer()
+{
+	events = std::queue<Label::Event>();
+	Label::Event e;
+}
+void Label::SetEventHandler(Label::EventHandler *eh)
+{
+	this->eventHandler = eh;
+}
 void Label::SetCaption(std::wstring newCaption)
 {
 	caption = newCaption;
@@ -577,7 +620,8 @@ ProgressBar::ProgressBar(const ProgressBar::Config& config)
 	MinValue(minValue),
 	MaxValue(maxValue),
 	Position(position),
-	Step(step)
+	Step(step),
+	State(barState)
 {
 	minValue = config.minValue;
 	if (config.maxValue > config.minValue)
@@ -587,6 +631,11 @@ ProgressBar::ProgressBar(const ProgressBar::Config& config)
 
 	position = config.position;
 	step = config.step;
+}
+ProgressBar::ProgressBar(const ProgressBar::Config& config, ProgressBar::EventHandler *eh)
+	:ProgressBar(config)
+{
+	eventHandler = eh;
 }
 ProgressBar::~ProgressBar()
 {
@@ -634,6 +683,37 @@ bool ProgressBar::CreateControlWindow()
 	return true;
 }
 // public:
+void ProgressBar::PushEvent(ProgressBar::Event newEvent)
+{
+	// push event to buffer
+	events.push(newEvent);
+	if (events.size() > eventBuffSize)
+		events.pop();
+
+	// call eventHandler
+	if (eventHandler) eventHandler->HandleEvent(newEvent);
+}
+ProgressBar::Event ProgressBar::GetEvent()
+{
+	if (events.size() > 0u)
+	{
+		ProgressBar::Event e = events.front();
+		events.pop();
+		return e;
+	}
+	else
+	{
+		return ProgressBar::Event();
+	}
+}
+void ProgressBar::ClearEventBuffer()
+{
+	events = std::queue<ProgressBar::Event>();
+}
+void ProgressBar::SetEventHandler(ProgressBar::EventHandler *eh)
+{
+	eventHandler = eh;
+}
 void ProgressBar::SetMinValue(unsigned int value)
 {
 	minValue = value;

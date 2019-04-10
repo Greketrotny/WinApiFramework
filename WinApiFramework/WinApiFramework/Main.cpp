@@ -130,8 +130,8 @@ public:
 		rbc.rect.y = 300;
 		rbc.rect.width = 100;
 		rbc.rect.height = 50;
-		radioButton1 = new RadioButton(rbc);
-		MainWindow->AddControl(radioButton1);
+		//radioButton1 = new RadioButton(rbc);
+		//MainWindow->AddControl(radioButton1);
 
 		// gb1
 		GroupBox::Config gbc;
@@ -140,12 +140,12 @@ public:
 		gbc.rect.width = 150;
 		gbc.rect.height = 200;
 		gbc.caption = L"group box caption";
-		gb1 = new GroupBox(gbc);
-		MainWindow->AddControl(gb1);
+		//gb1 = new GroupBox(gbc);
+		//MainWindow->AddControl(gb1);
 
-		gb1->AddControl(button1);
-		gb1->AddControl(button2);
-		gb1->AddControl(button3);
+		//gb1->AddControl(button1);
+		//gb1->AddControl(button2);
+		//gb1->AddControl(button3);
 
 		//pb1
 		ProgressBar::Config pbc;
@@ -226,6 +226,7 @@ public:
 		void Click() override
 		{
 			form->button1->SetCaption(L"button clicked! \n and new line!");
+			form->button1->DisableControl();
 		}
 		void DoubleClick() override
 		{
@@ -238,6 +239,10 @@ public:
 		void Unfocus() override
 		{
 			form->button1->SetCaption(L"button unfocused!");
+		}
+		void Disable() override
+		{
+			form->button1->SetCaption(L"control disabled");
 		}
 
 	};
@@ -341,16 +346,10 @@ void FreeTimeProcess()
 		{
 			mainForm->button3->SetCaption(L"Mouse left pressed!");
 			mainForm->MainWindow->EnableResize();
-			//Framework::Mouse.SetCursorType(Mouse::Cursor::Wait);
 		}
 		if (mev.type == Mouse::Event::Type::RightPress)
 		{
 			mainForm->MainWindow->DisableResize();
-			mainForm->MainWindow->Minimize();
-		}
-		if (mev.type == Mouse::Event::Type::MiddlePress)
-		{
-			mainForm->MainWindow->Maximize();
 		}
 	}
 
