@@ -6,6 +6,11 @@
 #include <string>
 #include <queue>
 
+#include <d2d1.h>
+#include <wincodec.h>
+
+#pragma comment(lib, "d2d1.lib")
+
 
 namespace WinApiFramework
 {
@@ -86,12 +91,14 @@ namespace WinApiFramework
 		virtual int ControlProc(WPARAM wParam, LPARAM lParam) = 0;
 		virtual bool CreateControlWindow() = 0;
 		void DestroyControlWindow();
+		virtual void PushBaseEvent(WindowControl::Event event) = 0;
 	public:
 		void EnableControl();
 		void DisableControl();
 		virtual void SetPosition(int x, int y);
 		void SetDimensions(unsigned int width, unsigned int height);
-		virtual void PushBaseEvent(WindowControl::Event event) = 0;
+		int GetMouseX();
+		int GetMouseY();
 
 
 		// -- property fields -- //
@@ -115,6 +122,7 @@ namespace WinApiFramework
 			std::wstring caption = L"Default";
 		};
 		struct Event
+
 		{
 			enum Type
 			{
@@ -307,6 +315,80 @@ namespace WinApiFramework
 		const std::wstring& Caption;
 		const bool& IsTripleState;
 	};
+
+	// class Slider
+	/*//class Slider : public WindowControl
+	//{
+	//	// -- fields -- //
+	//private:
+	//	
+	//public:
+	//	struct Config : public WindowControl
+	//	{
+
+	//	};
+	//	struct Event
+	//	{
+	//		enum Type
+	//		{
+	//			Invalid = 0,
+	//			Move = 1,
+	//			Resize = 2,
+	//			Enable = 3,
+	//			Disable = 4,
+	//		};
+	//		Type type;
+
+	//		Event()
+	//		{
+	//			this->type = Invalid;
+	//		}
+	//		Event(Type type)
+	//		{
+	//			this->type = type;
+	//		}
+	//	};
+	//	struct EventHandler : public WindowControl::EventHandler
+	//	{
+	//		virtual void HandleEvent(Slider::Event event)
+	//		{
+	//			HandleBaseEvent((WindowControl::Event::Type)event.type);
+
+	//			switch (event.type)
+	//			{
+	//				// cases
+	//			}
+	//		}
+	//		// virtual functions
+	//	};
+
+	//	// -- constructor -- //
+	//public:
+	//	Slider(const Slider &slider) = delete;
+	//	Slider(const Slider &&slider) = delete;
+	//	Slider(const Config &config);
+	//	Slider(const Config &config, EventHandler *eventHandler);
+
+
+	//	// -- operators -- //
+	//public:
+	//	Slider& operator=(const Slider& slider) = delete;
+	//	Slider& operator-(const Slider &&slider) = delete;
+
+
+	//	// -- methods -- //
+	//private:
+	//	int ControlProc(WPARAM wParam, LPARAM lParam) override;
+	//	bool CreateControlWindow() override;
+	//	void PushBaseEvent(WindowControl::Event event) override
+	//	{
+	//		PushEvent(Slider::Event((Slider::Event::Type)event.type));
+	//	}
+	//public:
+	//	void PushEvent(Slider::Event event);
+
+	//};*/
+
 	class Label : public WindowControl
 	{
 		// -- fields -- //
@@ -405,7 +487,7 @@ namespace WinApiFramework
 		const std::wstring& Caption;
 		const TextAlignment& Alignment;
 	};
-	class RadioButton : public WindowControl
+	/*In progress*/class RadioButton : public WindowControl
 	{
 		// -- fields -- //
 	private:
@@ -435,7 +517,7 @@ namespace WinApiFramework
 		int ControlProc(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
 	};
-	class GroupBox : public WindowControl
+	/*In progress*/class GroupBox : public WindowControl
 	{
 		// -- fields -- //
 	private:
@@ -592,24 +674,51 @@ namespace WinApiFramework
 		const unsigned int& Step;
 		const BarState& State;
 	};
-	//class GraphicsBox : public WindowControl
-	//{
-	//	// -- fields -- //
-	//private:
+	/*In progress*/class GraphicsBox : public WindowControl
+	{
+		// -- fields -- //
+	private:
+		ID2D1Factory* D2DFactory = NULL;
+		IWICImagingFactory *ImageFactory = NULL;	
+		ID2D1HwndRenderTarget* RT = NULL;
+		ID2D1Bitmap *D2DBitmap;
+		IWICBitmap *ImageBitmap;
+
+		RECT rc;
+		bool initialized = false;
+
+	public:
+		struct Config : WindowControl::Config
+		{
+
+		};
+		
+		// -- constructors -- //
+	public:
+		GraphicsBox(const GraphicsBox& graphicsBox) = delete;
+		GraphicsBox(const GraphicsBox&& graphicsBox) = delete;
+		GraphicsBox(const Config &config);
+		~GraphicsBox();
 
 
+		// -- operators -- //
+	public:
+		GraphicsBox& operator=(const GraphicsBox& graphicsBox) = delete;
+		GraphicsBox& operator=(const GraphicsBox&& graphicsBox) = delete;
 
-	//	// -- constructors -- //
-	//public:
-	//	GraphicsBox(const GraphicsBox& graphicsBox) = delete;
-	//	GraphicsBox(const GraphicsBox&& graphicsBox) = delete;
 
+		// -- methods -- //
+	private:
+		int ControlProc(WPARAM wParam, LPARAM lParam) override;
+		bool CreateControlWindow() override;
+		void PushBaseEvent(WindowControl::Event event) override
+		{
 
-	//	// -- operators -- //
-	//public:
-	//	GraphicsBox& operator=(const GraphicsBox& graphicsBox) = delete;
-	//	GraphicsBox& operator=(const GraphicsBox&& graphicsBox) = delete;
-	//};
+		}
+	public:
+		void InitGraphics2D();
+		void DrawLine(int x, int y);
+	};
 }
 
 #endif // !WIN_API_WINDOW_CONTROLS_H

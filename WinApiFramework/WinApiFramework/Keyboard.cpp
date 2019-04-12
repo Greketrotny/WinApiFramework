@@ -19,19 +19,28 @@ Keyboard::~Keyboard()
 void Keyboard::KeyPress(Keyboard::Key key)
 {
 	keys[key] = true;
-	keyEvents.push(KeyEvent(Keyboard::KeyEvent::Type::Press, key));
+	KeyEvent kev(Keyboard::KeyEvent::Type::Press, key);
+	keyEvents.push(kev);
 	TrimKeyBuffer();
+
+	if (keyEventHandler) keyEventHandler->HandleEvent(kev);
 }
 void Keyboard::KeyRelase(Keyboard::Key key)
 {
 	keys[key] = false;
-	keyEvents.push(KeyEvent(Keyboard::KeyEvent::Type::Relase, key));
+	KeyEvent kev(Keyboard::KeyEvent::Type::Relase, key);
+	keyEvents.push(kev);
 	TrimKeyBuffer();
+
+	if (keyEventHandler) keyEventHandler->HandleEvent(kev);
 }
 void Keyboard::CharInput(const wchar_t &newChar)
 {
-	charEvents.push(CharEvent(Keyboard::CharEvent::Type::CharInput, newChar));
+	CharEvent cev(Keyboard::CharEvent::Type::CharInput, newChar);
+	charEvents.push(cev);
 	TrimCharBuffer();
+
+	if (charEventHandler) charEventHandler->HandleEvent(cev);
 }
 void Keyboard::TrimKeyBuffer()
 {

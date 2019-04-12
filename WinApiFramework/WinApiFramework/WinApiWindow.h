@@ -48,7 +48,7 @@ namespace WinApiFramework
 		struct SizeRect
 		{
 			unsigned int minWidth = 0, minHeight = 0;
-			unsigned int maxWidth = 0xFFFFFFFF, maxHeight = 0xFFFFFFFF;
+			unsigned int maxWidth = 0x0FFFFFFF, maxHeight = 0x0FFFFFFF;
 		};
 		struct Event
 		{
@@ -229,7 +229,8 @@ namespace WinApiFramework
 	public:
 		Window(const Window &wnd) = delete;
 		Window(const Window &&wnd) = delete;
-		Window(Config config);
+		Window(const Config &config);
+		Window(const Config &config, EventHandler *eventHandler);
 		~Window();
 
 
@@ -301,6 +302,7 @@ namespace WinApiFramework
 		const int& Y;
 		const unsigned int& Width;
 		const unsigned int& Height;
+		const Rect& Rect;
 		const std::wstring& Caption;
 		const unsigned int& MinWidth;
 		const unsigned int& MinHeight;

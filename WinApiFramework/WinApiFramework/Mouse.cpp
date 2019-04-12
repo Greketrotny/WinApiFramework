@@ -39,6 +39,8 @@ void Mouse::PushEvent(Mouse::Event newEvent)
 
 	while (events.size() > buffLength)
 		events.pop();
+
+	if (eventHandler) eventHandler->HandleEvent(newEvent);
 }
 Mouse::Event Mouse::GetEvent()
 {

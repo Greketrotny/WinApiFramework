@@ -48,6 +48,7 @@ Window::Window()
 	Id(window_id),
 	X(rect.x), Y(rect.y),
 	Width(rect.width), Height(rect.height),
+	Rect(rect),
 	Caption(caption),
 	MinWidth(sizeRect.minWidth), MinHeight(sizeRect.minHeight),
 	MaxWidth(sizeRect.maxWidth), MaxHeight(sizeRect.maxHeight)
@@ -55,7 +56,7 @@ Window::Window()
 	// register self in framework
 	Framework::AddWindow(this);
 }
-Window::Window(Window::Config config)
+Window::Window(const Window::Config &config)
 	:Window()
 {
 	rect = config.rect;
@@ -68,6 +69,11 @@ Window::Window(Window::Config config)
 
 	// create window
 	CreateWinApiWindow(config);
+}
+Window::Window(const Window::Config &config, Window::EventHandler *eh)
+	:Window(config)
+{
+	events.eventHandler = eh;
 }
 Window::~Window()
 {
@@ -270,41 +276,31 @@ bool Window::CreateWinApiWindow(Window::Config config)
 		windowStyle |= WS_MINIMIZE;
 
 	// setup window rect
-	RECT r;
-	if (position == Position::Custom)
-	{
-		r = { (LONG)rect.x, (LONG)rect.y,
-			(LONG)(rect.x + rect.width), (LONG)(rect.y + rect.height) };
+	RECT r = { rect.x, rect.y, rect.x + rect.width, rect.y + rect.height };
+	AdjustWindowRect(&r, windowStyle, FALSE);
+	rect.x = r.left;
+	rect.y = r.top;
+	rect.width = r.right - r.left;
+	rect.height = r.bottom - r.top;
 
-		AdjustWindowRect(&r, windowStyle, FALSE);
-	}
-	else if (position == Position::Center)
+	if (position == Position::Center)
 	{
 		unsigned int w = GetSystemMetrics(SM_CXSCREEN);
 		unsigned int h = GetSystemMetrics(SM_CYSCREEN);
 
-		r.left = (w - std::min(rect.width, w)) / 2;
-		r.top = (h - std::min(rect.height, h)) / 2;
-		r.right = r.left + rect.width;
-		r.bottom = r.top + rect.height;
-
-		AdjustWindowRect(&r, windowStyle, FALSE);
-
-		rect.x = r.left;
-		rect.y = r.top;
+		rect.x = (w - std::min(rect.width, w)) / 2;
+		rect.y = (h - std::min(rect.height, h)) / 2;
 	}
 	else if (position == Position::Default)
 	{
-		r.left = 100;
-		r.top = 100;
-		r.right = r.left + rect.width;
-		r.bottom = r.top + rect.height;
+		rect.x = 100;
+		rect.y = 100;
 	}
 
 	// create window
 	hWindow = CreateWindow(window_class_name.c_str(), caption.c_str(),
 		windowStyle,
-		r.left, r.top, r.right - r.left, r.bottom - r.top,
+		rect.x, rect.y, rect.width, rect.height,
 		nullptr, nullptr, Framework::hProgramInstance, nullptr);
 
 	if (!hWindow)

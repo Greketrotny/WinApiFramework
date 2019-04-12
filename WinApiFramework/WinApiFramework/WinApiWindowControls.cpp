@@ -66,6 +66,14 @@ void WindowControl::SetDimensions(unsigned int width, unsigned int height)
 
 	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Resize));
 }
+int WindowControl::GetMouseX()
+{
+	return parentWindow->GetMouseX() - rect.x;
+}
+int WindowControl::GetMouseY()
+{
+	return parentWindow->GetMouseY() - rect.y;
+}
 // [CLASS] WindowConrtol -----------------------|
 
 
@@ -348,6 +356,12 @@ void CheckBox::SetDimensions(unsigned int width, unsigned int height)
 	PushEvent(CheckBox::Event::Type::Resize);
 }
 // [CLASS] CheckBox ----------------------------|
+
+
+// [CLASS] Slider ------------------------------|
+// TODO: make slider class after control event handling revolution
+// [CLASS] Slider ------------------------------|
+
 
 
 // [CLASS] Label -------------------------------|
@@ -646,12 +660,9 @@ ProgressBar::~ProgressBar()
 // private:
 int ProgressBar::ControlProc(WPARAM wParam, LPARAM lParam)
 {
-	UINT DefaultMessage = 0u;
-	switch (DefaultMessage)
+	UINT msg = HIWORD(wParam);
+	switch (msg)
 	{
-	case 0u:
-		break;
-
 	default:
 		return 1;	// if did't handle
 	}
@@ -759,5 +770,165 @@ void ProgressBar::StepIt()
 
 
 // [CLASS] GraphicsBox -------------------------|
+// -- constructors -- //
+GraphicsBox::GraphicsBox(const GraphicsBox::Config &config)
+	:WindowControl(config)
+{
 
+}
+GraphicsBox::~GraphicsBox()
+{
+	//// release
+	//if (RT)
+	//{
+	//	RT->Release();
+	//	RT = NULL;
+	//}
+	//if (D2DFactory)
+	//{
+	//	D2DFactory->Release();
+	//	D2DFactory = NULL;
+	//}
+	//if (D2DBitmap)
+	//{
+	//	D2DBitmap->Release();
+	//	D2DBitmap = NULL;
+	//}
+}
+
+// -- methods -- //
+// private:
+int GraphicsBox::ControlProc(WPARAM wParam, LPARAM lParam)
+{
+	UINT msg = HIWORD(wParam);
+	switch (msg)
+	{
+	default:
+		return 1;	// if did't handle
+	}
+	return 0;		// if did
+}
+bool GraphicsBox::CreateControlWindow()
+{
+	// create window
+	hControl = CreateWindow(L"BUTTON", NULL,
+		WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
+		rect.x, rect.y, rect.width, rect.height,
+		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+
+	// check control creation
+	if (!hControl)
+	{
+		MessageBox(nullptr, L"ProgressBar creation failed.", L"ProgressBar create error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	return true;
+}
+// public:
+void GraphicsBox::InitGraphics2D()
+{
+	//initialized = true;
+
+	//HRESULT hr;
+	//hr = D2D1CreateFactory(
+	//	D2D1_FACTORY_TYPE_SINGLE_THREADED,
+	//	&D2DFactory
+	//);
+
+	//// Obtain the size of the drawing area.	
+	//GetClientRect(hControl, &rc);
+
+	//// create a Direct2D render target
+	//hr = D2DFactory->CreateHwndRenderTarget(
+	//	D2D1::RenderTargetProperties(),
+	//	D2D1::HwndRenderTargetProperties(
+	//		hControl,
+	//		D2D1::SizeU(
+	//			rc.right - rc.left,
+	//			rc.bottom - rc.top)
+	//	),
+	//	&RT
+	//);
+
+	//IWICImagingFactory * pFactory = NULL;
+	//IWICBitmap *pBitmap = NULL;
+
+	//UINT uiWidth = 640;
+	//UINT uiHeight = 480;
+	//WICPixelFormatGUID formatGUID;
+
+	//WICRect rcLock = { 0, 0, uiWidth, uiHeight };
+	//IWICBitmapLock *pLock = NULL;
+
+	//HRESULT hr = CoCreateInstance(
+	//	CLSID_WICImagingFactory,
+	//	NULL,
+	//	CLSCTX_INPROC_SERVER,
+	//	IID_IWICImagingFactory,
+	//	(LPVOID*)&pFactory
+	//);
+
+	//if (SUCCEEDED(hr))
+	//{
+	//	renderTarget.
+	//	hr = pFactory->CreateBitmap(uiWidth, uiHeight, formatGUID, WICBitmapCacheOnDemand, &pBitmap);
+	//	ID2D1RenderTarget renderTarget;
+	//	ID2D1Factory::CreateWic
+	//}
+
+	//if (SUCCEEDED(hr))
+	//{
+	//	hr = pBitmap->Lock(&rcLock, WICBitmapLockWrite, &pLock);
+
+	//	if (SUCCEEDED(hr))
+	//	{
+	//		UINT cbBufferSize = 0;
+	//		UINT cbStride = 0;
+	//		BYTE *pv = NULL;
+
+	//		// Retrieve the stride.
+	//		hr = pLock->GetStride(&cbStride);
+
+	//		if (SUCCEEDED(hr))
+	//		{
+	//			hr = pLock->GetDataPointer(&cbBufferSize, &pv);
+	//		}
+	//		if (SUCCEEDED(hr))
+	//		{
+	//			for (unsigned int i = 0; i < 2000; i++)
+	//			{
+	//				*pv = i % 200;
+	//				pv += 1;
+	//			}
+	//			// Access the bitmap memory starting at pv, where
+	//			// each row begins cbStride bytes after the start
+	//			// of the preceding row.
+
+
+	//		}
+
+	//		// Release the bitmap lock.
+	//		pLock->Release();
+	//	}
+	//}
+
+	//if (pBitmap)
+	//{
+	//	pBitmap->Release();
+	//}
+
+	//if (pFactory)
+	//{
+	//	pFactory->Release();
+	//}
+
+}
+void GraphicsBox::DrawLine(int x, int y)
+{
+	/*if (!initialized) return;
+	RT->BeginDraw();
+	RT->DrawBitmap(D2DBitmap);
+	RT->EndDraw();*/
+}
 // [CLASS] GraphicsBox -------------------------|
