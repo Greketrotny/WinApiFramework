@@ -15,8 +15,6 @@
 namespace WinApiFramework
 {
 	class Window;
-	class GroupBox;
-
 
 	class WindowControl
 	{
@@ -40,10 +38,10 @@ namespace WinApiFramework
 			enum Type
 			{
 				Invalid = 0,
-				Move	= 1,
-				Resize	= 2,
-				Enable	= 3,
-				Disable	= 4
+				Move = 1,
+				Resize = 2,
+				Enable = 3,
+				Disable = 4
 			};
 			Type type;
 
@@ -56,7 +54,7 @@ namespace WinApiFramework
 				this->type = type;
 			}
 		};
-		struct EventHandler
+		template <class T> struct EventHandler
 		{
 		protected:
 			void HandleBaseEvent(WindowControl::Event::Type eventType)
@@ -70,14 +68,70 @@ namespace WinApiFramework
 				}
 			}
 		public:
+			virtual void HandleEvent(T event) = 0;
 			virtual void Move() {};
 			virtual void Resize() {};
 			virtual void Enable() {};
 			virtual void Disable() {};
 		};
+		template <class T> struct Events
+		{
+		private:
+			std::queue<T> events;
+			const unsigned short buffSize = 32u;
+			WindowControl::EventHandler<T> *eventHandler = nullptr;
+
+		public:
+			// -- constructor -- //
+			Events()
+			{
+
+			}
+			~Events()
+			{
+				if (eventHandler)
+				{
+					delete eventHandler;
+					eventHandler = nullptr;
+				}
+			}
+
+		public:
+			// -- methods -- //
+			void PushEvent(T newEvent)
+			{
+				// push event to buffer
+				events.push(newEvent);
+				if (events.size() > buffSize)
+					events.pop();
+
+				// call handler function
+				if (eventHandler) eventHandler->HandleEvent(newEvent);
+			}
+			T GetEvent()
+			{
+				if (events.size() > 0u)
+				{
+					T e = events.front();
+					events.pop();
+					return e;
+				}
+				else
+				{
+					return T();
+				}
+			}
+			void ClearBuffer()
+			{
+				events = std::queue<T>();
+			}
+			void SetEventHandler(WindowControl::EventHandler<T> *eventHandler)
+			{
+				this->eventHandler = eventHandler;
+			}
+		};
 	protected:
 		Rect rect;
-		const unsigned short eventBuffSize = 32u;
 
 
 		// -- constructors -- //
@@ -108,7 +162,6 @@ namespace WinApiFramework
 
 		// -- friends -- //
 		friend Window;
-		friend GroupBox;
 	};
 
 	class Button : public WindowControl
@@ -122,15 +175,14 @@ namespace WinApiFramework
 			std::wstring caption = L"Default";
 		};
 		struct Event
-
 		{
 			enum Type
 			{
-				Invalid	= 0,
-				Move	= 1,
-				Resize	= 2,
-				Enable	= 3,
-				Disable	= 4,
+				Invalid = 0,
+				Move = 1,
+				Resize = 2,
+				Enable = 3,
+				Disable = 4,
 				Click,
 				DoubleClick,
 				Focus,
@@ -147,9 +199,9 @@ namespace WinApiFramework
 				this->type = type;
 			}
 		};
-		struct EventHandler : public WindowControl::EventHandler
+		struct EventHandler : public WindowControl::EventHandler<Button::Event>
 		{
-			virtual void HandleEvent(Button::Event event)
+			virtual void HandleEvent(Button::Event event) override
 			{
 				HandleBaseEvent((WindowControl::Event::Type)event.type);
 
@@ -167,8 +219,7 @@ namespace WinApiFramework
 			virtual void Unfocus() {};
 		};
 	private:
-		std::queue<Event> events;
-		EventHandler *eventHandler = nullptr;
+		WindowControl::Events<Button::Event> events;
 
 
 		// -- constructors -- //
@@ -190,14 +241,10 @@ namespace WinApiFramework
 		int ControlProc(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
 		void PushBaseEvent(WindowControl::Event event) override
-		{ 
-			PushEvent(Button::Event((Button::Event::Type)event.type));
+		{
+			events.PushEvent(Button::Event((Button::Event::Type)event.type));
 		}
 	public:
-		void PushEvent(Button::Event newEvent);
-		Button::Event GetEvent();
-		void ClearEventBuffer();
-		void SetEventHandler(EventHandler *eventHandler);
 		void SetCaption(std::wstring newCaption);
 		void SetPosition(int x, int y);
 		void SetDimensions(unsigned int width, unsigned int height);
@@ -206,6 +253,7 @@ namespace WinApiFramework
 		// -- property fields -- //
 		const Rect& Rect;
 		const std::wstring& Caption;
+		WindowControl::Events<Button::Event>& Events;
 	};
 	class CheckBox : public WindowControl
 	{
@@ -228,9 +276,9 @@ namespace WinApiFramework
 			enum Type
 			{
 				Invalid = 0,
-				Move	= 1,
-				Resize	= 2,
-				Enable	= 3,
+				Move = 1,
+				Resize = 2,
+				Enable = 3,
 				Disable = 4,
 				Check,
 				UnCheck,
@@ -247,7 +295,7 @@ namespace WinApiFramework
 				this->type = type;
 			}
 		};
-		struct EventHandler : public WindowControl::EventHandler
+		struct EventHandler : public WindowControl::EventHandler<CheckBox::Event>
 		{
 			virtual void HandleEvent(CheckBox::Event event)
 			{
@@ -268,9 +316,7 @@ namespace WinApiFramework
 		std::wstring caption = L"Default";
 		bool isTripleState = 0;
 		BoxState boxState;
-
-		std::queue<Event> events;
-		EventHandler *eventHandler = nullptr;
+		WindowControl::Events<CheckBox::Event> events;
 
 
 		// -- constructors -- //
@@ -278,7 +324,7 @@ namespace WinApiFramework
 		CheckBox(const CheckBox& checkBox) = delete;
 		CheckBox(const CheckBox&& checkBox) = delete;
 		CheckBox(const Config& config);
-		CheckBox(const Config& config, EventHandler *eventHandler);
+		CheckBox(const Config& config, CheckBox::EventHandler *eventHandler);
 		~CheckBox();
 
 
@@ -294,15 +340,9 @@ namespace WinApiFramework
 		bool CreateControlWindow() override;
 		void PushBaseEvent(WindowControl::Event event) override
 		{
-			PushEvent(CheckBox::Event((CheckBox::Event::Type)event.type));
+			events.PushEvent(CheckBox::Event((CheckBox::Event::Type)event.type));
 		}
 	public:
-		void PushEvent(CheckBox::Event newEvent);
-		Event GetEvent();
-		void ClearEventBuffer();
-		void EnableControl();
-		void DisableControl();
-		void SetEventHandler(EventHandler *eventHandler);
 		void SetCaption(std::wstring newCaption);
 		void SetBoxState(BoxState newState);
 		void SetBoxState(unsigned int newState);
@@ -315,80 +355,99 @@ namespace WinApiFramework
 		const std::wstring& Caption;
 		const bool& IsTripleState;
 	};
+	class TrackBar : public WindowControl
+	{
+		// -- fields -- //
+	private:
 
-	// class Slider
-	/*//class Slider : public WindowControl
-	//{
-	//	// -- fields -- //
-	//private:
-	//	
-	//public:
-	//	struct Config : public WindowControl
-	//	{
+	public:
+		struct Range
+		{
+			int min, max;
+		}; 
+		enum Orientation
+		{
+			Horizontal,
+			Vertical
+		};
+		struct Config : public WindowControl::Config
+		{
+			Range range;
+			Orientation orientation;
+			unsigned int position;
+		};
+		struct Event
+		{
+			enum Type
+			{
+				Invalid = 0,
+				Move = 1,
+				Resize = 2,
+				Enable = 3,
+				Disable = 4,
+				MinValueChange,
+				MaxValueChange,
+				TrackPosChange
+			};
+			Type type;
 
-	//	};
-	//	struct Event
-	//	{
-	//		enum Type
-	//		{
-	//			Invalid = 0,
-	//			Move = 1,
-	//			Resize = 2,
-	//			Enable = 3,
-	//			Disable = 4,
-	//		};
-	//		Type type;
+			Event()
+			{
+				this->type = Invalid;
+			}
+			Event(Type type)
+			{
+				this->type = type;
+			}
+		};
+		struct EventHandler : public WindowControl::EventHandler<TrackBar::Event>
+		{
+			virtual void HandleEvent(TrackBar::Event event)
+			{
+				HandleBaseEvent((WindowControl::Event::Type)event.type);
 
-	//		Event()
-	//		{
-	//			this->type = Invalid;
-	//		}
-	//		Event(Type type)
-	//		{
-	//			this->type = type;
-	//		}
-	//	};
-	//	struct EventHandler : public WindowControl::EventHandler
-	//	{
-	//		virtual void HandleEvent(Slider::Event event)
-	//		{
-	//			HandleBaseEvent((WindowControl::Event::Type)event.type);
+				switch (event.type)
+				{
+				case TrackBar::Event::Type::MaxValueChange: MaxValueChange(); break;
+				case TrackBar::Event::Type::MinValueChange: MinValueChange(); break;
+				case TrackBar::Event::Type::TrackPosChange: TrackPosChange(); break;
+				}
+			}
+			virtual void MinValueChange() {};
+			virtual void MaxValueChange() {};
+			virtual void TrackPosChange() {};
+		};
+	private:
+		WindowControl::Events<TrackBar::Event> events;
 
-	//			switch (event.type)
-	//			{
-	//				// cases
-	//			}
-	//		}
-	//		// virtual functions
-	//	};
-
-	//	// -- constructor -- //
-	//public:
-	//	Slider(const Slider &slider) = delete;
-	//	Slider(const Slider &&slider) = delete;
-	//	Slider(const Config &config);
-	//	Slider(const Config &config, EventHandler *eventHandler);
+		// -- constructor -- //
+	public:
+		TrackBar(const TrackBar &TrackBar) = delete;
+		TrackBar(const TrackBar &&TrackBar) = delete;
+		TrackBar(const Config &config);
+		TrackBar(const Config &config, EventHandler *eventHandler);
+		~TrackBar();
 
 
-	//	// -- operators -- //
-	//public:
-	//	Slider& operator=(const Slider& slider) = delete;
-	//	Slider& operator-(const Slider &&slider) = delete;
+		// -- operators -- //
+	public:
+		TrackBar& operator=(const TrackBar& TrackBar) = delete;
+		TrackBar& operator-(const TrackBar &&TrackBar) = delete;
 
+		// -- methods -- //
+	private:
+		int ControlProc(WPARAM wParam, LPARAM lParam) override;
+		bool CreateControlWindow() override;
+		void PushBaseEvent(WindowControl::Event event) override
+		{
+			events.PushEvent(TrackBar::Event((TrackBar::Event::Type)event.type));
+		}
+	public:
+		void SetMinValue(int value);
+		void SetMaxValue(int value);
+		void SetTrackPosition(int newPosition);
 
-	//	// -- methods -- //
-	//private:
-	//	int ControlProc(WPARAM wParam, LPARAM lParam) override;
-	//	bool CreateControlWindow() override;
-	//	void PushBaseEvent(WindowControl::Event event) override
-	//	{
-	//		PushEvent(Slider::Event((Slider::Event::Type)event.type));
-	//	}
-	//public:
-	//	void PushEvent(Slider::Event event);
-
-	//};*/
-
+	};
 	class Label : public WindowControl
 	{
 		// -- fields -- //
@@ -429,7 +488,7 @@ namespace WinApiFramework
 				this->type = type;
 			}
 		};
-		struct EventHandler : public WindowControl::EventHandler
+		struct EventHandler : public WindowControl::EventHandler<Label::Event>
 		{
 			virtual void HandleEvent(Label::Event event)
 			{
@@ -445,8 +504,7 @@ namespace WinApiFramework
 			virtual void TextAlignmentChange() {};
 		};
 	private:
-		std::queue<Label::Event> events;
-		EventHandler *eventHandler = nullptr;
+		WindowControl::Events<Label::Event> events;
 		TextAlignment textAlignment;
 
 
@@ -470,15 +528,10 @@ namespace WinApiFramework
 		bool CreateControlWindow() override;
 		void PushBaseEvent(WindowControl::Event event) override
 		{
-			PushEvent(Label::Event((Label::Event::Type)event.type));
+			events.PushEvent(Label::Event((Label::Event::Type)event.type));
 		}
 	public:
-		void PushEvent(Label::Event newEvent);
-		Label::Event GetEvent();
-		void ClearEventBuffer();
-		void SetEventHandler(EventHandler *eventHandler);
 		void SetCaption(std::wstring newCaption);
-		void SetDimensions(unsigned int width, unsigned int height);
 		void SetTextAligment(TextAlignment textAlignment);
 
 
@@ -486,8 +539,9 @@ namespace WinApiFramework
 	public:
 		const std::wstring& Caption;
 		const TextAlignment& Alignment;
+		WindowControl::Events<Label::Event>& Events;
 	};
-	/*In progress*/class RadioButton : public WindowControl
+	/*In progress*//*class RadioButton : public WindowControl
 	{
 		// -- fields -- //
 	private:
@@ -516,8 +570,8 @@ namespace WinApiFramework
 	private:
 		int ControlProc(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
-	};
-	/*In progress*/class GroupBox : public WindowControl
+	};*/
+	/*In progress*//*class GroupBox : public WindowControl
 	{
 		// -- fields -- //
 	private:
@@ -556,7 +610,7 @@ namespace WinApiFramework
 		// -- property fields -- //
 	public:
 		const std::wstring& Caption;
-	};
+	};*/
 	class ProgressBar : public WindowControl
 	{
 		// -- fields -- //
@@ -603,7 +657,7 @@ namespace WinApiFramework
 				this->type = type;
 			}
 		};
-		struct EventHandler : public WindowControl::EventHandler
+		struct EventHandler : public WindowControl::EventHandler<ProgressBar::Event>
 		{
 			virtual void HandleEvent(ProgressBar::Event event)
 			{
@@ -626,8 +680,8 @@ namespace WinApiFramework
 		};
 	private:
 		BarState barState;
-		std::queue<ProgressBar::Event> events;
-		EventHandler *eventHandler = nullptr;
+		WindowControl::Events<ProgressBar::Event> events;
+
 
 		// -- constrctor -- //
 	public:
@@ -650,13 +704,9 @@ namespace WinApiFramework
 		bool CreateControlWindow() override;
 		void PushBaseEvent(WindowControl::Event event) override
 		{
-			PushEvent(ProgressBar::Event((ProgressBar::Event::Type)event.type));
+			events.PushEvent(ProgressBar::Event((ProgressBar::Event::Type)event.type));
 		}
 	public:
-		void PushEvent(ProgressBar::Event newEvent);
-		ProgressBar::Event GetEvent();
-		void ClearEventBuffer();
-		void SetEventHandler(EventHandler *eventHandler);
 		void SetMinValue(unsigned int value);
 		void SetMaxValue(unsigned int value);
 		void SetRange(unsigned int min, unsigned int max);
@@ -673,13 +723,14 @@ namespace WinApiFramework
 		const unsigned int& Position;
 		const unsigned int& Step;
 		const BarState& State;
+		WindowControl::Events<ProgressBar::Event>& Events;
 	};
-	/*In progress*/class GraphicsBox : public WindowControl
+	/*In progress*//*class GraphicsBox : public WindowControl
 	{
 		// -- fields -- //
 	private:
 		ID2D1Factory* D2DFactory = NULL;
-		IWICImagingFactory *ImageFactory = NULL;	
+		IWICImagingFactory *ImageFactory = NULL;
 		ID2D1HwndRenderTarget* RT = NULL;
 		ID2D1Bitmap *D2DBitmap;
 		IWICBitmap *ImageBitmap;
@@ -692,7 +743,7 @@ namespace WinApiFramework
 		{
 
 		};
-		
+
 		// -- constructors -- //
 	public:
 		GraphicsBox(const GraphicsBox& graphicsBox) = delete;
@@ -718,7 +769,7 @@ namespace WinApiFramework
 	public:
 		void InitGraphics2D();
 		void DrawLine(int x, int y);
-	};
+	};*/
 }
 
 #endif // !WIN_API_WINDOW_CONTROLS_H

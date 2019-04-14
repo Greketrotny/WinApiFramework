@@ -8,6 +8,8 @@ class MainForm
 	// -- fields -- //
 public:
 	Window *MainWindow = nullptr;
+	Button *button1 = nullptr;
+	TrackBar *trackBar1 = nullptr;
 
 	// -- constructor -- //
 public:
@@ -20,9 +22,31 @@ public:
 		wc.rect.width = 1000;
 		wc.rect.height = 600;
 		MainWindow = new Window(wc, new EHMainWindow(this));
+
+		// button1
+		Button::Config bc;
+		bc.rect.x = 50;
+		bc.rect.y = 50;
+		bc.rect.width = 150;
+		bc.rect.height = 50;
+		bc.caption = L"button caption";
+		button1 = new Button(bc, new EHbutton1(this));
+		MainWindow->AddControl(button1);
+
+		// trackBar
+		TrackBar::Config tbc;
+		tbc.rect.x = 200;
+		tbc.rect.y = 50;
+		tbc.rect.width = 200;
+		tbc.rect.height = 50;
+		trackBar1 = new TrackBar(tbc, new EHtrackBar1(this));
+		MainWindow->AddControl(trackBar1);
 	}
 	~MainForm()
 	{
+		if (button1) delete button1;
+		if (trackBar1) delete trackBar1;
+
 		if (MainWindow) delete MainWindow;
 	}
 
@@ -46,6 +70,37 @@ public:
 		}
 	};
 
+	struct EHbutton1 : public Button::EventHandler
+	{
+		MainForm *form;
+		Button **button1;
+		EHbutton1(MainForm *form) { this->form = form; button1 = &form->button1; }
+
+		void Click() override
+		{
+			form->button1->SetCaption(L"button clicked");
+			form->trackBar1->SetPosition(200, 70);
+		}
+		void DoubleClick() override
+		{
+			form->button1->SetCaption(L"button double clicked");
+		}
+	};
+	struct EHtrackBar1 : public TrackBar::EventHandler
+	{
+		MainForm *form;
+		EHtrackBar1(MainForm *form) { this->form = form; }
+
+		void Move() override
+		{
+			form->MainWindow->SetCaption(L"TrackBar moved");
+		}
+		void TrackPosChange() override
+		{
+			form->MainWindow->SetCaption(L"TrackBar position changed");
+		}
+	};
+
 	struct EHKeyboardKey : Keyboard::KeyEventHandler
 	{
 		bool created = false;
@@ -57,7 +112,6 @@ public:
 
 		}
 	};
-
 	struct EHMouse : Mouse::EventHandler
 	{
 		MainForm *form;

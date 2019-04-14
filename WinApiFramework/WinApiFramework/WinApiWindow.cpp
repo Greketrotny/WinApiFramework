@@ -93,11 +93,13 @@ Window::~Window()
 // private:
 LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	switch (msg)
+	switch (msg)	
 	{
 		// on window controls events //
 	case WM_COMMAND:
 	case WM_NOTIFY:
+	case WM_HSCROLL:
+	case WM_VSCROLL:
 		for (WindowControl *control : controls.controls)
 		{
 			if (control->hControl == (HWND)lParam)

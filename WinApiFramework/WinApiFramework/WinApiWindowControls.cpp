@@ -82,42 +82,42 @@ int WindowControl::GetMouseY()
 Button::Button(const Button::Config& config)
 	: WindowControl(config),
 	Rect(rect),
-	Caption(caption)
+	Caption(caption),
+	Events(events)
 {
 	caption = config.caption;
 }
 Button::Button(const Button::Config &config, Button::EventHandler *eventHandler)
 	: Button(config)
 {
-	this->eventHandler = eventHandler;
+	events.SetEventHandler(eventHandler);
 }
 Button::~Button()
 {
-	delete eventHandler;
-	eventHandler = nullptr;
+
 }
 
 // -- methods -- //
 // private:
 int Button::ControlProc(WPARAM wParam, LPARAM lParam)
 {
-	UINT bn = HIWORD(wParam);
-	switch (bn)
+	UINT event = HIWORD(wParam);
+	switch (event)
 	{
 	case BN_CLICKED:
-		PushEvent(Button::Event(Button::Event::Type::Click));
+		events.PushEvent(Button::Event(Button::Event::Type::Click));
 		break;
 
 	case BN_DBLCLK:
-		PushEvent(Button::Event(Button::Event::Type::DoubleClick));
+		events.PushEvent(Button::Event(Button::Event::Type::DoubleClick));
 		break;
 
 	case BN_SETFOCUS:
-		PushEvent(Button::Event(Button::Event::Type::Focus));
+		events.PushEvent(Button::Event(Button::Event::Type::Focus));
 		break;
 
 	case BN_KILLFOCUS:
-		PushEvent(Button::Event(Button::Event::Type::Unfocus));
+		events.PushEvent(Button::Event(Button::Event::Type::Unfocus));
 		break;
 
 	default:
@@ -145,37 +145,6 @@ bool Button::CreateControlWindow()
 }
 
 // public:
-void Button::PushEvent(Button::Event newEvent)
-{
-	// push event to buffer
-	events.push(newEvent);
-	if (events.size() > eventBuffSize)
-		events.pop();
-
-	// call eventHandler
-	if (eventHandler) eventHandler->HandleEvent(newEvent);
-}
-Button::Event Button::GetEvent()
-{
-	if (events.size() > 0u)
-	{
-		Button::Event e = events.front();
-		events.pop();
-		return e;
-	}
-	else
-	{
-		return Button::Event();
-	}
-}
-void Button::ClearEventBuffer()
-{
-	events = std::queue<Button::Event>();
-}
-void Button::SetEventHandler(Button::EventHandler *eh)
-{
-	eventHandler = eh;
-}
 void Button::SetCaption(std::wstring newCaption)
 {
 	caption = newCaption;
@@ -184,12 +153,12 @@ void Button::SetCaption(std::wstring newCaption)
 void Button::SetPosition(int x, int y)
 {
 	WindowControl::SetPosition(x, y);
-	PushEvent(Button::Event::Type::Move);
+	events.PushEvent(Button::Event::Type::Move);
 }
 void Button::SetDimensions(unsigned int width, unsigned int height)
 {
 	WindowControl::SetDimensions(width, height);
-	PushEvent(Button::Event::Type::Resize);
+	events.PushEvent(Button::Event::Type::Resize);
 }
 // [CLASS] Button ------------------------------|
 
@@ -214,19 +183,19 @@ CheckBox::CheckBox(const CheckBox::Config& config)
 CheckBox::CheckBox(const CheckBox::Config& config, CheckBox::EventHandler *eh)
 	: CheckBox(config)
 {
-	this->eventHandler = eh;
+	events.SetEventHandler(eh);
 }
 CheckBox::~CheckBox()
 {
-	eventHandler = nullptr;
+
 }
 
 // -- methods -- //
 // private:
 int CheckBox::ControlProc(WPARAM wParam, LPARAM lParam)
 {
-	UINT bn = HIWORD(wParam);
-	switch (bn)
+	UINT event = HIWORD(wParam);
+	switch (event)
 	{
 	case BN_CLICKED:
 	case BN_DBLCLK:
@@ -236,26 +205,26 @@ int CheckBox::ControlProc(WPARAM wParam, LPARAM lParam)
 			{
 				SendMessage(hControl, BM_SETCHECK, BST_INDETERMINATE, 0);
 				boxState = MiddleState;
-				PushEvent(CheckBox::Event(CheckBox::Event::Type::MiddleState));
+				events.PushEvent(CheckBox::Event(CheckBox::Event::Type::MiddleState));
 			}
 			else
 			{
 				SendMessage(hControl, BM_SETCHECK, BST_UNCHECKED, 0);
 				boxState = UnCheck;
-				PushEvent(CheckBox::Event(CheckBox::Event::Type::UnCheck));
+				events.PushEvent(CheckBox::Event(CheckBox::Event::Type::UnCheck));
 			}
 		}
 		else if (boxState == MiddleState)
 		{
 			SendMessage(hControl, BM_SETCHECK, BST_UNCHECKED, 0);
 			boxState = UnCheck;
-			PushEvent(CheckBox::Event(CheckBox::Event::Type::UnCheck));
+			events.PushEvent(CheckBox::Event(CheckBox::Event::Type::UnCheck));
 		}
 		else if (boxState == UnCheck)
 		{
 			SendMessage(hControl, BM_SETCHECK, BST_CHECKED, 0);
 			boxState = Check;
-			PushEvent(CheckBox::Event(CheckBox::Event::Type::Check));
+			events.PushEvent(CheckBox::Event(CheckBox::Event::Type::Check));
 		}
 		break;
 
@@ -274,7 +243,7 @@ bool CheckBox::CreateControlWindow()
 
 	if (!hControl)
 	{
-		MessageBox(nullptr, L"Button creation failed.", L"Button create error", MB_OK | MB_ICONERROR);
+		MessageBox(nullptr, L"CheckBox window creation failed.", L"CheckBox create error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
@@ -285,48 +254,6 @@ bool CheckBox::CreateControlWindow()
 	return true;
 }
 // public:
-void CheckBox::PushEvent(Event newEvent)
-{
-	// push event to buffer
-	events.push(newEvent);
-	if (events.size() > eventBuffSize)
-		events.pop();
-
-	// call eventHandler
-	if (eventHandler) eventHandler->HandleEvent(newEvent);
-}
-CheckBox::Event CheckBox::GetEvent()
-{
-	if (events.size() > 0u)
-	{
-		CheckBox::Event e = events.front();
-		events.pop();
-		return e;
-	}
-	else
-	{
-		return CheckBox::Event();
-	}
-}
-void CheckBox::ClearEventBuffer()
-{
-	events = std::queue<CheckBox::Event>();
-	CheckBox::Event e;
-}
-void CheckBox::EnableControl()
-{
-	::EnableWindow(hControl, TRUE);
-	PushEvent(CheckBox::Event::Type::Enable);
-}
-void CheckBox::DisableControl()
-{
-	::EnableWindow(hControl, FALSE);
-	PushEvent(CheckBox::Event::Type::Disable);
-}
-void CheckBox::SetEventHandler(CheckBox::EventHandler *eh)
-{
-	eventHandler = eh;
-}
 void CheckBox::SetCaption(std::wstring newCaption)
 {
 	caption = newCaption;
@@ -348,19 +275,67 @@ void CheckBox::SetBoxState(unsigned int newState)
 void CheckBox::SetPosition(int x, int y)
 {
 	WindowControl::SetPosition(x, y);
-	PushEvent(CheckBox::Event::Type::Move);
+	events.PushEvent(CheckBox::Event::Type::Move);
 }
 void CheckBox::SetDimensions(unsigned int width, unsigned int height)
 {
 	WindowControl::SetDimensions(width, height);
-	PushEvent(CheckBox::Event::Type::Resize);
+	events.PushEvent(CheckBox::Event::Type::Resize);
 }
 // [CLASS] CheckBox ----------------------------|
 
 
-// [CLASS] Slider ------------------------------|
-// TODO: make slider class after control event handling revolution
-// [CLASS] Slider ------------------------------|
+// [CLASS] TrackBar ------------------------------|
+// -- constructor -- //
+TrackBar::TrackBar(const TrackBar::Config& config)
+	:WindowControl(config)
+{
+
+}
+TrackBar::TrackBar(const TrackBar::Config& config, TrackBar::EventHandler *eventHandler)
+	: TrackBar(config)
+{
+	events.SetEventHandler(eventHandler);
+}
+TrackBar::~TrackBar()
+{
+
+}
+
+// -- methods -- //
+// private:
+int TrackBar::ControlProc(WPARAM wParam, LPARAM lParam)
+{
+	UINT event = LOWORD(wParam);
+	switch (event)
+	{
+	case TB_THUMBTRACK:
+		events.PushEvent(TrackBar::Event::Type::TrackPosChange);
+		break;
+
+
+	default:
+		return 1;	// if did't handle message
+	}
+	return 0;		// if did
+}
+bool TrackBar::CreateControlWindow()
+{
+	// create window
+	hControl = CreateWindow(TRACKBAR_CLASS, L"TrackBar",
+		WS_CHILD | WS_VISIBLE | TBS_ENABLESELRANGE,
+		rect.x, rect.y, rect.width, rect.height,
+		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+
+	if (!hControl)
+	{
+		MessageBox(nullptr, L"TrackBar window creation failed.", L"TrackBar create error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	return true;
+}
+// [CLASS] TrackBar ------------------------------|
 
 
 
@@ -369,7 +344,8 @@ void CheckBox::SetDimensions(unsigned int width, unsigned int height)
 Label::Label(const Label::Config& config)
 	:WindowControl(config),
 	Caption(caption),
-	Alignment(textAlignment)
+	Alignment(textAlignment),
+	Events(events)
 {
 	rect = config.rect;
 	caption = config.caption;
@@ -378,7 +354,7 @@ Label::Label(const Label::Config& config)
 Label::Label(const Label::Config& config, EventHandler *eh)
 	:Label(config)
 {
-	eventHandler = eh;
+	events.SetEventHandler(eh);
 }
 Label::~Label()
 {
@@ -389,8 +365,8 @@ Label::~Label()
 // private:
 int Label::ControlProc(WPARAM wParam, LPARAM lParam)
 {
-	UINT DefaultMessage = 0u;
-	switch (DefaultMessage)
+	UINT event = HIWORD(wParam);
+	switch (event)
 	{
 	case 0u:
 		break;
@@ -413,7 +389,6 @@ bool Label::CreateControlWindow()
 	if (textAlignment == Label::Right)
 		controlStyle |= SS_RIGHT;
 
-
 	// create window
 	hControl = CreateWindow(L"STATIC", caption.c_str(),
 		controlStyle,
@@ -423,57 +398,23 @@ bool Label::CreateControlWindow()
 	// check control creation
 	if (!hControl)
 	{
-		MessageBox(nullptr, L"Button creation failed.", L"Button create error", MB_OK | MB_ICONERROR);
+		MessageBox(nullptr, L"Label window creation failed.", L"Label create error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
-	// set better font
+	// set visual font
 	HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 	SendMessage(hControl, WM_SETFONT, (WPARAM)hNormalFont, 0);
 
 	return true;
 }
 // public:
-void Label::PushEvent(Label::Event newEvent)
-{
-	// push event to buffer
-	events.push(newEvent);
-	if (events.size() > eventBuffSize)
-		events.pop();
-
-	// call eventHandler
-	if (eventHandler) eventHandler->HandleEvent(newEvent);
-}
-Label::Event Label::GetEvent()
-{
-	if (events.size() > 0u)
-	{
-		Label::Event e = events.front();
-		events.pop();
-		return e;
-	}
-	else
-	{
-		return Label::Event();
-	}
-}
-void Label::ClearEventBuffer()
-{
-	events = std::queue<Label::Event>();
-	Label::Event e;
-}
-void Label::SetEventHandler(Label::EventHandler *eh)
-{
-	this->eventHandler = eh;
-}
 void Label::SetCaption(std::wstring newCaption)
 {
 	caption = newCaption;
 	SetWindowText(hControl, caption.c_str());
-}
-void Label::SetDimensions(unsigned int width, unsigned int height)
-{
-	WindowControl::SetDimensions(width, height);
+
+	events.PushEvent(Label::Event(Label::Event::Type::CaptionChange));
 }
 void Label::SetTextAligment(Label::TextAlignment textAlignment)
 {
@@ -489,10 +430,12 @@ void Label::SetTextAligment(Label::TextAlignment textAlignment)
 	s = (s & ~(SS_LEFT | SS_CENTER | SS_RIGHT | SS_LEFTNOWORDWRAP)) | newStyle;
 	SetWindowLongPtr(hControl, GWL_STYLE, s);
 	InvalidateRect(hControl, NULL, TRUE);
+
+	events.PushEvent(Label::Event(Label::Event::Type::TextAlignmentChange));
 }
 // [CLASS] Label -------------------------------|
 
-
+/*
 // [CLASS] RadioButton -------------------------|
 // -- constructors -- //
 RadioButton::RadioButton(const RadioButton::Config& config)
@@ -541,8 +484,9 @@ bool RadioButton::CreateControlWindow()
 	return true;
 }
 // [CLASS] RadioButton -------------------------|
+*/
 
-
+/*
 // [CLASS] GroupBox ----------------------------|
 // -- constructor -- //
 GroupBox::GroupBox(const GroupBox::Config& config)
@@ -625,7 +569,7 @@ void GroupBox::RemoveControl(WindowControl *control)
 	}
 }
 // [CLASS] GroupBox ----------------------------|
-
+*/
 
 // [CLASS] ProgressBar -------------------------|
 // -- constructors -- //
@@ -635,7 +579,8 @@ ProgressBar::ProgressBar(const ProgressBar::Config& config)
 	MaxValue(maxValue),
 	Position(position),
 	Step(step),
-	State(barState)
+	State(barState),
+	Events(events)
 {
 	minValue = config.minValue;
 	if (config.maxValue > config.minValue)
@@ -649,7 +594,7 @@ ProgressBar::ProgressBar(const ProgressBar::Config& config)
 ProgressBar::ProgressBar(const ProgressBar::Config& config, ProgressBar::EventHandler *eh)
 	:ProgressBar(config)
 {
-	eventHandler = eh;
+	events.SetEventHandler(eh);
 }
 ProgressBar::~ProgressBar()
 {
@@ -660,8 +605,8 @@ ProgressBar::~ProgressBar()
 // private:
 int ProgressBar::ControlProc(WPARAM wParam, LPARAM lParam)
 {
-	UINT msg = HIWORD(wParam);
-	switch (msg)
+	UINT event = HIWORD(wParam);
+	switch (event)
 	{
 	default:
 		return 1;	// if did't handle
@@ -694,37 +639,6 @@ bool ProgressBar::CreateControlWindow()
 	return true;
 }
 // public:
-void ProgressBar::PushEvent(ProgressBar::Event newEvent)
-{
-	// push event to buffer
-	events.push(newEvent);
-	if (events.size() > eventBuffSize)
-		events.pop();
-
-	// call eventHandler
-	if (eventHandler) eventHandler->HandleEvent(newEvent);
-}
-ProgressBar::Event ProgressBar::GetEvent()
-{
-	if (events.size() > 0u)
-	{
-		ProgressBar::Event e = events.front();
-		events.pop();
-		return e;
-	}
-	else
-	{
-		return ProgressBar::Event();
-	}
-}
-void ProgressBar::ClearEventBuffer()
-{
-	events = std::queue<ProgressBar::Event>();
-}
-void ProgressBar::SetEventHandler(ProgressBar::EventHandler *eh)
-{
-	eventHandler = eh;
-}
 void ProgressBar::SetMinValue(unsigned int value)
 {
 	minValue = value;
@@ -737,8 +651,10 @@ void ProgressBar::SetMaxValue(unsigned int value)
 }
 void ProgressBar::SetRange(unsigned int min, unsigned int max)
 {
+	if (min >= max) max = min + 1;
 	minValue = min;
 	maxValue = max;
+
 	SendMessage(hControl, PBM_SETRANGE, 0, MAKELPARAM(minValue, maxValue));
 }
 void ProgressBar::SetStep(unsigned int step)
@@ -768,7 +684,7 @@ void ProgressBar::StepIt()
 }
 // [CLASS] ProgressBar -------------------------|
 
-
+/*
 // [CLASS] GraphicsBox -------------------------|
 // -- constructors -- //
 GraphicsBox::GraphicsBox(const GraphicsBox::Config &config)
@@ -836,7 +752,7 @@ void GraphicsBox::InitGraphics2D()
 	//	&D2DFactory
 	//);
 
-	//// Obtain the size of the drawing area.	
+	//// Obtain the size of the drawing area.
 	//GetClientRect(hControl, &rc);
 
 	//// create a Direct2D render target
@@ -930,5 +846,5 @@ void GraphicsBox::DrawLine(int x, int y)
 	RT->BeginDraw();
 	RT->DrawBitmap(D2DBitmap);
 	RT->EndDraw();*/
-}
-// [CLASS] GraphicsBox -------------------------|
+	//}*/
+	// [CLASS] GraphicsBox -------------------------|
