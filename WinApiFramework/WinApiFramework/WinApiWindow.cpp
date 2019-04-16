@@ -401,7 +401,7 @@ void Window::Disable()
 }
 void Window::EnableResize()
 {
-	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
 	windowStyle = windowStyle | WS_SIZEBOX;
 	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
 
@@ -409,7 +409,7 @@ void Window::EnableResize()
 }
 void Window::DisableResize()
 {
-	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
 	windowStyle = windowStyle & (~WS_SIZEBOX);
 	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
 
@@ -417,7 +417,7 @@ void Window::DisableResize()
 }
 void Window::EnableMaximizeBox()
 {
-	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
 	windowStyle = windowStyle | WS_MAXIMIZEBOX;
 	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
 
@@ -425,7 +425,7 @@ void Window::EnableMaximizeBox()
 }
 void Window::DisableMaximizeBox()
 {
-	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
 	windowStyle = windowStyle & (~WS_MAXIMIZEBOX);
 	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
 
@@ -433,7 +433,7 @@ void Window::DisableMaximizeBox()
 }
 void Window::EnableMinimizeBox()
 {
-	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
 	windowStyle = windowStyle | WS_MINIMIZEBOX;
 	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
 
@@ -441,7 +441,7 @@ void Window::EnableMinimizeBox()
 }
 void Window::DisableMinimizeBox()
 {
-	LONG windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
 	windowStyle = windowStyle & (~WS_MINIMIZEBOX);
 	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
 

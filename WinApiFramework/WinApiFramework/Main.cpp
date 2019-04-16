@@ -9,6 +9,7 @@ class MainForm
 public:
 	Window *MainWindow = nullptr;
 	Button *button1 = nullptr;
+	CheckBox *checkBox1 = nullptr;
 	TrackBar *trackBar1 = nullptr;
 
 	// -- constructor -- //
@@ -33,18 +34,40 @@ public:
 		button1 = new Button(bc, new EHbutton1(this));
 		MainWindow->AddControl(button1);
 
+		CheckBox::Config cbc;
+		cbc.rect.x = 50;
+		cbc.rect.y = 120;
+		cbc.rect.width = 200;
+		cbc.rect.height = 50;
+		cbc.caption = L"checkBox1";
+		cbc.isTripleState = true;
+		cbc.boxState = CheckBox::BoxState::Check;
+		checkBox1 = new CheckBox(cbc, new EHcheckBox1(this));
+		MainWindow->AddControl(checkBox1);
+
 		// trackBar
 		TrackBar::Config tbc;
-		tbc.rect.x = 200;
+		tbc.rect.x = 250;
 		tbc.rect.y = 50;
-		tbc.rect.width = 200;
-		tbc.rect.height = 50;
+		tbc.rect.width = 400;
+		tbc.rect.height = 30;
+		tbc.trackRange.min = 0;
+		tbc.trackRange.max = 100;
+		tbc.EnableSelectRange = true;
+		tbc.selectRange.min = 20;
+		tbc.selectRange.max = 60;
+		tbc.startPosition = 20;
+		tbc.smallStep = 5;
+		tbc.largeStep = 25;
+		tbc.labels.label1 = L"left";
+		tbc.labels.label2 = L"right";
 		trackBar1 = new TrackBar(tbc, new EHtrackBar1(this));
 		MainWindow->AddControl(trackBar1);
 	}
 	~MainForm()
 	{
 		if (button1) delete button1;
+		if (checkBox1) delete checkBox1;
 		if (trackBar1) delete trackBar1;
 
 		if (MainWindow) delete MainWindow;
@@ -59,14 +82,17 @@ public:
 
 		void Move() override
 		{
-			form->MainWindow->SetCaption(L"window moved " 
+			form->MainWindow->SetCaption(L"window moved: " 
 				+ std::to_wstring(form->MainWindow->X)
 				+ L" : "
 				+ std::to_wstring(form->MainWindow->Y));
 		}
 		void Resize() override
 		{
-			form->MainWindow->SetCaption(L"window resized");
+			form->MainWindow->SetCaption(L"window resized: "
+				+ std::to_wstring(form->MainWindow->Width)
+				+ L" : "
+				+ std::to_wstring(form->MainWindow->Height));
 		}
 	};
 
@@ -79,11 +105,55 @@ public:
 		void Click() override
 		{
 			form->button1->SetCaption(L"button clicked");
-			form->trackBar1->SetPosition(200, 70);
+
+			if (!form->trackBar1)
+			{
+				TrackBar::Config tbc;
+				tbc.rect.x = 250;
+				tbc.rect.y = 50;
+				tbc.rect.width = 400;
+				tbc.rect.height = 30;
+				tbc.trackRange.min = 0;
+				tbc.trackRange.max = 100;
+				tbc.EnableSelectRange = true;
+				tbc.selectRange.min = 20;
+				tbc.selectRange.max = 60;
+				tbc.startPosition = 20;
+				tbc.smallStep = 5;
+				tbc.largeStep = 25;
+				tbc.labels.label1 = L"left";
+				tbc.labels.label2 = L"right";
+				form->trackBar1 = new TrackBar(tbc, new EHtrackBar1(form));
+				form->MainWindow->AddControl(form->trackBar1);
+			}
 		}
 		void DoubleClick() override
 		{
 			form->button1->SetCaption(L"button double clicked");
+
+			if (form->trackBar1)
+			{
+				delete form->trackBar1;
+				form->trackBar1 = nullptr;
+			}
+		}
+	};
+	struct EHcheckBox1 :public CheckBox::EventHandler
+	{
+		MainForm *form;
+		EHcheckBox1(MainForm *form) { this->form = form; }
+
+		void Check() override
+		{
+			form->checkBox1->SetCaption(L"checkBox1 checked");
+		}
+		void MiddleState() override
+		{
+			form->checkBox1->SetCaption(L"checkBox1 middlestated");
+		}
+		void UnCheck() override
+		{
+			form->checkBox1->SetCaption(L"checkBox1 unchecked");
 		}
 	};
 	struct EHtrackBar1 : public TrackBar::EventHandler
@@ -91,13 +161,14 @@ public:
 		MainForm *form;
 		EHtrackBar1(MainForm *form) { this->form = form; }
 
-		void Move() override
-		{
-			form->MainWindow->SetCaption(L"TrackBar moved");
-		}
 		void TrackPosChange() override
 		{
 			form->MainWindow->SetCaption(L"TrackBar position changed");
+			form->button1->SetCaption(std::to_wstring(form->trackBar1->Position));
+		}
+		void Move() override
+		{
+			form->MainWindow->SetCaption(L"trackBar1 move event!");
 		}
 	};
 
@@ -127,7 +198,7 @@ void FreeTimeProcess()
 {
 	//MF->MainWindow->SetCaption(std::to_wstring(Framework::Mouse.X));
 
-	Sleep(10);
+	Sleep(1);
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPWSTR args, INT ncmd)

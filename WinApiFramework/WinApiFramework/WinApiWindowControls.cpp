@@ -4,6 +4,7 @@
 
 using namespace WinApiFramework;
 
+
 // [CLASS] WindowConrtol -----------------------|
 // -- constructors -- //
 WindowControl::WindowControl(const WindowControl::Config& config)
@@ -50,7 +51,7 @@ void WindowControl::SetPosition(int x, int y)
 	SetWindowPos(hControl, nullptr,
 		rect.x, rect.y,
 		rect.width, rect.height,
-		0);
+		SWP_NOSIZE);
 
 	PushBaseEvent(WindowControl::Event::Type::Move);
 }
@@ -62,7 +63,7 @@ void WindowControl::SetDimensions(unsigned int width, unsigned int height)
 	SetWindowPos(hControl, nullptr,
 		rect.x, rect.y,
 		rect.width, rect.height,
-		0);
+		SWP_NOMOVE);
 
 	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Resize));
 }
@@ -75,6 +76,7 @@ int WindowControl::GetMouseY()
 	return parentWindow->GetMouseY() - rect.y;
 }
 // [CLASS] WindowConrtol -----------------------|
+
 
 
 // [CLASS] Button ------------------------------|
@@ -127,9 +129,11 @@ int Button::ControlProc(WPARAM wParam, LPARAM lParam)
 }
 bool Button::CreateControlWindow()
 {
+	controlStyle |= BS_NOTIFY | BS_PUSHBUTTON | BS_MULTILINE;
+
 	// create window
 	hControl = CreateWindow(L"BUTTON", caption.c_str(),
-		WS_CHILD | WS_VISIBLE | BS_NOTIFY | BS_PUSHBUTTON | BS_MULTILINE,
+		controlStyle,
 		rect.x, rect.y, rect.width, rect.height,
 		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
@@ -161,6 +165,7 @@ void Button::SetDimensions(unsigned int width, unsigned int height)
 	events.PushEvent(Button::Event::Type::Resize);
 }
 // [CLASS] Button ------------------------------|
+
 
 
 // [CLASS] CheckBox ----------------------------|
@@ -235,9 +240,11 @@ int CheckBox::ControlProc(WPARAM wParam, LPARAM lParam)
 }
 bool CheckBox::CreateControlWindow()
 {
+	controlStyle |= BS_NOTIFY | BS_CHECKBOX | BS_MULTILINE | BS_AUTO3STATE;
+
 	// create window
 	hControl = CreateWindow(L"BUTTON", caption.c_str(),
-		WS_CHILD | WS_VISIBLE | BS_NOTIFY | BS_CHECKBOX | BS_MULTILINE | BS_AUTO3STATE,
+		controlStyle,
 		rect.x, rect.y, rect.width, rect.height,
 		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
@@ -262,35 +269,67 @@ void CheckBox::SetCaption(std::wstring newCaption)
 void CheckBox::SetBoxState(CheckBox::BoxState newState)
 {
 	boxState = newState;
-	if (boxState == Check) SendMessage(hControl, BM_SETCHECK, BST_CHECKED, 0);
-	if (boxState == MiddleState) SendMessage(hControl, BM_SETCHECK, BST_INDETERMINATE, 0);
-	if (boxState == UnCheck) SendMessage(hControl, BM_SETCHECK, BST_UNCHECKED, 0);
+	if (boxState == Check)
+	{
+		SendMessage(hControl, BM_SETCHECK, BST_CHECKED, 0);
+		events.PushEvent(CheckBox::Event(CheckBox::Event::Type::Check));
+		return;
+	}
+
+	if (boxState == MiddleState && isTripleState)
+	{
+		SendMessage(hControl, BM_SETCHECK, BST_INDETERMINATE, 0);
+		events.PushEvent(CheckBox::Event(CheckBox::Event::Type::MiddleState));
+		return;
+	}
+
+	if (boxState == UnCheck)
+	{
+		SendMessage(hControl, BM_SETCHECK, BST_UNCHECKED, 0);
+		events.PushEvent(CheckBox::Event(CheckBox::Event::Type::UnCheck));
+		return;
+	}
 }
 void CheckBox::SetBoxState(unsigned int newState)
 {
-	if (newState == 0) SetBoxState(CheckBox::BoxState::UnCheck);
-	if (newState == 1) SetBoxState(CheckBox::BoxState::Check);
-	if (newState == 2) SetBoxState(CheckBox::BoxState::MiddleState);
+	if (newState == 0) { SetBoxState(CheckBox::BoxState::UnCheck); return; }
+	if (newState == 1) { SetBoxState(CheckBox::BoxState::Check); return; }
+	if (newState == 2 && isTripleState) { SetBoxState(CheckBox::BoxState::MiddleState); return; }
 }
-void CheckBox::SetPosition(int x, int y)
+void CheckBox::EnableTripleState()
 {
-	WindowControl::SetPosition(x, y);
-	events.PushEvent(CheckBox::Event::Type::Move);
+	isTripleState = true;
 }
-void CheckBox::SetDimensions(unsigned int width, unsigned int height)
+void CheckBox::DisableTripleState()
 {
-	WindowControl::SetDimensions(width, height);
-	events.PushEvent(CheckBox::Event::Type::Resize);
+	isTripleState = false;
+
+	if (boxState == CheckBox::BoxState::MiddleState)
+		SetBoxState(CheckBox::BoxState::UnCheck);
 }
 // [CLASS] CheckBox ----------------------------|
+
 
 
 // [CLASS] TrackBar ------------------------------|
 // -- constructor -- //
 TrackBar::TrackBar(const TrackBar::Config& config)
-	:WindowControl(config)
+	:WindowControl(config),
+	Position(thumbPosition),
+	TrackMin(trackRange.min),
+	TrackMax(trackRange.max),
+	Orientation(orientation),
+	SmallStep(smallStep),
+	LargeStep(largeStep)
 {
-
+	thumbPosition = config.startPosition;
+	trackRange = config.trackRange;
+	selectRange = config.selectRange;
+	labels = config.labels;
+	orientation = config.orientation;
+	smallStep = config.smallStep;
+	largeStep = config.largeStep;
+	selectRangeEnabled = config.EnableSelectRange;
 }
 TrackBar::TrackBar(const TrackBar::Config& config, TrackBar::EventHandler *eventHandler)
 	: TrackBar(config)
@@ -299,7 +338,8 @@ TrackBar::TrackBar(const TrackBar::Config& config, TrackBar::EventHandler *event
 }
 TrackBar::~TrackBar()
 {
-
+	DestroyWindow(hLabel1);
+	DestroyWindow(hLabel2);
 }
 
 // -- methods -- //
@@ -309,10 +349,16 @@ int TrackBar::ControlProc(WPARAM wParam, LPARAM lParam)
 	UINT event = LOWORD(wParam);
 	switch (event)
 	{
-	case TB_THUMBTRACK:
+	case TB_TOP:			// End
+	case TB_BOTTOM:			// Home
+	case TB_LINEUP:			// Left/Up arrow
+	case TB_LINEDOWN:		// Right/Down arrow
+	case TB_PAGEUP:			// PageUp
+	case TB_PAGEDOWN:		// PageDown
+	case TB_THUMBTRACK:		// Mouse drag
+		thumbPosition = SendMessage(hControl, TBM_GETPOS, 0, 0);
 		events.PushEvent(TrackBar::Event::Type::TrackPosChange);
 		break;
-
 
 	default:
 		return 1;	// if did't handle message
@@ -321,9 +367,17 @@ int TrackBar::ControlProc(WPARAM wParam, LPARAM lParam)
 }
 bool TrackBar::CreateControlWindow()
 {
+	if (orientation == TrackBar::Orientation::Horizontal)
+		controlStyle |= TBS_HORZ;
+	else if (orientation == TrackBar::Orientation::Vertical)
+		controlStyle |= TBS_VERT;
+
+	if (selectRangeEnabled)
+		controlStyle |= TBS_ENABLESELRANGE;
+
 	// create window
 	hControl = CreateWindow(TRACKBAR_CLASS, L"TrackBar",
-		WS_CHILD | WS_VISIBLE | TBS_ENABLESELRANGE,
+		controlStyle,
 		rect.x, rect.y, rect.width, rect.height,
 		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
@@ -333,7 +387,165 @@ bool TrackBar::CreateControlWindow()
 		return false;
 	}
 
+	SetTrackRange(trackRange);
+	SetSelectRange(selectRange);
+	SetThumbPosition(thumbPosition);
+	SetSmallStep(smallStep);
+	SetLargeStep(largeStep);
+
+
+
+	// create and set side labels
+	hLabel1 = CreateWindow(L"STATIC", labels.label1.c_str(), SS_CENTER | WS_CHILD | WS_VISIBLE,
+		0, 0, 50, 10, parentWindow->WndHandle, NULL, Framework::ProgramInstance, NULL);
+	hLabel2 = CreateWindow(L"STATIC", labels.label2.c_str(), SS_CENTER | WS_CHILD | WS_VISIBLE,
+		0, 0, 50, 10, parentWindow->WndHandle, NULL, Framework::ProgramInstance, NULL);
+
+	HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+	SendMessage(hLabel1, WM_SETFONT, (WPARAM)hNormalFont, TRUE);
+	SendMessage(hLabel2, WM_SETFONT, (WPARAM)hNormalFont, TRUE);
+
+	SendMessage(hControl, TBM_SETBUDDY, TRUE, (LPARAM)hLabel1);
+	SendMessage(hControl, TBM_SETBUDDY, FALSE, (LPARAM)hLabel2);
+
 	return true;
+}
+// public:
+void TrackBar::SetPosition(int x, int y)
+{
+	RECT label1Rect, label2Rect;
+	GetWindowRect(hLabel1, &label1Rect);
+	GetWindowRect(hLabel2, &label2Rect);
+	//SetWindowPos(hLabel1, NULL, label1Rect.left - parentWindow->X - (rect.x - x), label1Rect.top - parentWindow->Y - (rect.y - y), 0, 0, SWP_NOSIZE);
+	//SetWindowPos(hLabel2, NULL, label2Rect.left - parentWindow->X - (rect.x - x), label2Rect.top - parentWindow->Y - (rect.y - y), 0, 0, SWP_NOSIZE);
+
+	WindowControl::SetPosition(x, y);
+
+	//SendMessage(hControl, TBM_SETBUDDY, TRUE, (LPARAM)hLabel1);
+	//SendMessage(hControl, TBM_SETBUDDY, FALSE, (LPARAM)hLabel2);
+}
+void TrackBar::SetMinTrackValue(int value)
+{
+	if (value < trackRange.max)
+	{
+		trackRange.min = value;
+		SendMessage(hControl, TBM_SETRANGEMIN, TRUE, value);
+		SendMessage(hControl, TBM_SETTICFREQ, 1, 0);
+	}
+}
+void TrackBar::SetMaxTrackValue(int value)
+{
+	if (value > trackRange.min)
+	{
+		trackRange.max = value;
+		SendMessage(hControl, TBM_SETRANGEMAX, TRUE, value);
+		SendMessage(hControl, TBM_SETTICFREQ, 1, 0);
+	}
+}
+void TrackBar::SetMinSelectValue(int value)
+{
+	if (value > trackRange.min && value < selectRange.max)
+	{
+		selectRange.min = value;
+		SendMessage(hControl, TBM_SETSELSTART, TRUE, value);
+	}
+}
+void TrackBar::SetMaxSelectValue(int value)
+{
+	if (value < trackRange.max && value > selectRange.min)
+	{
+		SendMessage(hControl, TBM_SETSELEND, TRUE, value);
+	}
+}
+void TrackBar::SetTrackRange(TrackBar::Range newRange)
+{
+	SetTrackRange(newRange.min, newRange.max);
+}
+void TrackBar::SetTrackRange(int minValue, int maxValue)
+{
+	if (minValue < maxValue)
+	{
+		if (minValue >= trackRange.max)
+		{
+			SendMessage(hControl, TBM_SETRANGEMAX, TRUE, maxValue);
+			SendMessage(hControl, TBM_SETRANGEMIN, TRUE, minValue);
+		}
+		else
+		{
+			SendMessage(hControl, TBM_SETRANGEMIN, TRUE, minValue);
+			SendMessage(hControl, TBM_SETRANGEMAX, TRUE, maxValue);
+		}
+
+		trackRange.min = minValue;
+		trackRange.max = maxValue;
+	}
+}
+void TrackBar::SetSelectRange(TrackBar::Range newRange)
+{
+	SetSelectRange(newRange.min, newRange.max);
+}
+void TrackBar::SetSelectRange(int minValue, int maxValue)
+{
+	if (selectRangeEnabled)
+	{
+		SendMessage(hControl, TBM_SETSEL, TRUE, minValue | (maxValue << 16));
+	}
+}
+void TrackBar::SetThumbPosition(int newThumbPosition)
+{
+	if (newThumbPosition < trackRange.min) newThumbPosition = trackRange.min;
+	if (newThumbPosition > trackRange.max) newThumbPosition = trackRange.max;
+
+	thumbPosition = newThumbPosition;
+	SendMessage(hControl, TBM_SETPOS, TRUE, thumbPosition);
+}
+void TrackBar::SetSmallStep(unsigned int smallStep)
+{
+	this->smallStep = smallStep;
+	SendMessage(hControl, TBM_SETLINESIZE, 0, smallStep);
+}
+void TrackBar::SetLargeStep(unsigned int largeStep)
+{
+	this->largeStep = largeStep;
+	SendMessage(hControl, TBM_SETPAGESIZE, 0, largeStep);
+}
+void TrackBar::EnableSelectRange()
+{
+	if (!selectRangeEnabled)
+	{
+		selectRangeEnabled = true;
+		controlStyle |= TBS_ENABLESELRANGE;
+		SetWindowLong(hControl, GWL_STYLE, controlStyle);
+	}
+}
+void TrackBar::DisableSelectRange()
+{
+	if (selectRangeEnabled)
+	{
+		selectRangeEnabled = false;
+		controlStyle = controlStyle & (~TBS_ENABLESELRANGE);
+		SetWindowLong(hControl, GWL_STYLE, controlStyle);
+	}
+}
+void TrackBar::SetLabel1(const std::wstring& label1)
+{
+	labels.label1 = label1;
+	SetWindowText(hLabel1, labels.label1.c_str());
+}
+void TrackBar::SetLabel2(const std::wstring& label2)
+{
+	labels.label2 = label2;
+	SetWindowText(hLabel2, labels.label2.c_str());
+}
+void TrackBar::SetLabels(const std::wstring& label1, const std::wstring& label2)
+{
+	SetLabel1(label1);
+	SetLabel2(label2);
+}
+void TrackBar::SetLabels(const TrackBar::Labels& newLabels)
+{
+	SetLabel1(newLabels.label1);
+	SetLabel2(newLabels.label2);
 }
 // [CLASS] TrackBar ------------------------------|
 
@@ -378,10 +590,6 @@ int Label::ControlProc(WPARAM wParam, LPARAM lParam)
 }
 bool Label::CreateControlWindow()
 {
-	// set label styles
-	unsigned int controlStyle = 0u;
-	controlStyle = (WS_CHILD | WS_VISIBLE);
-
 	if (textAlignment == Label::Left)
 		controlStyle |= SS_LEFT;
 	if (textAlignment == Label::Center)
@@ -434,6 +642,7 @@ void Label::SetTextAligment(Label::TextAlignment textAlignment)
 	events.PushEvent(Label::Event(Label::Event::Type::TextAlignmentChange));
 }
 // [CLASS] Label -------------------------------|
+
 
 /*
 // [CLASS] RadioButton -------------------------|
@@ -571,6 +780,7 @@ void GroupBox::RemoveControl(WindowControl *control)
 // [CLASS] GroupBox ----------------------------|
 */
 
+
 // [CLASS] ProgressBar -------------------------|
 // -- constructors -- //
 ProgressBar::ProgressBar(const ProgressBar::Config& config)
@@ -683,6 +893,7 @@ void ProgressBar::StepIt()
 	SetPosition(position + step);
 }
 // [CLASS] ProgressBar -------------------------|
+
 
 /*
 // [CLASS] GraphicsBox -------------------------|

@@ -22,6 +22,7 @@ namespace WinApiFramework
 	protected:
 		HWND hControl;
 		Window* parentWindow = nullptr;
+		DWORD controlStyle = WS_CHILD | WS_VISIBLE;
 		unsigned int id;
 	public:
 		struct Rect
@@ -346,8 +347,8 @@ namespace WinApiFramework
 		void SetCaption(std::wstring newCaption);
 		void SetBoxState(BoxState newState);
 		void SetBoxState(unsigned int newState);
-		void SetPosition(int x, int y);
-		void SetDimensions(unsigned int width, unsigned int height);
+		void EnableTripleState();
+		void DisableTripleState();
 
 
 		// -- property fields -- //
@@ -359,12 +360,21 @@ namespace WinApiFramework
 	{
 		// -- fields -- //
 	private:
+		bool selectRangeEnabled = false;
+		unsigned int smallStep = 1u, largeStep = 10u;
+		int thumbPosition;
+		HWND hLabel1, hLabel2;
 
 	public:
 		struct Range
 		{
-			int min, max;
+			int min = 0, max = 100;
 		}; 
+		struct Labels
+		{
+			std::wstring label1 = L"";
+			std::wstring label2 = L"";
+		};
 		enum Orientation
 		{
 			Horizontal,
@@ -372,9 +382,13 @@ namespace WinApiFramework
 		};
 		struct Config : public WindowControl::Config
 		{
-			Range range;
+			Range trackRange;
+			Range selectRange;
+			Labels labels;
 			Orientation orientation;
-			unsigned int position;
+			int startPosition;
+			unsigned int smallStep, largeStep;
+			bool EnableSelectRange = false;
 		};
 		struct Event
 		{
@@ -419,8 +433,13 @@ namespace WinApiFramework
 		};
 	private:
 		WindowControl::Events<TrackBar::Event> events;
+		Range trackRange;
+		Range selectRange;
+		Labels labels;
+		Orientation orientation;
 
-		// -- constructor -- //
+
+		// -- constructors -- //
 	public:
 		TrackBar(const TrackBar &TrackBar) = delete;
 		TrackBar(const TrackBar &&TrackBar) = delete;
@@ -434,6 +453,7 @@ namespace WinApiFramework
 		TrackBar& operator=(const TrackBar& TrackBar) = delete;
 		TrackBar& operator-(const TrackBar &&TrackBar) = delete;
 
+
 		// -- methods -- //
 	private:
 		int ControlProc(WPARAM wParam, LPARAM lParam) override;
@@ -443,10 +463,33 @@ namespace WinApiFramework
 			events.PushEvent(TrackBar::Event((TrackBar::Event::Type)event.type));
 		}
 	public:
-		void SetMinValue(int value);
-		void SetMaxValue(int value);
-		void SetTrackPosition(int newPosition);
+		void SetPosition(int x, int y);
+		void SetMinTrackValue(int value);
+		void SetMaxTrackValue(int value);
+		void SetMinSelectValue(int value);
+		void SetMaxSelectValue(int value);
+		void SetTrackRange(Range newRAnge);
+		void SetTrackRange(int minValue, int maxValue);
+		void SetSelectRange(Range newSelectRange);
+		void SetSelectRange(int minValue, int maxValue);
+		void SetThumbPosition(int newPosition);
+		void SetSmallStep(unsigned int smallStep);
+		void SetLargeStep(unsigned int largeStep);
+		void EnableSelectRange();
+		void DisableSelectRange();
+		void SetLabel1(const std::wstring& label1);
+		void SetLabel2(const std::wstring& label2);
+		void SetLabels(const std::wstring& label1, const std::wstring& label2);
+		void SetLabels(const Labels& newLabels);
 
+		// -- property fields -- //
+	public:
+		const int& Position;
+		const int& TrackMin;
+		const int& TrackMax;
+		const Orientation& Orientation;
+		const unsigned int& SmallStep;
+		const unsigned int& LargeStep;
 	};
 	class Label : public WindowControl
 	{
