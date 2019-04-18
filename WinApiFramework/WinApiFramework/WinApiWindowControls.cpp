@@ -4,6 +4,7 @@
 
 using namespace WinApiFramework;
 
+#include <chrono>
 
 // [CLASS] WindowConrtol -----------------------|
 // -- constructors -- //
@@ -580,8 +581,6 @@ int Label::ControlProc(WPARAM wParam, LPARAM lParam)
 	UINT event = HIWORD(wParam);
 	switch (event)
 	{
-	case 0u:
-		break;
 
 	default:
 		return 1;	// if did't handle
@@ -590,6 +589,7 @@ int Label::ControlProc(WPARAM wParam, LPARAM lParam)
 }
 bool Label::CreateControlWindow()
 {
+	// set text alignment
 	if (textAlignment == Label::Left)
 		controlStyle |= SS_LEFT;
 	if (textAlignment == Label::Center)
@@ -634,14 +634,188 @@ void Label::SetTextAligment(Label::TextAlignment textAlignment)
 	if (textAlignment == Label::Right)
 		newStyle = SS_RIGHT;
 
-	unsigned int s = GetWindowLongPtr(hControl, GWL_STYLE);
-	s = (s & ~(SS_LEFT | SS_CENTER | SS_RIGHT | SS_LEFTNOWORDWRAP)) | newStyle;
-	SetWindowLongPtr(hControl, GWL_STYLE, s);
+	controlStyle = (controlStyle & ~(SS_LEFT | SS_CENTER | SS_RIGHT | SS_LEFTNOWORDWRAP)) | newStyle;
+	SetWindowLong(hControl, GWL_STYLE, controlStyle);
 	InvalidateRect(hControl, NULL, TRUE);
 
 	events.PushEvent(Label::Event(Label::Event::Type::TextAlignmentChange));
 }
 // [CLASS] Label -------------------------------|
+
+
+
+// [CLASS] Edit --------------------------------|
+// -- constructors -- //
+Edit::Edit(const Edit::Config& config)
+	:WindowControl(config),
+	PasswordMode(passwordMode),
+	NumberOnlyMode(numberOnly),
+	Alignment(textAlignment),
+	LetterMode(lettersMode)
+{
+	text = config.text;
+	passwordMode = config.passwordMode;
+	numberOnly = config.numberOnly;
+	textAlignment = config.textAlignment;
+	lettersMode = config.lettersMode;
+	textLengthLimit = config.textLengthLimit;
+
+	controlStyle |= WS_BORDER;
+}
+Edit::Edit(const Edit::Config& config, Edit::EventHandler *eh)
+	:Edit(config)
+{
+	events.SetEventHandler(eh);
+}
+Edit::~Edit()
+{
+
+}
+
+// -- methods -- //
+// private:
+int Edit::ControlProc(WPARAM wParam, LPARAM lParam)
+{
+	UINT event = HIWORD(wParam);
+	switch (event)
+	{
+	case EN_MAXTEXT:
+		events.PushEvent(Edit::Event(Edit::Event::Type::TextLimitReach));
+		break;
+
+	case EN_UPDATE:
+		events.PushEvent(Edit::Event(Edit::Event::Type::Text));
+		break;
+
+	default:
+		return 1;	// if did't handle
+	}
+	return 0;		// if did
+}
+bool Edit::CreateControlWindow()
+{
+	// set text alignment
+	if (textAlignment == Edit::TextAlignment::Left)
+		controlStyle |= ES_LEFT;
+	if (textAlignment == Edit::TextAlignment::Center)
+		controlStyle |= ES_CENTER;
+	if (textAlignment == Edit::TextAlignment::Right)
+		controlStyle |= ES_RIGHT;
+
+	// set letters mode
+	if (lettersMode == Edit::LettersMode::LowerCase)
+		controlStyle |= ES_LOWERCASE;
+	if (lettersMode == Edit::LettersMode::UpperCase)
+		controlStyle |= ES_UPPERCASE;
+
+	// set password mode
+	if (passwordMode)
+		controlStyle |= ES_PASSWORD;
+
+	// set number only mode
+	if (numberOnly)
+		controlStyle |= ES_NUMBER;
+
+
+	// create window
+	hControl = CreateWindow(L"EDIT", text.c_str(),
+		controlStyle,
+		rect.x, rect.y, rect.width, rect.height,
+		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+
+	// check control creation
+	if (!hControl)
+	{
+		MessageBox(nullptr, L"Label window creation failed.", L"Label create error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	// set visual font
+	HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+	SendMessage(hControl, WM_SETFONT, (WPARAM)hNormalFont, 0);
+
+	SetTextLengthLimit(textLengthLimit);
+	return true;
+}
+// public:
+void Edit::SetText(std::wstring newText)
+{
+	text = newText;
+	SetWindowText(hControl, text.c_str());
+
+	events.PushEvent(Edit::Event(Edit::Event::Type::Text));
+}
+void Edit::SetTextAlignment(Edit::TextAlignment newTextAlignment)
+{
+	// set text alignment
+	unsigned int newAlignment = 0u;
+	if (newTextAlignment == Edit::TextAlignment::Left)
+		newAlignment |= ES_LEFT;
+	if (newTextAlignment == Edit::TextAlignment::Center)
+		newAlignment |= ES_CENTER;
+	if (newTextAlignment == Edit::TextAlignment::Right)
+		newAlignment |= ES_RIGHT;
+
+	controlStyle = (controlStyle & ~(ES_LEFT | ES_CENTER | ES_RIGHT) | newAlignment);
+	SetWindowLong(hControl, GWL_STYLE, controlStyle);
+
+	events.PushEvent(Edit::Event(Edit::Event::Type::TextAlignment));
+}
+void Edit::SetLettersMode(Edit::LettersMode newLettersMode)
+{
+	lettersMode = newLettersMode;
+
+	unsigned int newMode = 0u;
+	if (newLettersMode == Edit::LettersMode::LowerCase)
+		newMode |= ES_LOWERCASE;
+	if (newLettersMode == Edit::LettersMode::UpperCase)
+		newMode |= ES_UPPERCASE;
+
+	controlStyle = (controlStyle & ~(ES_LOWERCASE | ES_UPPERCASE) | newMode);
+	SetWindowLong(hControl, GWL_STYLE, controlStyle);
+
+	events.PushEvent(Edit::Event(Edit::Event::Type::LettersMode));
+}
+void Edit::SetPasswordMode(bool newPasswordMode)
+{
+	if (passwordMode != newPasswordMode)
+	{
+		passwordMode = newPasswordMode;
+
+		controlStyle ^= ES_PASSWORD;
+		SetWindowLong(hControl, GWL_STYLE, controlStyle);
+
+		events.PushEvent(Edit::Event(Edit::Event::Type::PasswordMode));
+	}
+}
+void Edit::SetNumberOnlyMode(bool numberOnlyMode)
+{
+	if (numberOnly != numberOnlyMode)
+	{
+		numberOnly = numberOnlyMode;
+
+		if (numberOnly)
+			controlStyle |= ES_NUMBER;
+		else
+			controlStyle = (controlStyle & (~ES_NUMBER));
+		SetWindowLong(hControl, GWL_STYLE, controlStyle);
+
+		events.PushEvent(Edit::Event(Edit::Event::Type::NumberMode));
+	}
+}
+void Edit::SetTextLengthLimit(unsigned int lengthLimit)
+{
+	textLengthLimit = lengthLimit;
+	SendMessage(hControl, EM_LIMITTEXT, textLengthLimit, 0u);
+}
+std::wstring Edit::GetText()
+{
+	wchar_t* buffer = new wchar_t[textLengthLimit];
+	GetWindowText(hControl, buffer, textLengthLimit);
+	text = buffer;
+	return text;
+}
+// [CLASS] Edit --------------------------------|
 
 
 /*
@@ -895,32 +1069,24 @@ void ProgressBar::StepIt()
 // [CLASS] ProgressBar -------------------------|
 
 
-/*
+
 // [CLASS] GraphicsBox -------------------------|
 // -- constructors -- //
 GraphicsBox::GraphicsBox(const GraphicsBox::Config &config)
 	:WindowControl(config)
 {
-
+	pixelMap = new PixelMap(rect.width, rect.height);
 }
 GraphicsBox::~GraphicsBox()
 {
-	//// release
-	//if (RT)
-	//{
-	//	RT->Release();
-	//	RT = NULL;
-	//}
-	//if (D2DFactory)
-	//{
-	//	D2DFactory->Release();
-	//	D2DFactory = NULL;
-	//}
-	//if (D2DBitmap)
-	//{
-	//	D2DBitmap->Release();
-	//	D2DBitmap = NULL;
-	//}
+	delete pixelMap;
+
+	delete cBitmap;
+	delete bitmap;
+	delete graphics;
+	ReleaseDC(hControl, hdc);
+
+	Gdiplus::GdiplusShutdown(gdiplusToken);
 }
 
 // -- methods -- //
@@ -937,9 +1103,11 @@ int GraphicsBox::ControlProc(WPARAM wParam, LPARAM lParam)
 }
 bool GraphicsBox::CreateControlWindow()
 {
+	controlStyle |= WS_BORDER;
+
 	// create window
-	hControl = CreateWindow(L"BUTTON", NULL,
-		WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
+	hControl = CreateWindow(L"STATIC", NULL,
+		controlStyle,
 		rect.x, rect.y, rect.width, rect.height,
 		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
@@ -950,10 +1118,17 @@ bool GraphicsBox::CreateControlWindow()
 		return false;
 	}
 
+
+	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+	hdc = GetDC(hControl);
+	graphics = new Gdiplus::Graphics(hdc);
+	bitmap = new Gdiplus::Bitmap(rect.width, rect.height, PixelFormat32bppARGB);
+
 	return true;
 }
 // public:
-void GraphicsBox::InitGraphics2D()
+/*void GraphicsBox::InitGraphics2D()
 {
 	//initialized = true;
 
@@ -1050,12 +1225,38 @@ void GraphicsBox::InitGraphics2D()
 	//	pFactory->Release();
 	//}
 
-}
-void GraphicsBox::DrawLine(int x, int y)
+}*/
+void GraphicsBox::Render()
 {
-	/*if (!initialized) return;
-	RT->BeginDraw();
-	RT->DrawBitmap(D2DBitmap);
-	RT->EndDraw();*/
-	//}*/
-	// [CLASS] GraphicsBox -------------------------|
+	// lock bitmap
+	Gdiplus::Rect lockRect(0, 0, rect.width, rect.height);
+	Gdiplus::BitmapData bitmapData;
+
+	bitmap->LockBits
+	(
+		&lockRect,
+		Gdiplus::ImageLockMode::ImageLockModeWrite,
+		PixelFormat32bppARGB, &bitmapData
+	);
+
+	// copy data to bitmap ------
+	unsigned int *pixelIn = (unsigned int*)bitmapData.Scan0;
+	unsigned int *pixelOut = pixelMap->GetFirstAddress();
+	unsigned int *lastPixel = pixelOut + rect.width * rect.height;
+	while (pixelOut != lastPixel)
+		*pixelIn++ = *pixelOut++;
+	// ---------------------------
+
+	// unlock bitmap
+	bitmap->UnlockBits(&bitmapData);
+
+	// draw bitmap on control
+	cBitmap = new Gdiplus::CachedBitmap(bitmap, graphics);
+	graphics->DrawCachedBitmap(cBitmap, 0, 0);
+	delete cBitmap;
+}
+void GraphicsBox::SetPixel(unsigned int x, unsigned int y, unsigned char r, unsigned char g, unsigned char b)
+{
+	pixelMap->SetPixel(x, y, r, g, b);
+}
+// [CLASS] GraphicsBox -------------------------|
