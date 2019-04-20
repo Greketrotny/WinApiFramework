@@ -1,4 +1,5 @@
 #include "WinApiFramework.h"
+#include <chrono>
 
 using namespace WinApiFramework;
 
@@ -19,11 +20,12 @@ public:
 		Window::Config wc;
 		wc.caption = L"GraphicsBox test";
 		wc.position = Window::Position::Center;
-		wc.rect.width = 1000;
-		wc.rect.height = 600;
+		wc.rect.width = 600;
+		wc.rect.height = 400;
 		wc.sizeRect.minWidth = 300;
 		wc.sizeRect.minHeight = 300;
 		MainWindow = new Window(wc, new EHMainWindow(this));
+		MainWindow->DisableResize();
 
 		// gfxBox1
 		GraphicsBox::Config gbc;
@@ -50,7 +52,7 @@ public:
 
 		void Move() override
 		{
-			form->MainWindow->SetCaption(L"window moved: " 
+			form->MainWindow->SetCaption(L"window moved: "
 				+ std::to_wstring(form->MainWindow->X)
 				+ L" : "
 				+ std::to_wstring(form->MainWindow->Y));
@@ -61,9 +63,17 @@ public:
 				+ std::to_wstring(form->MainWindow->Width)
 				+ L" : "
 				+ std::to_wstring(form->MainWindow->Height));
+
+			form->gfxBox1->Resize(form->MainWindow->Width - 30, form->MainWindow->Height - 50);
 		}
 	};
-	
+
+	struct EHgfxBox1 : public GraphicsBox::EventHandler
+	{
+		MainForm *form;
+		EHgfxBox1(MainForm *form) { this->form = form; }
+	};
+
 	struct EHKeyboardKey : Keyboard::KeyEventHandler
 	{
 		bool created = false;
@@ -82,40 +92,156 @@ public:
 
 		void Move()
 		{
-
 		}
 	};
+
+	// -- methods -- //
+public:
+	float *values, *values2;
+	unsigned int count;
+	bool toogle = true;
+	// -----------------
+	void Init()
+	{
+		count = gfxBox1->Width * gfxBox1->Height;
+		values = new float[count];
+		values2 = new float[count];
+		for (unsigned int i = 0; i < count; i++)
+		{
+			values[i] = 0.0f;
+			values2[i] = 0.0f;
+		}			
+	}
+	void UnInit()
+	{
+		if (values) delete[] values;
+		if (values2) delete[] values2;
+	}
+	// -----------------
+
+
+	void Simulation()
+	{
+		gfxBox1->Gfx.Clear(0, 0, 0);
+
+		int mx = gfxBox1->GetMouseX() - 10;
+		int my = gfxBox1->GetMouseY() - 29;
+		float range = 10.0f;
+		unsigned int width = gfxBox1->Width;
+		unsigned int height = gfxBox1->Height;
+
+		auto index = [width](unsigned int x, unsigned int y) -> int
+		{
+			return y * width + x;
+		};
+
+		// Add heat
+		if (Framework::Mouse.LeftPressed)
+		{
+			for (int x = mx - range; x < mx + range; x++)
+			{
+				for (int y = my - range; y < my + range; y++)
+				{
+					if (x >= 0 && x < gfxBox1->Width &&
+						y >= 0 && y < gfxBox1->Height)
+					{
+						float distance = sqrtf((mx - x) * (mx - x) + (my - y) * (my - y));
+
+						if (distance <= range)
+						{
+							values[index(x, y)] += 5.0f;
+						}
+					}
+				}
+			}
+		}
+		// take heat
+		else if (Framework::Mouse.RightPressed)
+		{
+			for (int x = mx - range; x < mx + range; x++)
+			{
+				for (int y = my - range; y < my + range; y++)
+				{
+					if (x >= 0 && x < gfxBox1->Width &&
+						y >= 0 && y < gfxBox1->Height)
+					{
+						float distance = sqrtf((mx - x) * (mx - x) + (my - y) * (my - y));
+
+						if (distance <= range)
+						{
+							if (values[index(x, y)] > 5.0f)
+								values[index(x, y)] -= 5.0f;
+						}
+					}
+				}
+			}
+		}
+
+		
+		// simulate heat transfer
+		for (unsigned int x = 1; x < width - 1; x++)
+		{
+			for (unsigned int y = 1; y < height - 1; y++)
+			{
+				values2[index(x, y)] = values[index(x, y)];
+				values2[index(x, y)] -= (values[index(x, y)] - values[index(x - 1, y)]) * 0.25;
+				values2[index(x, y)] -= (values[index(x, y)] - values[index(x + 1, y)]) * 0.25;
+				values2[index(x, y)] -= (values[index(x, y)] - values[index(x, y - 1)]) * 0.25;
+				values2[index(x, y)] -= (values[index(x, y)] - values[index(x, y + 1)]) * 0.25;
+			}
+		}
+		float *temp = values;
+		values = values2;
+		values2 = temp;
+
+
+		// render values
+		float min = 10000.0f;
+		for (unsigned int i = 0; i < count; i++)
+		{
+			if (values[i] < min) min = values[i];
+		}
+
+		float max = 0.0f;
+		for (unsigned int i = 0; i < count; i++)
+		{
+			if (values[i] > max) max = values[i];
+		}
+
+
+		for (unsigned int x = 0; x < width; x++)
+		{
+			for (unsigned int y = 0; y < height; y++)
+			{
+				unsigned int color = (values[index(x, y)] - min) / (max - min) * 255.0f;
+				gfxBox1->Gfx.SetPixel(x, y, color, color, color);
+			}
+		}
+
+		gfxBox1->Gfx.DrawLine(10, 10, mx, my);
+		gfxBox1->Gfx.Render();
+	}
 };
 
 MainForm *MF;
-float *temperature;
 
 void FreeTimeProcess()
 {
-	static unsigned int counter = 1;
-	for (unsigned int i = 0; i < MF->gfxBox1->Rectangle.width; i++)
-	{
-		for (unsigned int j = 0; j < MF->gfxBox1->Rectangle.height; j++)
-		{
-			MF->gfxBox1->SetPixel(i, j, i * j + counter, i + counter, i);
-		}
-	}
-	counter++;
-	MF->gfxBox1->Render();
-	Sleep(5);
+	MF->Simulation();
+	//Sleep(10);
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPWSTR args, INT ncmd)
 {
 	MF = new MainForm();
-	temperature = new float[MF->gfxBox1->Rectangle.width * MF->gfxBox1->Rectangle.height];
-
+	MF->Init();
 
 	Framework::Keyboard.SetKeyEventHandler(new MainForm::EHKeyboardKey(MF));
 	Framework::Mouse.SetEventHandler(new MainForm::EHMouse(MF));
 	Framework::SetFreeTimeFunction(FreeTimeProcess);
 
 	Framework::ProcessMessages();
+	MF->UnInit();
 
 	delete MF;
 	return 0;

@@ -6,14 +6,10 @@
 #include <string>
 #include <queue>
 
-//#include <d2d1.h>
-//#include <wincodec.h>
-//#pragma comment(lib, "d2d1.lib")
-
-
-#include <objidl.h>
-#include <gdiplus.h>
-#pragma comment (lib,"Gdiplus.lib")
+#include <d2d1helper.h>
+#include <d2d1effects.h>
+#include <d2d1.h>
+#pragma comment(lib, "d2d1")
 
 
 namespace WinApiFramework
@@ -154,14 +150,18 @@ namespace WinApiFramework
 	public:
 		void EnableControl();
 		void DisableControl();
-		virtual void SetPosition(int x, int y);
-		void SetDimensions(unsigned int width, unsigned int height);
+		virtual void Move(int x, int y);
+		virtual void Resize(unsigned int width, unsigned int height);
 		int GetMouseX();
 		int GetMouseY();
 
 
 		// -- property fields -- //
 	public:
+		const int& X;
+		const int& Y;
+		const unsigned int& Width;
+		const unsigned int& Height;
 		const Rect& Rectangle;
 
 
@@ -251,8 +251,6 @@ namespace WinApiFramework
 		}
 	public:
 		void SetCaption(std::wstring newCaption);
-		void SetPosition(int x, int y);
-		void SetDimensions(unsigned int width, unsigned int height);
 
 
 		// -- property fields -- //
@@ -373,7 +371,7 @@ namespace WinApiFramework
 		struct Range
 		{
 			int min = 0, max = 100;
-		}; 
+		};
 		struct Labels
 		{
 			std::wstring label1 = L"";
@@ -673,7 +671,7 @@ namespace WinApiFramework
 		WindowControl::Events<Edit::Event> events;
 		TextAlignment textAlignment = TextAlignment::Left;
 		LettersMode lettersMode = LettersMode::Either;
-		
+
 
 		// -- contstructors -- //
 	public:
@@ -902,70 +900,294 @@ namespace WinApiFramework
 	{
 		// -- fields -- //
 	private:
-		Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-		ULONG_PTR           gdiplusToken;
-
-		Gdiplus::Graphics *graphics = nullptr;
-		Gdiplus::Bitmap *bitmap;
-		Gdiplus::CachedBitmap *cBitmap;
-		HDC hdc;
-
-		struct PixelMap
+		struct Graphics
 		{
+			// -- fields -- //
 		private:
-			unsigned int width, height;
-			unsigned int *pixels = nullptr;
+			GraphicsBox *control;
+			unsigned int width = 0u, height = 0u;
 
-		public:
-			PixelMap(unsigned int width, unsigned int height)
+			struct PixelMap
 			{
-				this->width = width;
-				this->height = height;
+			private:
+				unsigned int width, height;
+				unsigned int *pixels = nullptr;
 
-				pixels = new unsigned int[width * height];
-
-				for (unsigned int i = 0; i < width * height; i++)
-					pixels[i] = 0xFF000000;
-
-			}
-			~PixelMap()
-			{
-				if (pixels)
+			public:
+				PixelMap(unsigned int width, unsigned int height)
 				{
-					delete[] pixels;
+					this->width = width;
+					this->height = height;
+
+					pixels = new unsigned int[width * height];
+
+					for (unsigned int i = 0; i < width * height; i++)
+						pixels[i] = 0xFF000000;
+
+				}
+				~PixelMap()
+				{
+					if (pixels)
+					{
+						delete[] pixels;
+					}
+				}
+
+				void Resize(unsigned int newWidth, unsigned int newHeight)
+				{
+					this->width = newWidth;
+					this->height = newHeight;
+
+					if (pixels) delete[] pixels;
+					pixels = new unsigned int[width * height];
+
+					unsigned int range = width * height;
+					for (unsigned int i = 0; i < range; i++)
+						pixels[i] = 0xFF000000;
+				}
+				unsigned int* GetFirstAddress()
+				{
+					return pixels;
+				}
+				void SetPixel(unsigned int x, unsigned int y, unsigned char r, unsigned char g, unsigned char b)
+				{
+					unsigned int *pixel = (pixels + y * width + x);
+					*pixel = 0xFF000000 | (r << 16) | (g << 8) | b;
+				}
+			};
+			PixelMap *pixelMap;
+
+			ID2D1Factory *D2DFactory = nullptr;
+			ID2D1HwndRenderTarget *RT = nullptr;
+			ID2D1BitmapRenderTarget *BRT = nullptr;
+			ID2D1Bitmap *bitmap = nullptr, *compBitmap = nullptr;
+			ID2D1SolidColorBrush *brush = nullptr;
+			ID2D1BitmapBrush *bitmapBrush = nullptr;
+
+			// -- contructor -- //
+		private:
+			Graphics(GraphicsBox *control)
+			{
+				this->control = control;
+			}
+			~Graphics()
+			{
+				SafeRelease(&bitmap);
+				SafeRelease(&RT);
+				SafeRelease(&D2DFactory);
+
+				if (pixelMap) delete pixelMap;
+			}
+
+
+			// -- methods -- //
+		private:
+			void InitGraphics()
+			{
+				width = control->rect.width;
+				height = control->rect.height;
+				pixelMap = new PixelMap(width, height);
+
+				// create D2D1Factory
+				D2D1CreateFactory
+				(
+					D2D1_FACTORY_TYPE_SINGLE_THREADED,
+					&D2DFactory
+				);
+
+				// create render target
+				D2DFactory->CreateHwndRenderTarget
+				(
+					D2D1::RenderTargetProperties
+					(
+						D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_DEFAULT,
+						D2D1::PixelFormat
+						(
+							DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM,
+							D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_IGNORE
+						),
+						96.0f, 96.0f,
+						D2D1_RENDER_TARGET_USAGE::D2D1_RENDER_TARGET_USAGE_NONE,
+						D2D1_FEATURE_LEVEL::D2D1_FEATURE_LEVEL_DEFAULT
+					),
+					D2D1::HwndRenderTargetProperties
+					(
+						control->hControl,
+						D2D1::SizeU(width, height)
+					),
+					&RT
+				);
+
+				// create bitmap for render
+				RT->CreateBitmap
+				(
+					D2D1::SizeU(width, height),
+					D2D1::BitmapProperties
+					(
+						D2D1::PixelFormat
+						(
+							DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM,
+							D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_IGNORE
+						)
+					),
+					&bitmap
+				);
+
+				// ------------------
+				RT->CreateCompatibleRenderTarget(&BRT);
+				BRT->CreateSolidColorBrush
+				(
+					D2D1::ColorF(0x00FF88),
+					&brush
+				);
+			}
+			template <class T> void SafeRelease(T **ppT)
+			{
+				if (*ppT)
+				{
+					(*ppT)->Release();
+					*ppT = NULL;
 				}
 			}
-
 			void Resize(unsigned int newWidth, unsigned int newHeight)
 			{
-				this->width = newWidth;
-				this->height = newHeight;
+				width = newWidth;
+				height = newHeight;
 
-				if (pixels) delete[] pixels;
-				pixels = new unsigned int[width * height];
+				pixelMap->Resize(width, height);
+				RT->Resize(D2D1::SizeU(width, height));
 
-				unsigned int range = width * height;
-				for (unsigned int i = 0; i < range; i++)
-					pixels[i] = 0xFF000000;
+				SafeRelease(&bitmap);
+				RT->CreateBitmap
+				(
+					D2D1::SizeU(width, height),
+					D2D1::BitmapProperties
+					(
+						D2D1::PixelFormat
+						(
+							DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM,
+							D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_IGNORE
+						)
+					),
+					&bitmap
+				);
 			}
-			unsigned int* GetFirstAddress()
+		public:
+			void Render()
 			{
-				return pixels;
-			}
+				// copy data from pixelMap to bitmap
+				bitmap->CopyFromMemory
+				(
+					&D2D1::RectU(0, 0, width, height),
+					pixelMap->GetFirstAddress(),
+					width * 4
+				);
 
+				// render bitmap from pixelMap
+				RT->BeginDraw();
+				RT->DrawBitmap
+				(
+					bitmap,
+					&D2D1::RectF(0.0f, 0.0f, (float)width, (float)height),
+					1.0f,
+					D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
+					&D2D1::RectF(0.0f, 0.0f, (float)width, (float)height)
+				);
+
+				// render bitmap from BitmapRenderTarget
+				BRT->GetBitmap(&compBitmap);
+				RT->DrawBitmap
+				(
+					compBitmap,
+					&D2D1::RectF(0.0f, 0.0f, (float)width, (float)height),
+					0.2f,
+					D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
+					&D2D1::RectF(0.0f, 0.0f, (float)width, (float)height)
+				);
+				RT->EndDraw();
+			}
 			void SetPixel(unsigned int x, unsigned int y, unsigned char r, unsigned char g, unsigned char b)
 			{
-				unsigned int *pixel = (pixels + y * width + x);
-				*pixel = 0xFF000000 | (r << 16) | (g << 8) | b;
+				pixelMap->SetPixel(x, y, r, g, b);
 			}
-		};
-		PixelMap *pixelMap;
+			void Clear(unsigned char r, unsigned char g, unsigned char b)
+			{
+				// pixelMap
+				unsigned int *ptr = pixelMap->GetFirstAddress();
+				unsigned int range = width * height;
+				for (unsigned int i = 0; i < range; i++)
+				{
+					*ptr = (0xFF000000 | (r << 16) | (g << 8) | b);
+					++ptr;
+				}
 
+				// clear BRT bitmap
+				BRT->BeginDraw();
+				BRT->Clear(D2D1::ColorF((r << 16) | (g << 8) | b));
+				BRT->EndDraw();
+			}
+			void DrawLine(float x1, float y1, float x2, float y2)
+			{
+				BRT->BeginDraw();
+				BRT->Clear();
+				BRT->DrawLine
+				(
+					D2D1::Point2F(x1, y1),
+					D2D1::Point2F(x2, y2),
+					brush,
+					4.0f
+				);
+				BRT->EndDraw();
+			}
+
+
+			// -- friends -- //
+		public:
+			friend class GraphicsBox;
+		};
 	public:
 		struct Config : WindowControl::Config
 		{
 
 		};
+		struct Event
+		{
+			enum Type
+			{
+				Invalid = 0,
+				Move = 1,
+				Resize = 2,
+				Enable = 3,
+				Disable = 4,
+			};
+			Type type;
+
+			Event()
+			{
+				type = Invalid;
+			}
+			Event(GraphicsBox::Event::Type type)
+			{
+				this->type = type;
+			}
+		};
+		struct EventHandler : public WindowControl::EventHandler<GraphicsBox::Event>
+		{
+			virtual void HandleEvent(GraphicsBox::Event event)
+			{
+				HandleBaseEvent((WindowControl::Event::Type)event.type);
+
+				switch (event.type)
+				{
+					// cases
+				}
+			}
+			// virtual functions
+		};
+	private:
+		WindowControl::Events<GraphicsBox::Event> events;
+		Graphics graphics;
+
 
 		// -- constructors -- //
 	public:
@@ -990,8 +1212,12 @@ namespace WinApiFramework
 			// no GraphicsBox events yet
 		}
 	public:
-		void Render();
-		void SetPixel(unsigned int x, unsigned int y, unsigned char r, unsigned char g, unsigned char b);
+		void Resize(unsigned int newWidth, unsigned int newHeight);
+
+
+		// -- propetry fields -- //
+	public:
+		Graphics& Gfx;
 	};
 }
 

@@ -9,7 +9,11 @@ using namespace WinApiFramework;
 // [CLASS] WindowConrtol -----------------------|
 // -- constructors -- //
 WindowControl::WindowControl(const WindowControl::Config& config)
-	:Rectangle(rect)
+	:Rectangle(rect),
+	X(rect.x),
+	Y(rect.y),
+	Width(rect.width),
+	Height(rect.height)
 {
 	rect = config.rect;
 }
@@ -44,7 +48,7 @@ void WindowControl::DisableControl()
 	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Disable));
 }
 // public:
-void WindowControl::SetPosition(int x, int y)
+void WindowControl::Move(int x, int y)
 {
 	rect.x = x;
 	rect.y = y;
@@ -56,7 +60,7 @@ void WindowControl::SetPosition(int x, int y)
 
 	PushBaseEvent(WindowControl::Event::Type::Move);
 }
-void WindowControl::SetDimensions(unsigned int width, unsigned int height)
+void WindowControl::Resize(unsigned int width, unsigned int height)
 {
 	rect.width = width;
 	rect.height = height;
@@ -154,16 +158,6 @@ void Button::SetCaption(std::wstring newCaption)
 {
 	caption = newCaption;
 	SetWindowText(hControl, caption.c_str());
-}
-void Button::SetPosition(int x, int y)
-{
-	WindowControl::SetPosition(x, y);
-	events.PushEvent(Button::Event::Type::Move);
-}
-void Button::SetDimensions(unsigned int width, unsigned int height)
-{
-	WindowControl::SetDimensions(width, height);
-	events.PushEvent(Button::Event::Type::Resize);
 }
 // [CLASS] Button ------------------------------|
 
@@ -420,7 +414,7 @@ void TrackBar::SetPosition(int x, int y)
 	//SetWindowPos(hLabel1, NULL, label1Rect.left - parentWindow->X - (rect.x - x), label1Rect.top - parentWindow->Y - (rect.y - y), 0, 0, SWP_NOSIZE);
 	//SetWindowPos(hLabel2, NULL, label2Rect.left - parentWindow->X - (rect.x - x), label2Rect.top - parentWindow->Y - (rect.y - y), 0, 0, SWP_NOSIZE);
 
-	WindowControl::SetPosition(x, y);
+	WindowControl::Move(x, y);
 
 	//SendMessage(hControl, TBM_SETBUDDY, TRUE, (LPARAM)hLabel1);
 	//SendMessage(hControl, TBM_SETBUDDY, FALSE, (LPARAM)hLabel2);
@@ -1073,20 +1067,15 @@ void ProgressBar::StepIt()
 // [CLASS] GraphicsBox -------------------------|
 // -- constructors -- //
 GraphicsBox::GraphicsBox(const GraphicsBox::Config &config)
-	:WindowControl(config)
+	:WindowControl(config),
+	graphics(this),
+	Gfx(graphics)
 {
-	pixelMap = new PixelMap(rect.width, rect.height);
+
 }
 GraphicsBox::~GraphicsBox()
 {
-	delete pixelMap;
 
-	delete cBitmap;
-	delete bitmap;
-	delete graphics;
-	ReleaseDC(hControl, hdc);
-
-	Gdiplus::GdiplusShutdown(gdiplusToken);
 }
 
 // -- methods -- //
@@ -1118,15 +1107,11 @@ bool GraphicsBox::CreateControlWindow()
 		return false;
 	}
 
-
-	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-	hdc = GetDC(hControl);
-	graphics = new Gdiplus::Graphics(hdc);
-	bitmap = new Gdiplus::Bitmap(rect.width, rect.height, PixelFormat32bppARGB);
+	graphics.InitGraphics();
 
 	return true;
 }
+
 // public:
 /*void GraphicsBox::InitGraphics2D()
 {
@@ -1226,37 +1211,9 @@ bool GraphicsBox::CreateControlWindow()
 	//}
 
 }*/
-void GraphicsBox::Render()
+void GraphicsBox::Resize(unsigned int newWidth, unsigned int newHeight)
 {
-	// lock bitmap
-	Gdiplus::Rect lockRect(0, 0, rect.width, rect.height);
-	Gdiplus::BitmapData bitmapData;
-
-	bitmap->LockBits
-	(
-		&lockRect,
-		Gdiplus::ImageLockMode::ImageLockModeWrite,
-		PixelFormat32bppARGB, &bitmapData
-	);
-
-	// copy data to bitmap ------
-	unsigned int *pixelIn = (unsigned int*)bitmapData.Scan0;
-	unsigned int *pixelOut = pixelMap->GetFirstAddress();
-	unsigned int *lastPixel = pixelOut + rect.width * rect.height;
-	while (pixelOut != lastPixel)
-		*pixelIn++ = *pixelOut++;
-	// ---------------------------
-
-	// unlock bitmap
-	bitmap->UnlockBits(&bitmapData);
-
-	// draw bitmap on control
-	cBitmap = new Gdiplus::CachedBitmap(bitmap, graphics);
-	graphics->DrawCachedBitmap(cBitmap, 0, 0);
-	delete cBitmap;
-}
-void GraphicsBox::SetPixel(unsigned int x, unsigned int y, unsigned char r, unsigned char g, unsigned char b)
-{
-	pixelMap->SetPixel(x, y, r, g, b);
+	graphics.Resize(newWidth, newHeight);
+	WindowControl::Resize(newWidth, newHeight);
 }
 // [CLASS] GraphicsBox -------------------------|

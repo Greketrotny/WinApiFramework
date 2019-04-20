@@ -51,7 +51,8 @@ namespace WinApiFramework
 	public:
 		static UINT ProcessMessages();
 		static void Exit(int return_value);
-		static int ShowGlobalMessageBox(
+		static int ShowGlobalMessageBox
+		(
 			std::wstring text = L"default text",
 			std::wstring caption = L"Default caption",
 			UINT message_box_style = 0
