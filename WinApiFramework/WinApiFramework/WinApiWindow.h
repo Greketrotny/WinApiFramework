@@ -1,8 +1,8 @@
 #ifndef WIN_API_WINDOW
 #define WIN_API_WINDOW
 
-#include "WindowInclude.h"
-#include "WinApiWindowControls.h"
+#include "WinApiFramework.h"
+#include "WindowControl.h"
 
 #include <string>
 #include <vector>

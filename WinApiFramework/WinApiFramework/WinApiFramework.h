@@ -8,7 +8,6 @@
 #include "Mouse.h"
 #include "Keyboard.h"
 
-//#pragma comment (lib, "comct132.lib")
 
 #include <CommCtrl.h>
 #include <vector>

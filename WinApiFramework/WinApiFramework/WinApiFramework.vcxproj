@@ -72,7 +72,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level2</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
@@ -80,7 +80,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level2</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
@@ -115,20 +115,36 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Button.cpp" />
+    <ClCompile Include="CheckBox.cpp" />
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Edit.cpp" />
+    <ClCompile Include="GraphicsBox.cpp" />
     <ClCompile Include="Keyboard.cpp" />
+    <ClCompile Include="Label.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="ProgressBar.cpp" />
+    <ClCompile Include="TrackBar.cpp" />
     <ClCompile Include="WinApiFramework.cpp" />
     <ClCompile Include="WinApiWindow.cpp" />
-    <ClCompile Include="WinApiWindowControls.cpp" />
+    <ClCompile Include="WindowControl.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Graphics.h" />
+    <ClInclude Include="Button.h" />
+    <ClInclude Include="CheckBox.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="Edit.h" />
+    <ClInclude Include="GraphicsBox.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="Label.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="ProgressBar.h" />
+    <ClInclude Include="TrackBar.h" />
     <ClInclude Include="WinApiFramework.h" />
     <ClInclude Include="WinApiWindow.h" />
     <ClInclude Include="WinApiWindowControls.h" />
+    <ClInclude Include="WindowControl.h" />
     <ClInclude Include="WindowInclude.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

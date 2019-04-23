@@ -25,7 +25,7 @@ public:
 		wc.sizeRect.minWidth = 300;
 		wc.sizeRect.minHeight = 300;
 		MainWindow = new Window(wc, new EHMainWindow(this));
-		MainWindow->DisableResize();
+		//MainWindow->DisableResize();
 
 		// gfxBox1
 		GraphicsBox::Config gbc;
@@ -100,6 +100,29 @@ public:
 	float *values, *values2;
 	unsigned int count;
 	bool toogle = true;
+
+	struct Object
+	{
+		float x, y;
+		float vx, vy;
+		float ax, ay;
+
+		void Update()
+		{
+			x += vx;
+			y += vy;
+
+			vx += ax;
+			vy += ay;
+		}
+		void Friction()
+		{
+			vx *= 0.999f;
+			vy *= 0.999f;
+		}
+	};
+	Object ball;
+
 	// -----------------
 	void Init()
 	{
@@ -110,7 +133,12 @@ public:
 		{
 			values[i] = 0.0f;
 			values2[i] = 0.0f;
-		}			
+		}		
+
+		ball.x = 50;
+		ball.y = 100;
+		ball.vx = 10.0f;
+		ball.vy = -3.0f;
 	}
 	void UnInit()
 	{
@@ -120,105 +148,133 @@ public:
 	// -----------------
 
 
+
 	void Simulation()
 	{
-		gfxBox1->Gfx.Clear(0, 0, 0);
+		gfxBox1->Gfx.ClearPixelMap(0, 0, 0);
 
-		int mx = gfxBox1->GetMouseX() - 10;
-		int my = gfxBox1->GetMouseY() - 29;
+		float mx = gfxBox1->GetMouseX() - 10;
+		float my = gfxBox1->GetMouseY() - 29;
 		float range = 10.0f;
 		unsigned int width = gfxBox1->Width;
 		unsigned int height = gfxBox1->Height;
 
-		auto index = [width](unsigned int x, unsigned int y) -> int
-		{
-			return y * width + x;
-		};
-
-		// Add heat
-		if (Framework::Mouse.LeftPressed)
-		{
-			for (int x = mx - range; x < mx + range; x++)
-			{
-				for (int y = my - range; y < my + range; y++)
-				{
-					if (x >= 0 && x < gfxBox1->Width &&
-						y >= 0 && y < gfxBox1->Height)
-					{
-						float distance = sqrtf((mx - x) * (mx - x) + (my - y) * (my - y));
-
-						if (distance <= range)
-						{
-							values[index(x, y)] += 5.0f;
-						}
-					}
-				}
-			}
-		}
-		// take heat
-		else if (Framework::Mouse.RightPressed)
-		{
-			for (int x = mx - range; x < mx + range; x++)
-			{
-				for (int y = my - range; y < my + range; y++)
-				{
-					if (x >= 0 && x < gfxBox1->Width &&
-						y >= 0 && y < gfxBox1->Height)
-					{
-						float distance = sqrtf((mx - x) * (mx - x) + (my - y) * (my - y));
-
-						if (distance <= range)
-						{
-							if (values[index(x, y)] > 5.0f)
-								values[index(x, y)] -= 5.0f;
-						}
-					}
-				}
-			}
-		}
-
-		
-		// simulate heat transfer
-		for (unsigned int x = 1; x < width - 1; x++)
-		{
-			for (unsigned int y = 1; y < height - 1; y++)
-			{
-				values2[index(x, y)] = values[index(x, y)];
-				values2[index(x, y)] -= (values[index(x, y)] - values[index(x - 1, y)]) * 0.25;
-				values2[index(x, y)] -= (values[index(x, y)] - values[index(x + 1, y)]) * 0.25;
-				values2[index(x, y)] -= (values[index(x, y)] - values[index(x, y - 1)]) * 0.25;
-				values2[index(x, y)] -= (values[index(x, y)] - values[index(x, y + 1)]) * 0.25;
-			}
-		}
-		float *temp = values;
-		values = values2;
-		values2 = temp;
+		float dx = 0.0f, dy = 0.0f;
 
 
-		// render values
-		float min = 10000.0f;
-		for (unsigned int i = 0; i < count; i++)
-		{
-			if (values[i] < min) min = values[i];
-		}
+		// first corner
+		ball.vx += (10 - ball.x) * 0.001f;
+		ball.vy += (10 - ball.y) * 0.001f;
 
-		float max = 0.0f;
-		for (unsigned int i = 0; i < count; i++)
-		{
-			if (values[i] > max) max = values[i];
-		}
+		// second corner
+		ball.vx += ((width - 10) - ball.x) * 0.001f;
+		ball.vy += (10 - ball.y) * 0.001f;
+
+		// third corner
+		ball.vx += (10 - ball.x) * 0.001f;
+		ball.vy += ((height - 10) - ball.y) * 0.001f;
+
+		// fourth corner
+		ball.vx += ((width - 10) - ball.x) * 0.001f;
+		ball.vy += ((height - 10) - ball.y) * 0.001f;
+
+		ball.vy += 0.2f;
 
 
-		for (unsigned int x = 0; x < width; x++)
-		{
-			for (unsigned int y = 0; y < height; y++)
-			{
-				unsigned int color = (values[index(x, y)] - min) / (max - min) * 255.0f;
-				gfxBox1->Gfx.SetPixel(x, y, color, color, color);
-			}
-		}
+		ball.Friction();
+		ball.Update();
 
-		gfxBox1->Gfx.DrawLine(10, 10, mx, my);
+
+		//auto index = [width](unsigned int x, unsigned int y) -> int
+		//{
+		//	return y * width + x;
+		//};
+		//// Add heat
+		//if (Framework::Mouse.LeftPressed)
+		//{
+		//	for (int x = mx - range; x < mx + range; x++)
+		//	{
+		//		for (int y = my - range; y < my + range; y++)
+		//		{
+		//			if (x >= 0 && x < gfxBox1->Width &&
+		//				y >= 0 && y < gfxBox1->Height)
+		//			{
+		//				float distance = sqrtf((mx - x) * (mx - x) + (my - y) * (my - y));
+		//				if (distance <= range)
+		//				{
+		//					values[index(x, y)] += 5.0f;
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
+		//// take heat
+		//else if (Framework::Mouse.RightPressed)
+		//{
+		//	for (int x = mx - range; x < mx + range; x++)
+		//	{
+		//		for (int y = my - range; y < my + range; y++)
+		//		{
+		//			if (x >= 0 && x < gfxBox1->Width &&
+		//				y >= 0 && y < gfxBox1->Height)
+		//			{
+		//				float distance = sqrtf((mx - x) * (mx - x) + (my - y) * (my - y));
+		//				if (distance <= range)
+		//				{
+		//					if (values[index(x, y)] > 5.0f)
+		//						values[index(x, y)] -= 5.0f;
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
+		//
+		//// simulate heat transfer
+		//for (unsigned int x = 1; x < width - 1; x++)
+		//{
+		//	for (unsigned int y = 1; y < height - 1; y++)
+		//	{
+		//		values2[index(x, y)] = values[index(x, y)];
+		//		values2[index(x, y)] -= (values[index(x, y)] - values[index(x - 1, y)]) * 0.25;
+		//		values2[index(x, y)] -= (values[index(x, y)] - values[index(x + 1, y)]) * 0.25;
+		//		values2[index(x, y)] -= (values[index(x, y)] - values[index(x, y - 1)]) * 0.25;
+		//		values2[index(x, y)] -= (values[index(x, y)] - values[index(x, y + 1)]) * 0.25;
+		//	}
+		//}
+		//float *temp = values;
+		//values = values2;
+		//values2 = temp;
+		//// render values
+		//float min = 10000.0f;
+		//for (unsigned int i = 0; i < count; i++)
+		//{
+		//	if (values[i] < min) min = values[i];
+		//}
+		//float max = 0.0f;
+		//for (unsigned int i = 0; i < count; i++)
+		//{
+		//	if (values[i] > max) max = values[i];
+		//}
+		//for (unsigned int x = 0; x < width; x++)
+		//{
+		//	for (unsigned int y = 0; y < height; y++)
+		//	{
+		//		unsigned int color = (values[index(x, y)] - min) / (max - min) * 255.0f;
+		//		gfxBox1->Gfx.SetPixel(x, y, color, color, color);
+		//	}
+		//}
+
+		gfxBox1->Gfx.ClearGraphicsMap(Graphics::Color(0));
+		gfxBox1->Gfx.ClearPixelMap(Graphics::Color(0));
+
+		gfxBox1->Gfx.SetBrushColor(Graphics::Color(255, 0, 0));
+		gfxBox1->Gfx.DrawLine(10, 10, ball.x, ball.y);
+		gfxBox1->Gfx.DrawLine(width - 10, 10, ball.x, ball.y);
+		gfxBox1->Gfx.DrawLine(10, height - 10, ball.x, ball.y);
+		gfxBox1->Gfx.DrawLine(width - 10, height - 10, ball.x, ball.y);
+		gfxBox1->Gfx.FillEllipse(ball.x, ball.y, 10.0f, 10.0f);
+
+		gfxBox1->Gfx.DrawLine(ball.x, ball.y, ball.x + ball.vx * 5.0f, ball.y + ball.vy * 5.0f, 2.0f);
 		gfxBox1->Gfx.Render();
 	}
 };
