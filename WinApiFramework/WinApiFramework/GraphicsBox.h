@@ -4,6 +4,7 @@
 #include "WindowControl.h"
 
 #include "Color.h"
+#include "Point.h"
 
 #include <d2d1helper.h>
 #include <d2d1effects.h>
@@ -122,9 +123,11 @@ namespace WinApiFramework
 			void ClearGraphicsMap(const G::Color& color);
 
 			void SetBrushColor(const G::Color& color);
-			void DrawLine(const float& x1, const float& y1, const float& x2, const float& y2, const float& width = 1.0f);
-			void DrawEllipse(const float& x, const float& y, const float& a, const float& b, const float& width = 1.0f);
-			void FillEllipse(const float& x, const float& y, const float& a, const float& b);
+			void DrawLine(const G::Point<float>& point0, const G::Point <float>& point1, const float& width = 1.0f);
+			void DrawEllipse(const G::Point<float>& center, const G::Point<float>& size, const float& width = 1.0f);
+			void FillEllipse(const G::Point<float>& center, const G::Point<float>& size);
+			void DrawRectangle(const G::Point<float>& point, const G::Point<float>& size, const float& brushWidth = 1.0f);
+			void FillRectangle(const G::Point<float>& point, const G::Point<float>& size);
 
 
 			// -- friends -- //

@@ -2,6 +2,7 @@
 #include <chrono>
 
 using namespace WinApiFramework;
+using namespace Graphics;
 
 
 class MainForm
@@ -117,8 +118,8 @@ public:
 		}
 		void Friction()
 		{
-			vx *= 0.999f;
-			vy *= 0.999f;
+			vx *= 0.99f;
+			vy *= 0.99f;
 		}
 	};
 	Object ball;
@@ -153,6 +154,7 @@ public:
 	{
 		gfxBox1->Gfx.ClearPixelMap(0, 0, 0);
 
+
 		float mx = gfxBox1->GetMouseX() - 10;
 		float my = gfxBox1->GetMouseY() - 29;
 		float range = 10.0f;
@@ -161,6 +163,11 @@ public:
 
 		float dx = 0.0f, dy = 0.0f;
 
+		if (Framework::Mouse.LeftPressed)
+		{
+			ball.vx += (mx - ball.x) * 0.008f;
+			ball.vy += (my - ball.y) * 0.008f;
+		}
 
 		// first corner
 		ball.vx += (10 - ball.x) * 0.001f;
@@ -265,16 +272,19 @@ public:
 		//}
 
 		gfxBox1->Gfx.ClearGraphicsMap(Graphics::Color(0));
-		gfxBox1->Gfx.ClearPixelMap(Graphics::Color(0));
+		//gfxBox1->Gfx.ClearPixelMap(Graphics::Color(0, 0, Point<float>(ball.vx, ball.vy).Magnitude() / 50.0f * 255.0f));
 
-		gfxBox1->Gfx.SetBrushColor(Graphics::Color(255, 0, 0));
-		gfxBox1->Gfx.DrawLine(10, 10, ball.x, ball.y);
-		gfxBox1->Gfx.DrawLine(width - 10, 10, ball.x, ball.y);
-		gfxBox1->Gfx.DrawLine(10, height - 10, ball.x, ball.y);
-		gfxBox1->Gfx.DrawLine(width - 10, height - 10, ball.x, ball.y);
-		gfxBox1->Gfx.FillEllipse(ball.x, ball.y, 10.0f, 10.0f);
+		gfxBox1->Gfx.SetBrushColor(Graphics::Color(0x66, 0, 0));
+		gfxBox1->Gfx.DrawLine(Point<float>(10, 10), Point<float>(ball.x, ball.y), 5.0f);
+		gfxBox1->Gfx.DrawLine(Point<float>(width - 10, 10), Point<float>(ball.x, ball.y), 5.0f);
+		gfxBox1->Gfx.DrawLine(Point<float>(10, height - 10), Point<float>(ball.x, ball.y), 5.0f);
+		gfxBox1->Gfx.DrawLine(Point<float>(width - 10, height - 10), Point<float>(ball.x, ball.y), 5.0f);
 
-		gfxBox1->Gfx.DrawLine(ball.x, ball.y, ball.x + ball.vx * 5.0f, ball.y + ball.vy * 5.0f, 2.0f);
+		gfxBox1->Gfx.SetBrushColor(Graphics::Color(0xFF, 0, 0));
+		gfxBox1->Gfx.FillEllipse(Point<float>(ball.x, ball.y), Point<float>(10.0f, 10.0f));
+
+		gfxBox1->Gfx.SetBrushColor(Color(255, 255, 0));
+		gfxBox1->Gfx.DrawLine(Point<float>(ball.x, ball.y), Point<float>(ball.x + ball.vx * 5.0f, ball.y + ball.vy * 5.0f), 2.0f);
 		gfxBox1->Gfx.Render();
 	}
 };

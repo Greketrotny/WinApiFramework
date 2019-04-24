@@ -139,6 +139,7 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Label.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="Point.h" />
     <ClInclude Include="ProgressBar.h" />
     <ClInclude Include="TrackBar.h" />
     <ClInclude Include="WinApiFramework.h" />
