@@ -21,9 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WinApiFramework.cpp">
       <Filter>Source Files\WinApiFramework</Filter>
     </ClCompile>
@@ -59,9 +56,6 @@
     </ClCompile>
     <ClCompile Include="TrackBar.cpp">
       <Filter>Source Files\WinApiFramework</Filter>
-    </ClCompile>
-    <ClCompile Include="Color.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -106,12 +100,6 @@
     </ClInclude>
     <ClInclude Include="TrackBar.h">
       <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="Color.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Point.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

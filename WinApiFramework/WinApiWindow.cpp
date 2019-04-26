@@ -8,7 +8,7 @@ using namespace WinApiFramework;
 
 // [CLASS] Window ------------------------------|
 // -- fields -- //
-// [STRUCT] ControlsStorage----------------|
+// [STRUCT] Window::ControlsStorage-------------|
 // -- constructors -- //
 Window::ControlsStorage::ControlsStorage()
 {
@@ -35,7 +35,7 @@ void Window::ControlsStorage::RemoveControl(WindowControl* oldControl)
 		}
 	}
 }
-// [STRUCT] ControlsStorage----------------|
+// [STRUCT] Window::ControlsStorage-------------|
 
 
 // -- constructor -- //

@@ -1,4 +1,6 @@
 #include "WinApiFramework.h"
+#include "WinApiWindow.h"
+
 #include <vector>
 #include <windowsx.h>
 

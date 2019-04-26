@@ -140,7 +140,7 @@ namespace WinApiFramework
 			Position position = Position::Center;
 			StartStyle startStyle = StartStyle::Normal;
 			Rect rect;
-			std::wstring caption = L"default";
+			std::wstring caption = L"default title";
 			SizeRect sizeRect;
 		};
 	private:

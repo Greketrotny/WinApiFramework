@@ -4,7 +4,7 @@
 #include "WindowControl.h"
 
 #include "Color.h"
-#include "Point.h"
+#include "Point2D.h"
 
 #include <d2d1helper.h>
 #include <d2d1effects.h>
