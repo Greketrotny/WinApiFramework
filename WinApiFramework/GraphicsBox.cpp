@@ -240,12 +240,22 @@ void GraphicsBox::Graphics::ClearGraphicsMap(const G::Color& color)
 	BRT->Clear(D2D1::ColorF(color.GetColor(), 0.0f));
 	BRT->EndDraw();
 }
+void GraphicsBox::Graphics::Clear(const unsigned char& r, const unsigned char& g, const unsigned char& b)
+{
+	ClearPixelMap(r, g, b);
+	ClearGraphicsMap(r, g, b);
+}
+void GraphicsBox::Graphics::Clear(const G::Color& color)
+{
+	ClearPixelMap(color);
+	ClearGraphicsMap(color);
+}
 
 void GraphicsBox::Graphics::SetBrushColor(const G::Color& color)
 {
 	brush->SetColor(D2D1::ColorF(color.GetColor(), 1.0f));
 }
-void GraphicsBox::Graphics::DrawLine(const G::Point<float>& p0, const G::Point <float>& p1, const float& width)
+void GraphicsBox::Graphics::DrawLine(const G::Point2D<float>& p0, const G::Point2D<float>& p1, const float& width)
 {
 	BRT->BeginDraw();
 	BRT->DrawLine
@@ -257,7 +267,7 @@ void GraphicsBox::Graphics::DrawLine(const G::Point<float>& p0, const G::Point <
 	);
 	BRT->EndDraw();
 }
-void GraphicsBox::Graphics::DrawEllipse(const G::Point<float>& center, const G::Point<float>& size, const float& width)
+void GraphicsBox::Graphics::DrawEllipse(const G::Point2D<float>& center, const G::Point2D<float>& size, const float& width)
 {
 	BRT->BeginDraw();
 	BRT->DrawEllipse
@@ -268,7 +278,7 @@ void GraphicsBox::Graphics::DrawEllipse(const G::Point<float>& center, const G::
 	);
 	BRT->EndDraw();
 }
-void GraphicsBox::Graphics::FillEllipse(const G::Point<float>& center, const G::Point<float>& size)
+void GraphicsBox::Graphics::FillEllipse(const G::Point2D<float>& center, const G::Point2D<float>& size)
 {
 	BRT->BeginDraw();
 	BRT->FillEllipse
@@ -278,7 +288,7 @@ void GraphicsBox::Graphics::FillEllipse(const G::Point<float>& center, const G::
 	);
 	BRT->EndDraw();
 }
-void GraphicsBox::Graphics::DrawRectangle(const G::Point<float>& point, const G::Point<float>& size, const float& brushWidth)
+void GraphicsBox::Graphics::DrawRectangle(const G::Point2D<float>& point, const G::Point2D<float>& size, const float& brushWidth)
 {
 	BRT->BeginDraw();
 	BRT->DrawRectangle
@@ -289,7 +299,7 @@ void GraphicsBox::Graphics::DrawRectangle(const G::Point<float>& point, const G:
 	);
 	BRT->EndDraw();
 }
-void GraphicsBox::Graphics::FillRectangle(const G::Point<float>& point, const G::Point<float>& size)
+void GraphicsBox::Graphics::FillRectangle(const G::Point2D<float>& point, const G::Point2D<float>& size)
 {
 	BRT->BeginDraw();
 	BRT->FillRectangle

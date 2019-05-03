@@ -121,13 +121,15 @@ namespace WinApiFramework
 			void ClearPixelMap(const G::Color& color);
 			void ClearGraphicsMap(const unsigned char& r, const unsigned char& g, const unsigned char& b);
 			void ClearGraphicsMap(const G::Color& color);
+			void Clear(const unsigned char& r, const unsigned char& g, const unsigned char& b);
+			void Clear(const G::Color& color);
 
 			void SetBrushColor(const G::Color& color);
-			void DrawLine(const G::Point<float>& point0, const G::Point <float>& point1, const float& width = 1.0f);
-			void DrawEllipse(const G::Point<float>& center, const G::Point<float>& size, const float& width = 1.0f);
-			void FillEllipse(const G::Point<float>& center, const G::Point<float>& size);
-			void DrawRectangle(const G::Point<float>& point, const G::Point<float>& size, const float& brushWidth = 1.0f);
-			void FillRectangle(const G::Point<float>& point, const G::Point<float>& size);
+			void DrawLine(const G::Point2D<float>& point0, const G::Point2D<float>& point1, const float& width = 1.0f);
+			void DrawEllipse(const G::Point2D<float>& center, const G::Point2D<float>& size, const float& width = 1.0f);
+			void FillEllipse(const G::Point2D<float>& center, const G::Point2D<float>& size);
+			void DrawRectangle(const G::Point2D<float>& point, const G::Point2D<float>& size, const float& brushWidth = 1.0f);
+			void FillRectangle(const G::Point2D<float>& point, const G::Point2D<float>& size);
 
 
 			// -- friends -- //
