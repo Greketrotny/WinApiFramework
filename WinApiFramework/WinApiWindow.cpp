@@ -46,9 +46,12 @@ Window::Window()
 	IsActivated(isActivated),
 	IsMinimized(isMinimized),
 	Id(window_id),
-	X(rect.x), Y(rect.y),
-	Width(rect.width), Height(rect.height),
-	Rect(rect),
+	WindowX(windowRect.x), WindowY(windowRect.y),
+	ClientX(clientRect.x), ClientY(clientRect.y),
+	WindowWidth(windowRect.width), WindowHeight(windowRect.height),
+	ClientWidth(clientRect.width), ClientHeight(clientRect.height),
+	WindowRect(windowRect),
+	ClientRect(clientRect),
 	Caption(caption),
 	MinWidth(sizeRect.minWidth), MinHeight(sizeRect.minHeight),
 	MaxWidth(sizeRect.maxWidth), MaxHeight(sizeRect.maxHeight)
@@ -59,7 +62,7 @@ Window::Window()
 Window::Window(const Window::Config &config)
 	:Window()
 {
-	rect = config.rect;
+	windowRect = config.rect;
 	position = config.position;
 	sizeRect = config.sizeRect;
 	caption = config.caption;
@@ -170,10 +173,19 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		RECT r;
 		if (GetWindowRect(hWindow, &r))
 		{
-			rect.x = r.left;
-			rect.y = r.top;
-			rect.width = r.right - r.left;
-			rect.height = r.bottom - r.top;
+			windowRect.x = r.left;
+			windowRect.y = r.top;
+			windowRect.width = r.right - r.left;
+			windowRect.height = r.bottom - r.top;
+		}
+		if (GetClientRect(hWindow, &r))
+		{
+			POINT p{ 0, 0 };
+			ClientToScreen(hWindow, &p);
+			clientRect.x = p.x;
+			clientRect.y = p.y;
+			clientRect.width = r.right - r.left;
+			clientRect.height = r.bottom - r.top;
 		}
 		events.PushEvent(Window::Event(Window::Event::Type::Move));
 		return 0;
@@ -185,10 +197,19 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 		RECT r;
 		if (GetWindowRect(hWindow, &r))
 		{
-			rect.x = r.left;
-			rect.y = r.top;
-			rect.width = r.right - r.left;
-			rect.height = r.bottom - r.top;
+			windowRect.x = r.left;
+			windowRect.y = r.top;
+			windowRect.width = r.right - r.left;
+			windowRect.height = r.bottom - r.top;
+		}
+		if (GetClientRect(hWindow, &r))
+		{
+			POINT p{ 0, 0 };
+			ClientToScreen(hWindow, &p);
+			clientRect.x = p.x;
+			clientRect.y = p.y;
+			clientRect.width = r.right - r.left;
+			clientRect.height = r.bottom - r.top;
 		}
 		events.PushEvent(Window::Event(Window::Event::Type::Resize));
 		return 0;
@@ -278,31 +299,31 @@ bool Window::CreateWinApiWindow(Window::Config config)
 		windowStyle |= WS_MINIMIZE;
 
 	// setup window rect
-	RECT r = { rect.x, rect.y, rect.x + rect.width, rect.y + rect.height };
+	RECT r = { windowRect.x, windowRect.y, windowRect.x + windowRect.width, windowRect.y + windowRect.height };
 	AdjustWindowRect(&r, windowStyle, FALSE);
-	rect.x = r.left;
-	rect.y = r.top;
-	rect.width = r.right - r.left;
-	rect.height = r.bottom - r.top;
+	windowRect.x = r.left;
+	windowRect.y = r.top;
+	windowRect.width = r.right - r.left;
+	windowRect.height = r.bottom - r.top;
 
 	if (position == Position::Center)
 	{
 		unsigned int w = GetSystemMetrics(SM_CXSCREEN);
 		unsigned int h = GetSystemMetrics(SM_CYSCREEN);
 
-		rect.x = (w - min(rect.width, w)) / 2;
-		rect.y = (h - min(rect.height, h)) / 2;
+		windowRect.x = (w - min(windowRect.width, w)) / 2;
+		windowRect.y = (h - min(windowRect.height, h)) / 2;
 	}
 	else if (position == Position::Default)
 	{
-		rect.x = 100;
-		rect.y = 100;
+		windowRect.x = 100;
+		windowRect.y = 100;
 	}
 
 	// create window
 	hWindow = CreateWindow(window_class_name.c_str(), caption.c_str(),
 		windowStyle,
-		rect.x, rect.y, rect.width, rect.height,
+		windowRect.x, windowRect.y, windowRect.width, windowRect.height,
 		nullptr, nullptr, Framework::hProgramInstance, nullptr);
 
 	if (!hWindow)
@@ -339,24 +360,24 @@ void Window::SetCaption(std::wstring new_caption)
 }
 void Window::SetPosition(unsigned int x, unsigned int y)
 {
-	rect.x = x;
-	rect.y = y;
+	windowRect.x = x;
+	windowRect.y = y;
 
 	SetWindowPos(hWindow, nullptr,
-		rect.x, rect.y,
-		rect.width, rect.height,
+		windowRect.x, windowRect.y,
+		windowRect.width, windowRect.height,
 		0);
 
 	events.PushEvent(Window::Event(Event::Type::Move));
 }
 void Window::SetDimensions(unsigned int width, unsigned int height)
 {
-	rect.width = width;
-	rect.height = height;
+	windowRect.width = width;
+	windowRect.height = height;
 
 	SetWindowPos(hWindow, nullptr,
-		rect.x, rect.y,
-		rect.width, rect.height,
+		windowRect.x, windowRect.y,
+		windowRect.width, windowRect.height,
 		0);
 
 	events.PushEvent(Window::Event(Event::Type::Resize));
@@ -476,21 +497,37 @@ int Window::ShowMessageBox(std::wstring text, std::wstring caption, UINT message
 	return MessageBoxW(hWindow, text.c_str(), caption.c_str(), message_box_style);
 }
 
-unsigned int Window::GetX() const
+int Window::GetWindowX() const
 {
-	return rect.x;
+	return windowRect.x;
 }
-unsigned int Window::GetY() const
+int Window::GetWindowY() const
 {
-	return rect.y;
+	return windowRect.y;
 }
-unsigned int Window::GetWidth() const
+int Window::GetClientX() const
 {
-	return rect.width;
+	return clientRect.x;
 }
-unsigned int Window::GetHeight() const
+int Window::GetClientY() const
 {
-	return rect.height;
+	return clientRect.y;
+}
+unsigned int Window::GetWindowWidth() const
+{
+	return windowRect.width;
+}
+unsigned int Window::GetWindowHeight() const
+{
+	return windowRect.height;
+}
+unsigned int Window::GetClientWidth() const
+{
+	return clientRect.width;
+}
+unsigned int Window::GetClientHeight() const
+{
+	return clientRect.height;
 }
 const HWND& Window::GetWindowHandle() const
 {
@@ -502,11 +539,19 @@ const std::wstring& Window::GetCaption() const
 }
 int Window::GetMouseX() const
 {
-	return Framework::Mouse.X - this->X;
+	return Framework::Mouse.X - this->WindowX;
 }
 int Window::GetMouseY() const
 {
-	return Framework::Mouse.Y - this->Y;
+	return Framework::Mouse.Y - this->WindowY;
+}
+int Window::GetClientMouseX() const
+{
+	return Framework::Mouse.X - this->ClientX;
+}
+int Window::GetClientMouseY() const
+{
+	return Framework::Mouse.Y - this->ClientY;
 }
 
 void Window::AddControl(WindowControl* newControl)

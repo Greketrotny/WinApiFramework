@@ -71,10 +71,10 @@ void WindowControl::Resize(unsigned int width, unsigned int height)
 }
 int WindowControl::GetMouseX()
 {
-	return parentWindow->GetMouseX() - rect.x;
+	return parentWindow->GetClientMouseX() - rect.x;
 }
 int WindowControl::GetMouseY()
 {
-	return parentWindow->GetMouseY() - rect.y;
+	return parentWindow->GetClientMouseY() - rect.y;
 }
 // [CLASS] WindowConrtol -----------------------|

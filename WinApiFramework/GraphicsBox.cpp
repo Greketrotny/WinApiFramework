@@ -7,7 +7,7 @@ using namespace WinApiFramework;
 // -- constructors -- //
 GraphicsBox::GraphicsBox(const GraphicsBox::Config &config)
 	:WindowControl(config),
-	graphics(this),
+	graphics(this, config.renderType),
 	Gfx(graphics)
 {
 
@@ -57,7 +57,7 @@ bool GraphicsBox::CreateControlWindow()
 // public:
 void GraphicsBox::Resize(unsigned int newWidth, unsigned int newHeight)
 {
-	graphics.Resize(newWidth, newHeight);
+	graphics.Resize(newWidth - 2, newHeight - 2);
 	WindowControl::Resize(newWidth, newHeight);
 }
 // [CLASS] GraphicsBox -------------------------|
@@ -66,7 +66,10 @@ void GraphicsBox::Resize(unsigned int newWidth, unsigned int newHeight)
 
 // [CLASS] GraphicsBox::Graphics ---------------|
 // -- constructors -- //
-GraphicsBox::Graphics::Graphics(GraphicsBox *control)
+GraphicsBox::Graphics::Graphics(GraphicsBox *control, GraphicsBox::RenderType renderType)
+	:Width(width),
+	Height(height),
+	renderType(renderType)
 {
 	this->control = control;
 }
@@ -79,16 +82,16 @@ GraphicsBox::Graphics::~Graphics()
 	SafeRelease(&BRT);
 	SafeRelease(&D2DFactory);
 
-	if (pixelMap) delete pixelMap;
+	if (bitmap) delete bitmap;
 }
 
 // -- methods -- //
 // private:
 bool GraphicsBox::Graphics::InitGraphics()
 {
-	width = control->rect.width;
-	height = control->rect.height;
-	pixelMap = new PixelMap(width, height);
+	width = control->rect.width - 2;
+	height = control->rect.height - 2;
+	bitmap = new G::Bitmap(width, height);
 
 	// create D2D1Factory
 	D2D1CreateFactory
@@ -98,14 +101,28 @@ bool GraphicsBox::Graphics::InitGraphics()
 	);
 
 	// create render target
+	D2D1_RENDER_TARGET_TYPE renderTargetType;
+	switch (renderType)
+	{
+	case WinApiFramework::GraphicsBox::RenderTypeDefault:
+		renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_DEFAULT;
+		break;
+	case WinApiFramework::GraphicsBox::RenderTypeSoftware:
+		renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+		break;
+	case WinApiFramework::GraphicsBox::RenderTypeHardware:
+		renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_HARDWARE;
+		break;
+	}
+
 	D2DFactory->CreateHwndRenderTarget
 	(
 		D2D1::RenderTargetProperties
 		(
-			D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_DEFAULT,
+			renderTargetType,
 			D2D1::PixelFormat
 			(
-				DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM,
+				DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM,
 				D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_IGNORE
 			),
 			96.0f, 96.0f,
@@ -152,11 +169,11 @@ void GraphicsBox::Graphics::Resize(unsigned int newWidth, unsigned int newHeight
 	height = newHeight;
 
 	// resize pixelMap
-	pixelMap->Resize(width, height);
+	bitmap->Resize(width, height);
 	RT->Resize(D2D1::SizeU(width, height));
 
 	// resize pixelBitmap
-	SafeRelease(&pixelBitmap);
+	if (pixelBitmap) pixelBitmap->Release();
 	RT->CreateBitmap
 	(
 		D2D1::SizeU(width, height),
@@ -181,8 +198,8 @@ void GraphicsBox::Graphics::Render()
 	pixelBitmap->CopyFromMemory
 	(
 		&D2D1::RectU(0, 0, width, height),
-		pixelMap->GetMapAddress(),
-		width * 4
+		bitmap->GetMapAddress(),
+		width * sizeof(G::Color)
 	);
 
 	// render bitmap from pixelMap
@@ -210,23 +227,30 @@ void GraphicsBox::Graphics::Render()
 }
 void GraphicsBox::Graphics::SetPixel(const unsigned int& x, const unsigned int& y, const unsigned int& colorValue)
 {
-	pixelMap->SetPixel(x, y, colorValue);
+	bitmap->SetPixel(x, y, colorValue);
 }
 void GraphicsBox::Graphics::SetPixel(const unsigned int& x, const unsigned int& y, const unsigned char& r, const unsigned char& g, const unsigned char& b)
 {
-	pixelMap->SetPixel(x, y, 0xFF000000 | (r << 16) | (g << 8) | b);
+	bitmap->SetPixel(x, y, 0xFF000000 | (r << 16) | (g << 8) | b);
 }
 void GraphicsBox::Graphics::SetPixel(const unsigned int& x, const unsigned int& y, const G::Color& color)
 {
-	pixelMap->SetPixel(x, y, color.GetColor());
+	bitmap->SetPixel(x, y, color);
+}
+void GraphicsBox::Graphics::SetBitmap(const G::Bitmap& newBitmap)
+{
+	if (newBitmap.Width == bitmap->Width && newBitmap.Height == bitmap->Height)
+	{
+		*bitmap = newBitmap;
+	}
 }
 void GraphicsBox::Graphics::ClearPixelMap(const unsigned char& r, const unsigned char& g, const unsigned char& b)
 {
-	pixelMap->Clear(0xFF000000 | (r << 16) | (g << 8) | b);
+	bitmap->Clear(0xFF000000 | (r << 16) | (g << 8) | b);
 }
 void GraphicsBox::Graphics::ClearPixelMap(const G::Color& color)
 {
-	pixelMap->Clear(color.GetColor());
+	bitmap->Clear(color);
 }
 void GraphicsBox::Graphics::ClearGraphicsMap(const unsigned char& r, const unsigned char& g, const unsigned char& b)
 {

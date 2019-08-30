@@ -4,6 +4,7 @@
 #include "WindowControl.h"
 
 #include "Color.h"
+#include "Bitmap.h"
 #include "Point2D.h"
 
 #include <d2d1helper.h>
@@ -19,6 +20,13 @@ namespace WinApiFramework
 	class GraphicsBox : public WindowControl
 	{
 		// -- fields -- //
+	public:
+		enum RenderType
+		{
+			RenderTypeDefault,
+			RenderTypeSoftware,
+			RenderTypeHardware
+		};
 	private:
 		class Graphics
 		{
@@ -26,65 +34,8 @@ namespace WinApiFramework
 		private:
 			GraphicsBox *control;
 			unsigned int width = 0u, height = 0u;
-
-			struct PixelMap
-			{
-			private:
-				unsigned int width, height;
-				unsigned int *pixels = nullptr;
-
-			public:
-				PixelMap(unsigned int width, unsigned int height)
-				{
-					this->width = width;
-					this->height = height;
-
-					pixels = new unsigned int[width * height];
-
-					for (unsigned int i = 0; i < width * height; i++)
-						pixels[i] = 0x00000000;
-
-				}
-				~PixelMap()
-				{
-					if (pixels)
-					{
-						delete[] pixels;
-					}
-				}
-
-				unsigned int* GetMapAddress()
-				{
-					return pixels;
-				}
-				void Resize(unsigned int newWidth, unsigned int newHeight)
-				{
-					this->width = newWidth;
-					this->height = newHeight;
-
-					if (pixels) delete[] pixels;
-					pixels = new unsigned int[width * height];
-
-					unsigned int range = width * height;
-					for (unsigned int i = 0; i < range; i++)
-						pixels[i] = 0x00000000;
-				}
-				void SetPixel(const unsigned int& x, const unsigned int& y, const unsigned int& colorValue)
-				{
-					pixels[y * width + x] = colorValue;
-				}
-				void Clear(const unsigned int& colorValue)
-				{
-					unsigned int *ptr = pixels;
-					unsigned int *end = (pixels + width * height);
-					while (ptr < end)
-					{
-						*ptr = colorValue;
-						++ptr;
-					}
-				}
-			};
-			PixelMap *pixelMap;
+			G::Bitmap* bitmap;
+			GraphicsBox::RenderType renderType;
 
 			ID2D1Factory *D2DFactory = nullptr;
 			ID2D1HwndRenderTarget *RT = nullptr;
@@ -96,7 +47,7 @@ namespace WinApiFramework
 
 			// -- contructor -- //
 		private:
-			Graphics(GraphicsBox *control);
+			Graphics(GraphicsBox *control, RenderType renderType);
 			~Graphics();
 
 
@@ -117,6 +68,7 @@ namespace WinApiFramework
 			void SetPixel(const unsigned int& x, const unsigned int& y, const unsigned int& colorValue);
 			void SetPixel(const unsigned int& x, const unsigned int& y, const unsigned char& r, const unsigned char& g, const unsigned char& b);
 			void SetPixel(const unsigned int& x, const unsigned int& y, const G::Color& color);
+			void SetBitmap(const G::Bitmap& newBitmap);
 			void ClearPixelMap(const unsigned char& r, const unsigned char& g, const unsigned char& b);
 			void ClearPixelMap(const G::Color& color);
 			void ClearGraphicsMap(const unsigned char& r, const unsigned char& g, const unsigned char& b);
@@ -132,14 +84,20 @@ namespace WinApiFramework
 			void FillRectangle(const G::Point2D<float>& point, const G::Point2D<float>& size);
 
 
+			// -- properties -- //
+		public:
+			const unsigned int& Width;
+			const unsigned int& Height;
+
+
 			// -- friends -- //
 		public:
 			friend class GraphicsBox;
 		};
 	public:
-		struct Config : WindowControl::Config
+		struct Config : public WindowControl::Config
 		{
-
+			RenderType renderType = RenderType::RenderTypeDefault;
 		};
 		struct Event
 		{
@@ -171,6 +129,8 @@ namespace WinApiFramework
 				switch (event.type)
 				{
 					// cases
+				default:
+					break;
 				}
 			}
 			// virtual functions

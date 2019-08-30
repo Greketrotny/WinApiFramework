@@ -26,6 +26,38 @@ namespace WinApiFramework
 		static Mouse mouse;
 		static Keyboard keyboard;
 
+	public:
+		enum MessBoxButtonLayout
+		{
+			AbortRetryIgnore = 0x00000002L,
+			CancelTryContinue = 0x00000006L,
+			Help = 0x00004000L,
+			Ok = 0x00000000L,
+			OkCancel = 0x00000001L,
+			RetryCancel = 0x00000005L,
+			YesNo = 0x00000004L,
+			YesNoCancel = 0x00000003L
+		};
+		enum MessBoxIcon
+		{
+			IconWarning = 0x00000030L,
+			IconInformation = 0x00000040L,
+			IconQuestion = 0x00000020L,
+			IconError = 0x00000010L
+		};
+		enum MessBoxButtonPressed
+		{
+			ButtonOk = 1,
+			ButtonCancel = 2,
+			ButtonAbort = 3,
+			ButtonRetry = 4,
+			ButtonIgnore = 5,
+			ButtonYes = 6,
+			ButtonNo = 7,
+			ButtonTryAgain = 10,
+			ButtonContinue = 11
+		};
+
 
 		// -- constructor -- //
 	public:
@@ -55,6 +87,13 @@ namespace WinApiFramework
 			std::wstring text = L"default text",
 			std::wstring caption = L"Default caption",
 			UINT message_box_style = 0
+		);
+		static MessBoxButtonPressed ShowGlobalMessageBox
+		(
+			std::wstring text = L"default text",
+			std::wstring caption = L"Default caption",
+			MessBoxButtonLayout buttons = MessBoxButtonLayout::Ok,
+			MessBoxIcon icon = MessBoxIcon::IconInformation
 		);
 		static void SetFreeTimeFunction(void(*freeTimeFunction)());
 		static void UnsetFreeTimeFunction();

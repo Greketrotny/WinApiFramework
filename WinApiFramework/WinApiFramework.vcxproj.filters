@@ -57,6 +57,9 @@
     <ClCompile Include="TrackBar.cpp">
       <Filter>Source Files\WinApiFramework</Filter>
     </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WinApiWindow.h">

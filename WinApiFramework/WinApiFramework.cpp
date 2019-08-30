@@ -178,6 +178,12 @@ int Framework::ShowGlobalMessageBox(std::wstring text, std::wstring caption, UIN
 {
 	return MessageBoxW(NULL, text.c_str(), caption.c_str(), message_box_style);
 }
+Framework::MessBoxButtonPressed Framework::ShowGlobalMessageBox(std::wstring text, std::wstring caption,
+Framework::MessBoxButtonLayout buttons, Framework::MessBoxIcon icon)
+{
+	return (Framework::MessBoxButtonPressed)MessageBox(NULL, text.c_str(), caption.c_str(),
+		buttons | icon);
+}
 void Framework::SetFreeTimeFunction(void(*freeTimeFunction)())
 {
 	if (freeTimeFunction == nullptr) return;

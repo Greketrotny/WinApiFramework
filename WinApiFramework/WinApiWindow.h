@@ -216,7 +216,8 @@ namespace WinApiFramework
 
 	private:
 		Position position;
-		Rect rect;
+		Rect windowRect;
+		Rect clientRect;
 		SizeRect sizeRect;
 		Events events;
 		ControlsStorage controls;
@@ -276,14 +277,20 @@ namespace WinApiFramework
 			UINT message_box_style = 0
 		);
 
-		unsigned int GetX() const;
-		unsigned int GetY() const;
-		unsigned int GetWidth() const;
-		unsigned int GetHeight() const;
+		int GetWindowX() const;
+		int GetWindowY() const;
+		int GetClientX() const;
+		int GetClientY() const;
+		unsigned int GetWindowWidth() const;
+		unsigned int GetWindowHeight() const;
+		unsigned int GetClientWidth() const;
+		unsigned int GetClientHeight() const;
 		const HWND& GetWindowHandle() const;
 		const std::wstring& GetCaption() const;
 		int GetMouseX() const;
 		int GetMouseY() const;
+		int GetClientMouseX() const;
+		int GetClientMouseY() const;
 
 		void AddControl(WindowControl* newControl);
 		void RemoveControl(WindowControl* oldControl);
@@ -297,11 +304,16 @@ namespace WinApiFramework
 		const bool& IsActivated;
 		const bool& IsMinimized;
 		const unsigned int& Id;
-		const int& X;
-		const int& Y;
-		const unsigned int& Width;
-		const unsigned int& Height;
-		const Rect& Rect;
+		const int& WindowX;
+		const int& WindowY;
+		const int& ClientX;
+		const int& ClientY;
+		const unsigned int& WindowWidth;
+		const unsigned int& WindowHeight;
+		const unsigned int& ClientWidth;
+		const unsigned int& ClientHeight;
+		const Rect& WindowRect;
+		const Rect& ClientRect;
 		const std::wstring& Caption;
 		const unsigned int& MinWidth;
 		const unsigned int& MinHeight;
