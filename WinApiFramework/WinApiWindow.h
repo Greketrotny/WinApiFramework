@@ -1,11 +1,10 @@
-#ifndef WIN_API_WINDOW
-#define WIN_API_WINDOW
+#ifndef WIN_API_WINDOW_H
+#define WIN_API_WINDOW_H
 
-#include "WinApiFramework.h"
+#include "WindowInclude.h"
+#include "ExternIncludes.h"
+
 #include "WindowControl.h"
-
-#include <string>
-#include <vector>
 
 namespace WinApiFramework
 {
@@ -86,55 +85,6 @@ namespace WinApiFramework
 				this->type = type;
 			}
 		};
-		struct EventHandler
-		{
-			virtual void HandleEvent(Window::Event event)
-			{
-				switch (event.type)
-				{
-				case Window::Event::Type::Move:					Move();					break;
-				case Window::Event::Type::Resize:				Resize();				break;
-				case Window::Event::Type::Enable:				Enable();				break;
-				case Window::Event::Type::Disable:				Disable();				break;
-				case Window::Event::Type::Activate:				Activate();				break;
-				case Window::Event::Type::Deactivate:			Deactivate();			break;
-				case Window::Event::Type::Minimize:				Minimize();				break;
-				case Window::Event::Type::Maximize:				Maximize();				break;
-				case Window::Event::Type::Show:					Show();					break;
-				case Window::Event::Type::Hide:					Hide();					break;
-				case Window::Event::Type::EnableResize:			EnableResize();			break;
-				case Window::Event::Type::DisableResize:		DisableResize();		break;
-				case Window::Event::Type::EnableMaximizeBox:	EnableMaximizeBox();	break;
-				case Window::Event::Type::DisableMaximizeBox:	DisableMaximizeBox();	break;
-				case Window::Event::Type::EnableMinimizeBox:	EnableMinimizeBox();	break;
-				case Window::Event::Type::DisableMinimizeBox:	DisableMinimizeBox();	break;
-				case Window::Event::Type::ControlAdd:			ControlAdd();			break;
-				case Window::Event::Type::ControlRemove:		ControlRemove();		break;
-				case Window::Event::Type::CaptionChange:		CaptionChange();		break;
-				case Window::Event::Type::Close:				Close();				break;
-				}
-			}
-			virtual void Move() {};
-			virtual void Resize() {};
-			virtual void Enable() {};
-			virtual void Disable() {};
-			virtual void Activate() {};
-			virtual void Deactivate() {};
-			virtual void Minimize() {};
-			virtual void Maximize() {};
-			virtual void Show() {};
-			virtual void Hide() {};
-			virtual void EnableResize() {};
-			virtual void DisableResize() {};
-			virtual void EnableMaximizeBox() {};
-			virtual void DisableMaximizeBox() {};
-			virtual void EnableMinimizeBox() {};
-			virtual void DisableMinimizeBox() {};
-			virtual void ControlAdd() {};
-			virtual void ControlRemove() {};
-			virtual void CaptionChange() {};
-			virtual void Close() {};
-		};
 		struct Config
 		{
 			Position position = Position::Center;
@@ -144,25 +94,29 @@ namespace WinApiFramework
 			SizeRect sizeRect;
 		};
 	private:
-		struct Events
+		struct EventsManager
 		{
 			// -- fields -- //
-			std::queue<Event> events;
+		private:
 			const unsigned short buffLength = 32u;
-			EventHandler* eventHandler = nullptr;
+			bool eventHandlersEnabled = true;
+			std::queue<Event> events;
+			std::vector<std::function<void(Window::Event)>> eventHandlers;
+
 
 			// -- constructor -- //
-			Events()
+		public:
+			EventsManager()
 			{
 
 			}
-			~Events()
+			~EventsManager()
 			{
-				delete eventHandler;
-				eventHandler = nullptr;
 			}
+
 
 			// -- methods -- //
+		public:
 			void PushEvent(Event newEvent)
 			{
 				// push event to buffer
@@ -170,8 +124,14 @@ namespace WinApiFramework
 				if (events.size() > buffLength)
 					events.pop();
 
-				// call handler function
-				if (eventHandler) eventHandler->HandleEvent(newEvent);
+				// handle event
+				if (eventHandlersEnabled)
+				{
+					for (unsigned int i = 0; i < eventHandlers.size(); ++i)
+					{
+						eventHandlers[i](newEvent);
+					}
+				}
 			}
 			Event GetEvent()
 			{
@@ -190,9 +150,24 @@ namespace WinApiFramework
 			{
 				events = std::queue<Event>();
 			}
-			void SetEventHandler(Window::EventHandler *eh)
+			template <class EventReceiver> void AddEventHandler(EventReceiver* receiverObject, void(EventReceiver::*eventFunction)(Window::Event))
 			{
-				eventHandler = eh;
+				using std::placeholders::_1;
+				std::function<void(Window::Event)> f;
+				f = std::bind(eventFunction, receiverObject, _1);
+				eventHandlers.push_back(f);
+			}
+			void RemoveAllEventHandlers()
+			{
+				eventHandlers.clear();
+			}
+			void EnableEventHandlers()
+			{
+				eventHandlersEnabled = true;
+			}
+			void DisableEventHandlers()
+			{
+				eventHandlersEnabled = false;
 			}
 		};
 		struct ControlsStorage
@@ -219,7 +194,7 @@ namespace WinApiFramework
 		Rect windowRect;
 		Rect clientRect;
 		SizeRect sizeRect;
-		Events events;
+		EventsManager events;
 		ControlsStorage controls;
 
 
@@ -230,7 +205,6 @@ namespace WinApiFramework
 		Window(const Window &wnd) = delete;
 		Window(const Window &&wnd) = delete;
 		Window(const Config &config);
-		Window(const Config &config, EventHandler *eventHandler);
 		~Window();
 
 
@@ -246,9 +220,11 @@ namespace WinApiFramework
 		bool CreateAndRegisterWindowClass();
 		bool CreateWinApiWindow(Config config);
 	public:
-		void PushEvent(Event newEvent);
-		Event GetEvent();
+		void PushEvent(Window::Event newEvent);
+		Window::Event GetEvent();
 		void ClearEventBuffer();
+		void EnableEventHandlers();
+		void DisableEventHandlers();
 		void SetCaption(std::wstring new_caption);
 		void SetPosition(unsigned int x, unsigned int y);
 		void SetDimensions(unsigned int width, unsigned int height);
@@ -269,7 +245,10 @@ namespace WinApiFramework
 		void Minimize();
 		void Show();
 		void Hide();
-		void SetEventHandler(Window::EventHandler *eventHandler);
+		template <class EventReceiver> void AddEventHandler(EventReceiver* receivingObject, void(EventReceiver::*eventFunction)(Window::Event))
+		{
+			events.AddEventHandler<EventReceiver>(receivingObject, eventFunction);
+		}
 		int ShowMessageBox
 		(
 			std::wstring text = L"default text",
@@ -319,6 +298,7 @@ namespace WinApiFramework
 		const unsigned int& MinHeight;
 		const unsigned int& MaxWidth;
 		const unsigned int& MaxHeight;
+		EventsManager& Events;
 
 
 		// -- friends -- //

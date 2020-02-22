@@ -1,5 +1,6 @@
+#include "Precompiled.h"
 #include "ProgressBar.h"
-#include "WinApiWindow.h"
+#include "WinApiFramework.h"
 
 using namespace WinApiFramework;
 
@@ -14,19 +15,14 @@ ProgressBar::ProgressBar(const ProgressBar::Config& config)
 	State(barState),
 	Events(events)
 {
-	minValue = config.minValue;
-	if (config.maxValue > config.minValue)
-		maxValue = config.maxValue;
+	minValue = config.range.min;
+	if (config.range.max > config.range.min)
+		maxValue = config.range.max;
 	else
 		maxValue = minValue + 10;
 
 	position = config.position;
 	step = config.step;
-}
-ProgressBar::ProgressBar(const ProgressBar::Config& config, ProgressBar::EventHandler *eh)
-	:ProgressBar(config)
-{
-	events.SetEventHandler(eh);
 }
 ProgressBar::~ProgressBar()
 {
@@ -75,15 +71,19 @@ void ProgressBar::SetMinValue(unsigned int value)
 {
 	minValue = value;
 	SendMessage(hControl, PBM_SETRANGE, 0, MAKELPARAM(value, maxValue));
+	events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::MinValueChange));
 }
 void ProgressBar::SetMaxValue(unsigned int value)
 {
 	maxValue = value;
 	SendMessage(hControl, PBM_SETRANGE, 0, MAKELPARAM(maxValue, value));
+	events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::MaxValueChange));
 }
 void ProgressBar::SetRange(unsigned int min, unsigned int max)
 {
 	if (min >= max) max = min + 1;
+	if (min != minValue) events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::MinValueChange));
+	if (max != maxValue) events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::MaxValueChange));
 	minValue = min;
 	maxValue = max;
 
@@ -93,11 +93,13 @@ void ProgressBar::SetStep(unsigned int step)
 {
 	this->step = step;
 	SendMessage(hControl, PBM_SETSTEP, step, 0);
+	events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::StepChange));
 }
 void ProgressBar::SetPosition(unsigned int position)
 {
 	this->position = position;
 	SendMessage(hControl, PBM_SETPOS, position, 0);
+	events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::PositionChange));
 }
 void ProgressBar::SetState(ProgressBar::BarState state)
 {
@@ -109,6 +111,7 @@ void ProgressBar::SetState(ProgressBar::BarState state)
 		SendMessage(hControl, PBM_SETSTATE, 0, PBST_ERROR);
 
 	barState = state;
+	events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::BarStateChange));
 }
 void ProgressBar::StepIt()
 {

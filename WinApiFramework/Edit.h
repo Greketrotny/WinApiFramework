@@ -2,7 +2,6 @@
 #define EDIT_H
 
 #include "WindowControl.h"
-#include <string>
 
 namespace WinApiFramework
 {
@@ -55,40 +54,13 @@ namespace WinApiFramework
 			};
 			Type type;
 
-			Event()
-			{
-				type = Invalid;
-			}
-			Event(Edit::Event::Type type)
+			Event(Edit::Event::Type type = Edit::Event::Type::Invalid)
 			{
 				this->type = type;
 			}
 		};
-		struct EventHandler : public WindowControl::EventHandler<Edit::Event>
-		{
-			virtual void HandleEvent(Edit::Event event)
-			{
-				HandleBaseEvent((WindowControl::Event::Type)event.type);
-
-				switch (event.type)
-				{
-				case Edit::Event::Type::Text:			TextChange();		break;
-				case Edit::Event::Type::TextAlignment:	TextAlignment();	break;
-				case Edit::Event::Type::LettersMode:	LettersMode();		break;
-				case Edit::Event::Type::PasswordMode:	PasswordMode();		break;
-				case Edit::Event::Type::NumberMode:		NumberMode();		break;
-				case Edit::Event::Type::TextLimitReach:	TextLimitReach();	break;
-				}
-			}
-			virtual void TextChange() {};
-			virtual void TextAlignment() {};
-			virtual void LettersMode() {};
-			virtual void PasswordMode() {};
-			virtual void NumberMode() {};
-			virtual void TextLimitReach() {};
-		};
 	private:
-		WindowControl::Events<Edit::Event> events;
+		WindowControl::EventsManager<Edit::Event> events;
 		TextAlignment textAlignment = TextAlignment::Left;
 		LettersMode lettersMode = LettersMode::Either;
 
@@ -98,7 +70,6 @@ namespace WinApiFramework
 		Edit(const Edit& edit) = delete;
 		Edit(const Edit&& edit) = delete;
 		Edit(const Config& config);
-		Edit(const Config& config, EventHandler *eventHandler);
 		~Edit();
 
 
@@ -131,6 +102,7 @@ namespace WinApiFramework
 		const bool& NumberOnlyMode;
 		const TextAlignment& Alignment;
 		const LettersMode& LetterMode;
+		WindowControl::EventsManager<Edit::Event>& Events;
 	};
 }
 

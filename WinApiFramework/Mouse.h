@@ -1,8 +1,8 @@
 #ifndef MOUSE_H
 #define MOUSE_H
 
-#include <queue>
-
+#include "WindowInclude.h"
+#include "ExternIncludes.h"
 
 namespace WinApiFramework
 {
@@ -17,6 +17,23 @@ namespace WinApiFramework
 		bool isVisible = true;
 
 	public:
+		enum Cursor
+		{
+			Arrow,
+			IBeam,
+			Wait,
+			Cross,
+			UpArrow,
+			Size,
+			Icon,
+			SizeNWSE,
+			SizeNESW,
+			SizeWE,
+			SizeNS,
+			SizeALL,
+			Hand,
+			Help
+		};
 		struct Event
 		{
 		public:
@@ -54,56 +71,72 @@ namespace WinApiFramework
 				this->y = y;
 			}
 		};
-		enum Cursor
+		struct Events
 		{
-			Arrow,
-			IBeam,
-			Wait,
-			Cross,
-			UpArrow,
-			Size,
-			Icon,
-			SizeNWSE,
-			SizeNESW,
-			SizeWE,
-			SizeNS,
-			SizeALL,
-			Hand,
-			Help
-		};
-		struct EventHandler
-		{
-			virtual void HandleEvent(Mouse::Event event)
+			// -- fields -- //
+		private:
+			std::queue<Mouse::Event> events;
+			std::vector<std::function<void(Mouse::Event)>> eventHandlers;
+		public:
+			const unsigned short buffLength = 32u;
+			bool eventHandlersEnabled = true;
+
+
+			// -- constructor -- //
+		public:
+			Events() {}
+			~Events() {}
+
+
+			// -- methods -- //
+		public:
+			void PushEvent(Mouse::Event newEvent)
 			{
-				switch (event.type)
+				// push event to buffer
+				events.push(newEvent);
+				if (events.size() > buffLength)
+					events.pop();
+
+				// handle event
+				if (eventHandlersEnabled)
 				{
-				case Mouse::Event::Type::LeftPress:		LeftPress();	break;
-				case Mouse::Event::Type::LeftRelase:	LeftRelase();	break;
-				case Mouse::Event::Type::RightPress:	RightPress();	break;
-				case Mouse::Event::Type::RightRelase:	RightRelase();	break;
-				case Mouse::Event::Type::MiddlePress:	MiddlePress();	break;
-				case Mouse::Event::Type::MiddleRelase:	MiddleRelase();	break;
-				case Mouse::Event::Type::WheelUp:		WheelUp();		break;
-				case Mouse::Event::Type::WheelDown:		WheelDown();	break;
-				case Mouse::Event::Type::Move:			Move();			break;
-				case Mouse::Event::Type::CursorChanged:CursorChanged();	break;
+					for (unsigned int i = 0; i < eventHandlers.size(); ++i)
+					{
+						eventHandlers[i](newEvent);
+					}
 				}
 			}
-			virtual void LeftPress() {};
-			virtual void LeftRelase() {};
-			virtual void RightPress() {};
-			virtual void RightRelase() {};
-			virtual void MiddlePress() {};
-			virtual void MiddleRelase() {};
-			virtual void WheelUp() {};
-			virtual void WheelDown() {};
-			virtual void Move() {};
-			virtual void CursorChanged() {};
+			Mouse::Event GetEvent()
+			{
+				if (events.size() > 0u)
+				{
+					Event e = events.front();
+					events.pop();
+					return e;
+				}
+				else
+				{
+					return Event();
+				}
+			}
+			void ClearBuffer()
+			{
+				events = std::queue<Mouse::Event>();
+			}
+			template <class EventReceiver> void AddEventHandler(EventReceiver* receiverObject, void(EventReceiver::*eventFunction)(Mouse::Event))
+			{
+				using std::placeholders::_1;
+				std::function<void(Mouse::Event)> f;
+				f = std::bind(eventFunction, receiverObject, _1);
+				eventHandlers.push_back(f);
+			}
+			void RemoveAllEventHandlers()
+			{
+				eventHandlers.clear();
+			}
 		};
 	private:
-		std::queue<Event> events;
-		const unsigned short buffLength = 64u;
-		EventHandler *eventHandler = nullptr;
+		Events events;
 
 
 		// -- constructor -- //
@@ -125,10 +158,6 @@ namespace WinApiFramework
 	private:
 		void Move(int x, int y);
 	public:
-		void PushEvent(Mouse::Event newEvent);
-		Event GetEvent();
-		void ClearEventBuffer();
-		void SetEventHandler(Mouse::EventHandler *eventHandler);
 		void SetCursorPosition(int x, int y);
 		void ShowCursor();
 		void HideCursor();
@@ -142,6 +171,7 @@ namespace WinApiFramework
 		const bool& LeftPressed;
 		const bool& RightPressed;
 		const bool& MiddlePressed;
+		Mouse::Events& Events;
 
 		// -- friend statements -- //
 		friend class Window;

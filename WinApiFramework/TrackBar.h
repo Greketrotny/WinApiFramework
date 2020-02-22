@@ -14,12 +14,7 @@ namespace WinApiFramework
 		unsigned int smallStep = 1u, largeStep = 10u;
 		int thumbPosition;
 		HWND hLabel1, hLabel2;
-
 	public:
-		struct Range
-		{
-			int min = 0, max = 100;
-		};
 		struct Labels
 		{
 			std::wstring label1 = L"";
@@ -49,40 +44,23 @@ namespace WinApiFramework
 				Resize = 2,
 				Enable = 3,
 				Disable = 4,
-				MinValueChange,
-				MaxValueChange,
-				TrackPosChange
+				MinTrackValueChange,
+				MaxTrackValueChange,
+				MinSelectValueChange,
+				MaxSelectValueChange,
+				ThumbPosChange,
+				SmallStepChange,
+				LargeStepChange
 			};
 			Type type;
 
-			Event()
-			{
-				this->type = Invalid;
-			}
-			Event(Type type)
+			Event(TrackBar::Event::Type type = TrackBar::Event::Type::Invalid)
 			{
 				this->type = type;
 			}
 		};
-		struct EventHandler : public WindowControl::EventHandler<TrackBar::Event>
-		{
-			virtual void HandleEvent(TrackBar::Event event)
-			{
-				HandleBaseEvent((WindowControl::Event::Type)event.type);
-
-				switch (event.type)
-				{
-				case TrackBar::Event::Type::MaxValueChange: MaxValueChange(); break;
-				case TrackBar::Event::Type::MinValueChange: MinValueChange(); break;
-				case TrackBar::Event::Type::TrackPosChange: TrackPosChange(); break;
-				}
-			}
-			virtual void MinValueChange() {};
-			virtual void MaxValueChange() {};
-			virtual void TrackPosChange() {};
-		};
 	private:
-		WindowControl::Events<TrackBar::Event> events;
+		WindowControl::EventsManager<TrackBar::Event> events;
 		Range trackRange;
 		Range selectRange;
 		Labels labels;
@@ -94,7 +72,6 @@ namespace WinApiFramework
 		TrackBar(const TrackBar &TrackBar) = delete;
 		TrackBar(const TrackBar &&TrackBar) = delete;
 		TrackBar(const Config &config);
-		TrackBar(const Config &config, EventHandler *eventHandler);
 		~TrackBar();
 
 
@@ -140,6 +117,7 @@ namespace WinApiFramework
 		const Orientation& Orientation;
 		const unsigned int& SmallStep;
 		const unsigned int& LargeStep;
+		WindowControl::EventsManager<TrackBar::Event>& Events;
 	};
 }
 

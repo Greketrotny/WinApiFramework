@@ -1,3 +1,4 @@
+#include "Precompiled.h"
 #include "Mouse.h"
 #include "WindowInclude.h"
 
@@ -10,7 +11,8 @@ Mouse::Mouse()
 	Y(y),
 	LeftPressed(isLeftPressed),
 	RightPressed(isRightPressed),
-	MiddlePressed(isMiddlePressed)
+	MiddlePressed(isMiddlePressed),
+	Events(events)
 {
 	x = 0;
 	y = 0;
@@ -29,40 +31,10 @@ void Mouse::Move(int x, int y)
 {
 	this->x = x;
 	this->y = y;
-	PushEvent(Mouse::Event(Mouse::Event::Type::Move, x, y));
+	events.PushEvent(Mouse::Event(Mouse::Event::Type::Move, x, y));
 }
 
 // public:
-void Mouse::PushEvent(Mouse::Event newEvent)
-{
-	events.push(newEvent);
-
-	while (events.size() > buffLength)
-		events.pop();
-
-	if (eventHandler) eventHandler->HandleEvent(newEvent);
-}
-Mouse::Event Mouse::GetEvent()
-{
-	if (events.size() > 0u)
-	{
-		Event e = events.front();
-		events.pop();
-		return e;
-	}
-	else
-	{
-		return Event();
-	}
-}
-void Mouse::ClearEventBuffer()
-{
-	events = std::queue<Event>();
-}
-void Mouse::SetEventHandler(Mouse::EventHandler *eh)
-{
-	this->eventHandler = eh;
-}
 void Mouse::SetCursorPosition(int x, int y)
 {
 	SetCursorPos(x, y);
@@ -106,5 +78,6 @@ void Mouse::SetCursorType(Mouse::Cursor cursorType)
 	case WinApiFramework::Mouse::Help:		hCursor = LoadCursor(NULL, IDC_HELP);		break;
 	}
 	SetCursor(hCursor);
+	events.PushEvent(Mouse::Event(Mouse::Event::Type::CursorChanged, X, Y));
 }
 // [CLASS] Mouse -------------------------------|

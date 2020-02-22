@@ -1,5 +1,6 @@
+#include "Precompiled.h"
 #include "Button.h"
-#include "WinApiWindow.h"
+#include "WinApiFramework.h"
 
 using namespace WinApiFramework;
 
@@ -13,11 +14,6 @@ Button::Button(const Button::Config& config)
 	Events(events)
 {
 	caption = config.caption;
-}
-Button::Button(const Button::Config &config, Button::EventHandler *eventHandler)
-	: Button(config)
-{
-	events.SetEventHandler(eventHandler);
 }
 Button::~Button()
 {
@@ -78,5 +74,6 @@ void Button::SetCaption(std::wstring newCaption)
 {
 	caption = newCaption;
 	SetWindowText(hControl, caption.c_str());
+	events.PushEvent(Button::Event(Button::Event::Type::CaptionChanged));
 }
 // [CLASS] Button ------------------------------|

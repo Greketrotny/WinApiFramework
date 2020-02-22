@@ -1,3 +1,4 @@
+#include "Precompiled.h"
 #include "WindowControl.h"
 #include "WinApiWindow.h"
 

@@ -1,3 +1,4 @@
+#include "Precompiled.h"
 #include "Keyboard.h"
 
 using namespace WinApiFramework;
@@ -6,7 +7,9 @@ using namespace WinApiFramework;
 // -- constructor -- //
 Keyboard::Keyboard()
 	:Keys(keys),
-	Autorepeat(autorepeat)
+	Autorepeat(autorepeat),
+	KeyEvents(keyEvents),
+	CharEvents(charEvents)
 {
 
 }
@@ -19,42 +22,16 @@ Keyboard::~Keyboard()
 void Keyboard::KeyPress(Keyboard::Key key)
 {
 	keys[key] = true;
-	KeyEvent kev(Keyboard::KeyEvent::Type::Press, key);
-	keyEvents.push(kev);
-	TrimKeyBuffer();
-
-	if (keyEventHandler) keyEventHandler->HandleEvent(kev);
+	keyEvents.PushEvent(KeyEvent(Keyboard::KeyEvent::Type::Press, key));
 }
 void Keyboard::KeyRelase(Keyboard::Key key)
 {
-	keys[key] = false;
-	KeyEvent kev(Keyboard::KeyEvent::Type::Relase, key);
-	keyEvents.push(kev);
-	TrimKeyBuffer();
-
-	if (keyEventHandler) keyEventHandler->HandleEvent(kev);
+	keys[key] = false; 
+	keyEvents.PushEvent(KeyEvent(Keyboard::KeyEvent::Type::Relase, key));
 }
 void Keyboard::CharInput(const wchar_t &newChar)
 {
-	CharEvent cev(Keyboard::CharEvent::Type::CharInput, newChar);
-	charEvents.push(cev);
-	TrimCharBuffer();
-
-	if (charEventHandler) charEventHandler->HandleEvent(cev);
-}
-void Keyboard::TrimKeyBuffer()
-{
-	while (keyEvents.size() > buffLength)
-	{
-		keyEvents.pop();
-	}
-}
-void Keyboard::TrimCharBuffer()
-{
-	while (charEvents.size() > buffLength)
-	{
-		charEvents.pop();
-	}
+	charEvents.PushEvent(CharEvent(Keyboard::CharEvent::Type::CharInput, newChar));
 }
 
 bool Keyboard::KeyPressed(Keyboard::Key key) const
@@ -72,64 +49,6 @@ bool Keyboard::KeyRelased(Keyboard::Key key) const
 bool Keyboard::KeyRelased(unsigned char key) const
 {
 	return keys[key];
-}
-void Keyboard::ClearBuffers()
-{
-	ClearCharBuffer();
-	ClearKeyBuffer();
-}
-
-Keyboard::CharEvent Keyboard::GetCharEvent()
-{
-	if (charEvents.size() > 0u)
-	{
-		Keyboard::CharEvent e = charEvents.front();
-		charEvents.pop();
-		return e;
-	}
-	else
-	{
-		return Keyboard::CharEvent();
-	}
-}
-bool Keyboard::IsCharEmpty()
-{
-	return charEvents.empty();
-}
-void Keyboard::ClearCharBuffer()
-{
-	charEvents = std::queue<CharEvent>();
-}
-
-Keyboard::KeyEvent Keyboard::GetKeyEvent()
-{
-	if (keyEvents.size() > 0u)
-	{
-		Keyboard::KeyEvent e = keyEvents.front();
-		keyEvents.pop();
-		return e;
-	}
-	else
-	{
-		return Keyboard::KeyEvent();
-	}
-}
-bool Keyboard::IsKeyEmpty()
-{
-	return keyEvents.empty();
-}
-void Keyboard::ClearKeyBuffer()
-{
-	keyEvents = std::queue<KeyEvent>();
-}
-
-void Keyboard::SetKeyEventHandler(Keyboard::KeyEventHandler* keh)
-{
-	this->keyEventHandler = keh;
-}
-void Keyboard::SetCharEventHandler(Keyboard::CharEventHandler* ceh)
-{
-	this->charEventHandler = ceh;
 }
 
 

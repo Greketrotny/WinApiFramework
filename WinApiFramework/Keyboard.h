@@ -1,7 +1,8 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
-#include <queue>
+#include "WindowInclude.h"
+#include "ExternIncludes.h"
 
 namespace WinApiFramework
 {
@@ -192,31 +193,78 @@ namespace WinApiFramework
 				this->key = key;
 			}
 		};
-		struct KeyEventHandler
+	private:
+		template <class T> struct EventsManager
 		{
-			virtual void HandleEvent(Keyboard::KeyEvent event)
+		private:
+			std::queue<T> events;
+			const unsigned short buffSize = 32u;
+			std::vector<std::function<void(T)>> eventHandlers;
+			bool eventHandlersEnabled = true;
+
+		public:
+			// -- constructor -- //
+			EventsManager() {}
+			~EventsManager() {}
+
+		public:
+			// -- methods -- //
+			void PushEvent(T newEvent)
 			{
-				switch (event.type)
+				// push event to buffer
+				events.push(newEvent);
+				if (events.size() > buffSize)
+					events.pop();
+
+				// call handler function
+				if (eventHandlersEnabled)
 				{
-				case Keyboard::KeyEvent::Type::Press:	Press(event);	break;
-				case Keyboard::KeyEvent::Type::Relase:	Relase(event);	break;
+					for (unsigned int i = 0u; i < eventHandlers.size(); ++i)
+					{
+						eventHandlers[i](newEvent);
+					}
 				}
 			}
-			virtual void Press(Keyboard::KeyEvent event) {};
-			virtual void Relase(Keyboard::KeyEvent event) {};
+			T GetEvent()
+			{
+				if (events.size() > 0u)
+				{
+					T e = events.front();
+					events.pop();
+					return e;
+				}
+				else
+				{
+					return T();
+				}
+			}
+			void ClearBuffer()
+			{
+				events = std::queue<T>();
+			}
+			template <class EventReceiver> void AddEventHandler(EventReceiver* receiverObject, void(EventReceiver::*eventFunction)(T))
+			{
+				using std::placeholders::_1;
+				std::function<void(T)> f;
+				f = std::bind(eventFunction, receiverObject, _1);
+				eventHandlers.push_back(f);
+			}
+			void RemoveAllEventHandlers()
+			{
+				eventHandlers.clear();
+			}
+			void EnableEventHandlers()
+			{
+				eventHandlersEnabled = true;
+			}
+			void DisableEventHandlers()
+			{
+				eventHandlersEnabled = false;
+			}
 		};
-		struct CharEventHandler
-		{
-			virtual void HandleEvent(Keyboard::CharEvent event) {};
-		};
-	private:
-		std::queue<CharEvent> charEvents;
-		std::queue<KeyEvent> keyEvents;
-
+		EventsManager<KeyEvent> keyEvents;
+		EventsManager<CharEvent> charEvents;
 		bool autorepeat = true;
-		const unsigned short buffLength = 16u;
-		KeyEventHandler* keyEventHandler;
-		CharEventHandler* charEventHandler;
 
 
 		// -- constructors -- //
@@ -238,33 +286,20 @@ namespace WinApiFramework
 		void KeyPress(Keyboard::Key key);
 		void KeyRelase(Keyboard::Key key);
 		void CharInput(const wchar_t &newChar);
-		void TrimKeyBuffer();
-		void TrimCharBuffer();
 
 	public:
 		bool KeyPressed(Keyboard::Key key) const;
 		bool KeyPressed(unsigned char key) const;
 		bool KeyRelased(Keyboard::Key key) const;
 		bool KeyRelased(unsigned char key) const;
-		void ClearBuffers();
-
-		CharEvent GetCharEvent();
-		bool IsCharEmpty();
-		void ClearCharBuffer();
-
-		KeyEvent GetKeyEvent();
-		bool IsKeyEmpty();
-		void ClearKeyBuffer();
-
-		void SetKeyEventHandler(Keyboard::KeyEventHandler* keyEventHandler);
-		void SetCharEventHandler(Keyboard::CharEventHandler* charEventHandler);
 
 
 		// -- property fields -- //
 	public:
 		const Keys& Keys;
 		bool& Autorepeat;
-
+		EventsManager<KeyEvent>& KeyEvents;
+		EventsManager<CharEvent>& CharEvents;
 
 		// -- friend statements -- //
 		friend class Window;

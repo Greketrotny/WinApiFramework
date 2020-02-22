@@ -3,55 +3,161 @@
 
 #include "WindowControl.h"
 
-#include "Color.h"
-#include "Bitmap.h"
-#include "Point2D.h"
-
-#include <d2d1helper.h>
-#include <d2d1effects.h>
-#include <d2d1.h>
-#pragma comment(lib, "d2d1")
 
 namespace G = Graphics;
-
 
 namespace WinApiFramework
 {
 	class GraphicsBox : public WindowControl
 	{
-		// -- fields -- //
+		// -- GraphicsBox::fields -- //
 	public:
-		enum RenderType
+		class GBGraphics
 		{
-			RenderTypeDefault,
-			RenderTypeSoftware,
-			RenderTypeHardware
-		};
-	private:
-		class Graphics
-		{
-			// -- fields -- //
+			// -- GBGraphics::fields -- //
+		public:
+			// configuration enums
+			enum RenderType
+			{
+				RenderTypeDefault = 0,
+				RenderTypeSoftware = 1,
+				RenderTypeHardware = 2
+			};
+			enum PresentOption
+			{
+				PresentOptionWaitForDisplay = 0,
+				PresentOptionRenderImmediately = 1,
+				PresentOptionRetainContents = 2
+			};
+			enum InterpolationMode
+			{
+				InterpolationModeLinear = 0,
+				InterpolationModeNearestNeighbor = 1
+			};
+			enum BrushType
+			{
+				BrushTypeSolid = 0,
+				BrushTypeLinearGradient = 1,
+				BrushTypeRadialGradient = 2
+			};
 		private:
-			GraphicsBox *control;
-			unsigned int width = 0u, height = 0u;
-			G::Bitmap* bitmap;
-			GraphicsBox::RenderType renderType;
+			GraphicsBox *const m_pControl;
+			unsigned int m_width = 0u, m_height = 0u;
+			const RenderType m_renderType;
+			const PresentOption m_presentOption;
+			InterpolationMode m_interpolationMode;
 
-			ID2D1Factory *D2DFactory = nullptr;
-			ID2D1HwndRenderTarget *RT = nullptr;
-			ID2D1BitmapRenderTarget *BRT = nullptr;
-			ID2D1Bitmap *pixelBitmap = nullptr, *compBitmap = nullptr;
-			ID2D1SolidColorBrush *brush = nullptr;
-			ID2D1BitmapBrush *bitmapBrush = nullptr;
+			// directX 2D
+			ID2D1Factory *m_pD2DFactory = nullptr;
+			ID2D1HwndRenderTarget *m_pHwndRenderTarget = nullptr;
+			ID2D1Brush **m_ppBrush = nullptr;
+			ID2D1SolidColorBrush *m_pSolidBrush = nullptr;
+			ID2D1LinearGradientBrush *m_pLinearGradientBrush = nullptr;
+			ID2D1RadialGradientBrush *m_pRadialGradientBrush = nullptr;
+
+			IDWriteFactory *m_pDWriteFactory = nullptr;
+			IDWriteTextFormat *m_pTextFormat = nullptr;
+		public:
+			struct Configuration
+			{
+				RenderType renderType;
+				PresentOption presentOption;
+				InterpolationMode interpolationMode;
+
+				Configuration(
+					RenderType renderType = RenderType::RenderTypeDefault,
+					PresentOption presentOption = PresentOption::PresentOptionWaitForDisplay,
+					InterpolationMode interpolationMode = InterpolationMode::InterpolationModeLinear)
+					: renderType(renderType)
+					, presentOption(presentOption)
+					, interpolationMode(interpolationMode)
+				{
+				}
+				~Configuration()
+				{
+				}
+			};
+
+			struct TextFormat
+			{
+			public:
+				enum TextAlignment
+				{
+					TextAlignmentLeft		= 0,
+					TextAlignmentRight		= 1,
+					TextAlignmentCenter		= 2,
+					TextAlignmentJustified	= 3
+				};
+				enum ParagraphAlignment
+				{
+					ParagraphAlignmentTop		= 0,
+					ParagraphAlignmentBottom	= 1,
+					ParagraphAlignmentCenter	= 2
+				};
+				enum WrapMode
+				{
+					WrapModeWrap		= 0,
+					WrapModeNoWrap		= 1,
+					WrapModeWholeWorld	= 2
+				};
+				enum FontWeight
+				{
+					FontWeightThin,
+					FontWeightExtraLight,
+					FontWeightUltraLight,
+					FontWeightLight,
+					FontWeightSemiLight,
+					FontWeightNormal,
+					FontWeightMedium,
+					FontWeightSemiBold,
+					FontWeightBold,
+					FontWeightExtraBold,
+					FontWeightUltraBold,
+					FontWeightHeavy,
+					FontWeightUltraHeavy
+				};
+				enum FontStyle
+				{
+					FontStyleNormal,
+					FontStyleItalic,
+					FontStyleOblique
+				};
+				enum FontStretch
+				{
+					FontStretchUptraCondensed,
+					FontStretchExtraCondensed,
+					FontStretchCondensed,
+					FontStretchSemiCondensed,
+					FontStretchNormal,
+					FontStretchSemiExpanded,
+					FontStretchExpanded,
+					FontStretchExtraExpanded,
+					FontStretchUltraExpanded
+				};
+
+			private:
+				TextAlignment textAlignment;
+				ParagraphAlignment paragraphAlignment;
+				WrapMode wrapMode;
+				FontWeight fontWeight;
+				FontStyle fontStyle;
+				FontStretch fontStretch;
+				float fontSize;
+
+			private:
+				friend class GraphicsBox::GBGraphics;
+			};
 
 
-			// -- contructor -- //
+			// -- GBGraphics::contructor -- //
 		private:
-			Graphics(GraphicsBox *control, RenderType renderType);
-			~Graphics();
+			GBGraphics(const GBGraphics& graphics) = delete;
+			GBGraphics(GBGraphics&& graphics) = delete;
+			GBGraphics(GraphicsBox *control, const Configuration& config);
+			~GBGraphics();
 
 
-			// -- methods -- //
+			// -- GBGraphics::methods -- //
 		private:
 			bool InitGraphics();
 			template <class T> void SafeRelease(T **ppT)
@@ -64,40 +170,70 @@ namespace WinApiFramework
 			}
 			void Resize(unsigned int newWidth, unsigned int newHeight);
 		public:
-			void Render();
-			void SetPixel(const unsigned int& x, const unsigned int& y, const unsigned int& colorValue);
-			void SetPixel(const unsigned int& x, const unsigned int& y, const unsigned char& r, const unsigned char& g, const unsigned char& b);
-			void SetPixel(const unsigned int& x, const unsigned int& y, const G::Color& color);
-			void SetBitmap(const G::Bitmap& newBitmap);
-			void ClearPixelMap(const unsigned char& r, const unsigned char& g, const unsigned char& b);
-			void ClearPixelMap(const G::Color& color);
-			void ClearGraphicsMap(const unsigned char& r, const unsigned char& g, const unsigned char& b);
-			void ClearGraphicsMap(const G::Color& color);
-			void Clear(const unsigned char& r, const unsigned char& g, const unsigned char& b);
+			void SetInterpolationMode(InterpolationMode newInterpolationMode);
+
+			// brush methods
+			void ChangeActiveBrush(BrushType newBrushType);
+			void SetSolidBrush(const G::Color& brushColor, const float opacity = 1.0f);
+
+			void BeginDraw();
+			void EndDraw();
 			void Clear(const G::Color& color);
 
-			void SetBrushColor(const G::Color& color);
-			void DrawLine(const G::Point2D<float>& point0, const G::Point2D<float>& point1, const float& width = 1.0f);
-			void DrawEllipse(const G::Point2D<float>& center, const G::Point2D<float>& size, const float& width = 1.0f);
-			void FillEllipse(const G::Point2D<float>& center, const G::Point2D<float>& size);
-			void DrawRectangle(const G::Point2D<float>& point, const G::Point2D<float>& size, const float& brushWidth = 1.0f);
-			void FillRectangle(const G::Point2D<float>& point, const G::Point2D<float>& size);
+			// drawing text
+			void DrawString(std::wstring text, G::Rect<float> rect);
+
+			void DrawBitmap(
+				const G::Bitmap& bitmap,
+				const G::Rect<float>& destinationRect,
+				const G::Rect<float>& sourceRect,
+				const float opacity = 1.0f,
+				GBGraphics::InterpolationMode interpolationMode = GBGraphics::InterpolationModeLinear);
+			void DrawBitmap(
+				const G::Bitmap& bitmap,
+				const float opacity = 1.0f,
+				GBGraphics::InterpolationMode interpolationMode = GBGraphics::InterpolationModeLinear);
+			void DrawLine(
+				const G::Point<float>& point1,
+				const G::Point<float>& point2,
+				const float& stroke = 1.0f);
+			void DrawEllipse(const G::Point<float>& center, const G::Point<float>& size, const float& stroke = 1.0f);
+			void DrawRectangle(const G::Point<float>& topLeft, const G::Point<float>& bottomRight, const float& stroke = 1.0f);
+			void DrawRoundedRectangle(
+				const G::Point<float>& topLeft,
+				const G::Point<float>& bottomRight,
+				const float& radiousX, const float& radiousY,
+				const float& stroke = 1.0f);
+
+			void FillEllipse(const G::Point<float>& center, const G::Point<float>& size);
+			void FillRectangle(const G::Point<float>& topLeft, const G::Point<float>& bottomRight);
+			void FillRoundedRectangle(
+				const G::Point<float>& topLeft,
+				const G::Point<float>& bottomRight,
+				const float& radiousX, const float& radiousY);
 
 
-			// -- properties -- //
+			// -- GBGraphics::properties -- //
 		public:
 			const unsigned int& Width;
 			const unsigned int& Height;
 
 
-			// -- friends -- //
+			// -- GBGraphics::friends -- //
 		public:
 			friend class GraphicsBox;
 		};
 	public:
 		struct Config : public WindowControl::Config
 		{
-			RenderType renderType = RenderType::RenderTypeDefault;
+			GBGraphics::Configuration graphicsConfiguration;
+
+			Config()
+			{
+			}
+			~Config()
+			{
+			}
 		};
 		struct Event
 		{
@@ -120,24 +256,9 @@ namespace WinApiFramework
 				this->type = type;
 			}
 		};
-		struct EventHandler : public WindowControl::EventHandler<GraphicsBox::Event>
-		{
-			virtual void HandleEvent(GraphicsBox::Event event)
-			{
-				HandleBaseEvent((WindowControl::Event::Type)event.type);
-
-				switch (event.type)
-				{
-					// cases
-				default:
-					break;
-				}
-			}
-			// virtual functions
-		};
 	private:
-		WindowControl::Events<GraphicsBox::Event> events;
-		Graphics graphics;
+		WindowControl::EventsManager<GraphicsBox::Event> events;
+		GBGraphics graphics;
 
 
 		// -- constructors -- //
@@ -160,7 +281,7 @@ namespace WinApiFramework
 		bool CreateControlWindow() override;
 		void PushBaseEvent(WindowControl::Event event) override
 		{
-			// no GraphicsBox events yet
+			events.PushEvent(GraphicsBox::Event((GraphicsBox::Event::Type)event.type));
 		}
 	public:
 		void Resize(unsigned int newWidth, unsigned int newHeight);
@@ -168,7 +289,8 @@ namespace WinApiFramework
 
 		// -- propetry fields -- //
 	public:
-		Graphics& Gfx;
+		GBGraphics& Gfx;
+		WindowControl::EventsManager<GraphicsBox::Event>& Events;
 	};
 }
 

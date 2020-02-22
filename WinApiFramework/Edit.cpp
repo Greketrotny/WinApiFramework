@@ -1,5 +1,6 @@
+#include "Precompiled.h"
 #include "Edit.h"
-#include "WinApiWindow.h"
+#include "WinApiFramework.h"
 
 using namespace WinApiFramework;
 
@@ -10,7 +11,8 @@ Edit::Edit(const Edit::Config& config)
 	PasswordMode(passwordMode),
 	NumberOnlyMode(numberOnly),
 	Alignment(textAlignment),
-	LetterMode(lettersMode)
+	LetterMode(lettersMode),
+	Events(events)
 {
 	text = config.text;
 	passwordMode = config.passwordMode;
@@ -20,11 +22,6 @@ Edit::Edit(const Edit::Config& config)
 	textLengthLimit = config.textLengthLimit;
 
 	controlStyle |= WS_BORDER;
-}
-Edit::Edit(const Edit::Config& config, Edit::EventHandler *eh)
-	:Edit(config)
-{
-	events.SetEventHandler(eh);
 }
 Edit::~Edit()
 {

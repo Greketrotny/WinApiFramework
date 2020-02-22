@@ -57,7 +57,7 @@
     <ClCompile Include="TrackBar.cpp">
       <Filter>Source Files\WinApiFramework</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
+    <ClCompile Include="Precompiled.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -66,9 +66,6 @@
       <Filter>Header Files\WinApiFramework</Filter>
     </ClInclude>
     <ClInclude Include="WinApiWindowControls.h">
-      <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowInclude.h">
       <Filter>Header Files\WinApiFramework</Filter>
     </ClInclude>
     <ClInclude Include="WinApiFramework.h">
@@ -103,6 +100,15 @@
     </ClInclude>
     <ClInclude Include="TrackBar.h">
       <Filter>Header Files\WinApiFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="ExternIncludes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowInclude.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Precompiled.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

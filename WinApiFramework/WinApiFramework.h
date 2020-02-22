@@ -2,15 +2,13 @@
 #define WIN_API_FRAMEWORK
 
 #include "WindowInclude.h"
+#include "ExternIncludes.h"
+
 #include "WinApiWindow.h"
 #include "WinApiWindowControls.h"
 
 #include "Mouse.h"
 #include "Keyboard.h"
-
-
-#include <CommCtrl.h>
-#include <vector>
 
 namespace WinApiFramework
 {

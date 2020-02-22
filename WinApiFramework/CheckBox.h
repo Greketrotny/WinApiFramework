@@ -36,37 +36,16 @@ namespace WinApiFramework
 			};
 			Type type;
 
-			Event()
-			{
-				this->type = Invalid;
-			}
-			Event(Type type)
+			Event(Type type = Type::Invalid)
 			{
 				this->type = type;
 			}
-		};
-		struct EventHandler : public WindowControl::EventHandler<CheckBox::Event>
-		{
-			virtual void HandleEvent(CheckBox::Event event)
-			{
-				HandleBaseEvent((WindowControl::Event::Type)event.type);
-
-				switch (event.type)
-				{
-				case CheckBox::Event::Type::Check:			Check();		break;
-				case CheckBox::Event::Type::UnCheck:		UnCheck();		break;
-				case CheckBox::Event::Type::MiddleState:	MiddleState();	break;
-				}
-			}
-			virtual void Check() {};
-			virtual void UnCheck() {};
-			virtual void MiddleState() {};
 		};
 	private:
 		std::wstring caption = L"Default";
 		bool isTripleState = 0;
 		BoxState boxState;
-		WindowControl::Events<CheckBox::Event> events;
+		WindowControl::EventsManager<CheckBox::Event> events;
 
 
 		// -- constructors -- //
@@ -74,7 +53,6 @@ namespace WinApiFramework
 		CheckBox(const CheckBox& checkBox) = delete;
 		CheckBox(const CheckBox&& checkBox) = delete;
 		CheckBox(const Config& config);
-		CheckBox(const Config& config, CheckBox::EventHandler *eventHandler);
 		~CheckBox();
 
 
@@ -104,6 +82,7 @@ namespace WinApiFramework
 		const BoxState& State;
 		const std::wstring& Caption;
 		const bool& IsTripleState;
+		WindowControl::EventsManager<CheckBox::Event>& Events;
 	};
 }
 

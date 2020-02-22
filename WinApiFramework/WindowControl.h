@@ -2,7 +2,7 @@
 #define WINDOW_CONTROL_H
 
 #include "WindowInclude.h"
-#include <queue>
+#include "ExternIncludes.h"
 
 namespace WinApiFramework
 {
@@ -21,6 +21,26 @@ namespace WinApiFramework
 		{
 			int x = 50, y = 50;
 			unsigned int width = 100, height = 100;
+
+			Rect() {}
+
+			Rect(int x, int y, unsigned int width, unsigned int height)
+				:x(x),
+				y(y),
+				width(width),
+				height(height)
+			{}
+		};
+		struct Range
+		{
+			int min = 0, max = 100;
+
+			Range() {};
+			Range(int min, int max)
+			{
+				this->min = min;
+				this->max = max;
+			}
 		};
 		struct Config
 		{
@@ -47,47 +67,19 @@ namespace WinApiFramework
 				this->type = type;
 			}
 		};
-		template <class T> struct EventHandler
-		{
-		protected:
-			void HandleBaseEvent(WindowControl::Event::Type eventType)
-			{
-				switch (eventType)
-				{
-				case WindowControl::Event::Move:	Move();		break;
-				case WindowControl::Event::Resize:	Resize();	break;
-				case WindowControl::Event::Enable:	Enable();	break;
-				case WindowControl::Event::Disable:	Disable();	break;
-				}
-			}
-		public:
-			virtual void HandleEvent(T event) = 0;
-			virtual void Move() {};
-			virtual void Resize() {};
-			virtual void Enable() {};
-			virtual void Disable() {};
-		};
-		template <class T> struct Events
+	protected:
+		template <class T> struct EventsManager
 		{
 		private:
 			std::queue<T> events;
 			const unsigned short buffSize = 32u;
-			WindowControl::EventHandler<T> *eventHandler = nullptr;
+			std::vector<std::function<void(T)>> eventHandlers;
+			bool eventHandlersEnabled = true;
 
 		public:
 			// -- constructor -- //
-			Events()
-			{
-
-			}
-			~Events()
-			{
-				if (eventHandler)
-				{
-					delete eventHandler;
-					eventHandler = nullptr;
-				}
-			}
+			EventsManager() {}
+			~EventsManager() {}
 
 		public:
 			// -- methods -- //
@@ -99,7 +91,13 @@ namespace WinApiFramework
 					events.pop();
 
 				// call handler function
-				if (eventHandler) eventHandler->HandleEvent(newEvent);
+				if (eventHandlersEnabled)
+				{
+					for (unsigned int i = 0u; i < eventHandlers.size(); ++i)
+					{
+						eventHandlers[i](newEvent);
+					}
+				}
 			}
 			T GetEvent()
 			{
@@ -118,12 +116,26 @@ namespace WinApiFramework
 			{
 				events = std::queue<T>();
 			}
-			void SetEventHandler(WindowControl::EventHandler<T> *eventHandler)
+			template <class EventReceiver> void AddEventHandler(EventReceiver* receiverObject, void(EventReceiver::*eventFunction)(T))
 			{
-				this->eventHandler = eventHandler;
+				using std::placeholders::_1;
+				std::function<void(T)> f;
+				f = std::bind(eventFunction, receiverObject, _1);
+				eventHandlers.push_back(f);
+			}
+			void RemoveAllEventHandlers()
+			{
+				eventHandlers.clear();
+			}
+			void EnableEventHandlers()
+			{
+				eventHandlersEnabled = true;
+			}
+			void DisableEventHandlers()
+			{
+				eventHandlersEnabled = false;
 			}
 		};
-	protected:
 		Rect rect;
 
 

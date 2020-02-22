@@ -1,5 +1,6 @@
+#include "Precompiled.h"
 #include "Label.h"
-#include "WinApiWindow.h"
+#include "WinApiFramework.h"
 
 using namespace WinApiFramework;
 
@@ -14,11 +15,6 @@ Label::Label(const Label::Config& config)
 	rect = config.rect;
 	caption = config.caption;
 	textAlignment = config.textAlignment;
-}
-Label::Label(const Label::Config& config, EventHandler *eh)
-	:Label(config)
-{
-	events.SetEventHandler(eh);
 }
 Label::~Label()
 {

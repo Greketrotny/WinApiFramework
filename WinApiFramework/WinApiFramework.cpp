@@ -1,14 +1,6 @@
+#include "Precompiled.h"
 #include "WinApiFramework.h"
 #include "WinApiWindow.h"
-
-#include <vector>
-#include <windowsx.h>
-
-//#include <CommCtrl.h>
-
-#pragma comment(linker,"\"/manifestdependency:type='win32' \
-name='Microsoft.Windows.Common-controls' version='6.0.0.0' \
-processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 using namespace WinApiFramework;
 
@@ -82,36 +74,36 @@ LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_LBUTTONDOWN:
 			mouse.isLeftPressed = true;
-			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::LeftPress));
+			mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::LeftPress));
 			break;
 		case WM_RBUTTONDOWN:
 			mouse.isRightPressed = true;
-			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::RightPress));
+			mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::RightPress));
 			break;
 		case WM_LBUTTONUP:
 			mouse.isLeftPressed = false;
-			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::LeftRelase));
+			mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::LeftRelase));
 			break;
 		case WM_RBUTTONUP:
 			mouse.isRightPressed = false;
-			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::RightRelase));
+			mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::RightRelase));
 			break;
 		case WM_MBUTTONDOWN:
 			mouse.isMiddlePressed = true;
-			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::MiddlePress));
+			mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::MiddlePress));
 			break;
 		case WM_MBUTTONUP:
 			mouse.isMiddlePressed = false;
-			mouse.PushEvent(Mouse::Event(Mouse::Event::Type::MiddleRelase));
+			mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::MiddleRelase));
 			break;
 		case WM_MOUSEWHEEL:
 			if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
 			{
-				mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WheelUp));
+				mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::WheelUp));
 			}
 			else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
 			{
-				mouse.PushEvent(Mouse::Event(Mouse::Event::Type::WheelDown));
+				mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::WheelDown));
 			}
 			break;
 		}

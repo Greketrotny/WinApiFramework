@@ -2,7 +2,6 @@
 #define BUTTON_H
 
 #include "WindowControl.h"
-#include <string>
 
 namespace WinApiFramework
 {
@@ -28,40 +27,18 @@ namespace WinApiFramework
 				Click,
 				DoubleClick,
 				Focus,
-				Unfocus
+				Unfocus,
+				CaptionChanged
 			};
 			Type type;
 
-			Event()
-			{
-				this->type = Invalid;
-			}
-			Event(Type type)
+			Event(Type type = Type::Invalid)
 			{
 				this->type = type;
 			}
 		};
-		struct EventHandler : public WindowControl::EventHandler<Button::Event>
-		{
-			virtual void HandleEvent(Button::Event event) override
-			{
-				HandleBaseEvent((WindowControl::Event::Type)event.type);
-
-				switch (event.type)
-				{
-				case Button::Event::Type::Click:		Click();		break;
-				case Button::Event::Type::DoubleClick:	DoubleClick();	break;
-				case Button::Event::Type::Focus:		Focus();		break;
-				case Button::Event::Type::Unfocus:		Unfocus();		break;
-				}
-			}
-			virtual void Click() {};
-			virtual void DoubleClick() {};
-			virtual void Focus() {};
-			virtual void Unfocus() {};
-		};
 	private:
-		WindowControl::Events<Button::Event> events;
+		WindowControl::EventsManager<Button::Event> events;
 
 
 		// -- constructors -- //
@@ -69,7 +46,6 @@ namespace WinApiFramework
 		Button(const Button &otherButton) = delete;
 		Button(const Button &&otherButton) = delete;
 		Button(const Config &config);
-		Button(const Config &config, EventHandler *eventHandler);
 		~Button();
 
 
@@ -93,7 +69,7 @@ namespace WinApiFramework
 		// -- property fields -- //
 		const Rect& Rect;
 		const std::wstring& Caption;
-		WindowControl::Events<Button::Event>& Events;
+		WindowControl::EventsManager<Button::Event>& Events;
 	};
 }
 #endif // !BUTTON_H_H

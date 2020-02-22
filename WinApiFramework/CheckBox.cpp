@@ -1,5 +1,6 @@
+#include "Precompiled.h"
 #include "CheckBox.h"
-#include "WinApiWindow.h"
+#include "WinApiFramework.h"
 
 using namespace WinApiFramework;
 
@@ -10,7 +11,8 @@ CheckBox::CheckBox(const CheckBox::Config& config)
 	: WindowControl(config),
 	State(boxState),
 	Caption(caption),
-	IsTripleState(isTripleState)
+	IsTripleState(isTripleState),
+	Events(events)
 {
 	caption = config.caption;
 	isTripleState = config.isTripleState;
@@ -20,11 +22,6 @@ CheckBox::CheckBox(const CheckBox::Config& config)
 	{
 		this->boxState = UnCheck;
 	}
-}
-CheckBox::CheckBox(const CheckBox::Config& config, CheckBox::EventHandler *eh)
-	: CheckBox(config)
-{
-	events.SetEventHandler(eh);
 }
 CheckBox::~CheckBox()
 {

@@ -1,23 +1,24 @@
+#include "Precompiled.h"
 #include "GraphicsBox.h"
-#include "WinApiWindow.h"
+#include "WinApiFramework.h"
 
 using namespace WinApiFramework;
 
-// [CLASS] GraphicsBox -------------------------|
-// -- constructors -- //
+// ~~~~~~~~ [CLASS] GraphicsBox ~~~~~~~~
+// -- GraphicsBox::constructors -- //
 GraphicsBox::GraphicsBox(const GraphicsBox::Config &config)
 	:WindowControl(config),
-	graphics(this, config.renderType),
-	Gfx(graphics)
+	graphics(this, config.graphicsConfiguration),
+	Gfx(graphics),
+	Events(events)
 {
-
 }
 GraphicsBox::~GraphicsBox()
 {
 
 }
 
-// -- methods -- //
+// -- GraphicsBox::methods -- //
 // private:
 int GraphicsBox::ControlProc(WPARAM wParam, LPARAM lParam)
 {
@@ -34,7 +35,7 @@ bool GraphicsBox::CreateControlWindow()
 	controlStyle |= WS_BORDER;
 
 	// create window
-	hControl = CreateWindow(L"STATIC", NULL,
+	hControl = CreateWindowW(L"STATIC", NULL,
 		controlStyle,
 		rect.x, rect.y, rect.width, rect.height,
 		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
@@ -48,7 +49,7 @@ bool GraphicsBox::CreateControlWindow()
 
 	if (!graphics.InitGraphics())
 	{
-		MessageBox(nullptr, L"GraphicsBox::Graphics initialization failed.", L"Graphics error", MB_OK | MB_ICONERROR);
+		MessageBox(nullptr, L"GraphicsBox::GBGraphics initialization failed.", L"GBGraphics error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
@@ -60,277 +61,309 @@ void GraphicsBox::Resize(unsigned int newWidth, unsigned int newHeight)
 	graphics.Resize(newWidth - 2, newHeight - 2);
 	WindowControl::Resize(newWidth, newHeight);
 }
-// [CLASS] GraphicsBox -------------------------|
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
-// [CLASS] GraphicsBox::Graphics ---------------|
-// -- constructors -- //
-GraphicsBox::Graphics::Graphics(GraphicsBox *control, GraphicsBox::RenderType renderType)
-	:Width(width),
-	Height(height),
-	renderType(renderType)
+// ~~~~~~~~ [CLASS] GBGraphics ~~~~~~~~
+// -- GraphicsBox::GBGraphics::constructors -- //
+GraphicsBox::GBGraphics::GBGraphics(GraphicsBox *control, const GraphicsBox::GBGraphics::Configuration& config)
+	: Width(m_width)
+	, Height(m_height)
+	, m_pControl(control)
+	, m_renderType(config.renderType)
+	, m_presentOption(config.presentOption)
+	, m_interpolationMode(config.interpolationMode)
 {
-	this->control = control;
 }
-GraphicsBox::Graphics::~Graphics()
+GraphicsBox::GBGraphics::~GBGraphics()
 {
-	SafeRelease(&brush);
-	SafeRelease(&pixelBitmap);
-	SafeRelease(&compBitmap);
-	SafeRelease(&RT);
-	SafeRelease(&BRT);
-	SafeRelease(&D2DFactory);
+	// release brushes
+	SafeRelease(&m_pSolidBrush);
+	SafeRelease(&m_pLinearGradientBrush);
+	SafeRelease(&m_pRadialGradientBrush);
 
-	if (bitmap) delete bitmap;
+	// release render target
+	SafeRelease(&m_pHwndRenderTarget);
+
+	// release factory
+	SafeRelease(&m_pD2DFactory);
+	SafeRelease(&m_pDWriteFactory);
 }
 
-// -- methods -- //
+// -- GraphicsBox::GBGraphics::methods -- //
 // private:
-bool GraphicsBox::Graphics::InitGraphics()
+bool GraphicsBox::GBGraphics::InitGraphics()
 {
-	width = control->rect.width - 2;
-	height = control->rect.height - 2;
-	bitmap = new G::Bitmap(width, height);
+	m_width = m_pControl->rect.width - 2;
+	m_height = m_pControl->rect.height - 2;
+	
 
-	// create D2D1Factory
-	D2D1CreateFactory
-	(
-		D2D1_FACTORY_TYPE_SINGLE_THREADED,
-		&D2DFactory
-	);
+	// [>] Create D2D1Factory
+	D2D1CreateFactory(
+		D2D1_FACTORY_TYPE::D2D1_FACTORY_TYPE_SINGLE_THREADED,
+		&m_pD2DFactory);
 
-	// create render target
+	// [>] Create render target
 	D2D1_RENDER_TARGET_TYPE renderTargetType;
-	switch (renderType)
+	switch (m_renderType)
 	{
-	case WinApiFramework::GraphicsBox::RenderTypeDefault:
-		renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_DEFAULT;
-		break;
-	case WinApiFramework::GraphicsBox::RenderTypeSoftware:
-		renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_SOFTWARE;
-		break;
-	case WinApiFramework::GraphicsBox::RenderTypeHardware:
-		renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_HARDWARE;
-		break;
+		case WinApiFramework::GraphicsBox::GBGraphics::RenderTypeDefault:
+			renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_DEFAULT;
+			break;
+		case WinApiFramework::GraphicsBox::GBGraphics::RenderTypeSoftware:
+			renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+			break;
+		case WinApiFramework::GraphicsBox::GBGraphics::RenderTypeHardware:
+			renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_HARDWARE;
+			break;
 	}
 
-	D2DFactory->CreateHwndRenderTarget
-	(
-		D2D1::RenderTargetProperties
-		(
+	D2D1_PRESENT_OPTIONS presentOptions;
+	switch (m_presentOption)
+	{
+		case WinApiFramework::GraphicsBox::GBGraphics::PresentOptionWaitForDisplay:
+			presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_NONE;
+			break;
+		case WinApiFramework::GraphicsBox::GBGraphics::PresentOptionRenderImmediately:
+			presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_IMMEDIATELY;
+			break;
+		case WinApiFramework::GraphicsBox::GBGraphics::PresentOptionRetainContents:
+			presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS;
+			break;
+	}
+
+	// [>] Create render target
+	m_pD2DFactory->CreateHwndRenderTarget(
+		D2D1::RenderTargetProperties(
 			renderTargetType,
-			D2D1::PixelFormat
-			(
+			D2D1::PixelFormat(
 				DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM,
-				D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_IGNORE
-			),
+				D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_PREMULTIPLIED),
 			96.0f, 96.0f,
 			D2D1_RENDER_TARGET_USAGE::D2D1_RENDER_TARGET_USAGE_NONE,
-			D2D1_FEATURE_LEVEL::D2D1_FEATURE_LEVEL_DEFAULT
-		),
-		D2D1::HwndRenderTargetProperties
-		(
-			control->hControl,
-			D2D1::SizeU(width, height)
-		),
-		&RT
-	);
+			D2D1_FEATURE_LEVEL::D2D1_FEATURE_LEVEL_DEFAULT),
+		D2D1::HwndRenderTargetProperties(
+			m_pControl->hControl,
+			D2D1::SizeU(m_width, m_height),
+			presentOptions),
+		&m_pHwndRenderTarget);
 
-	// create bitmap for pixelMap
-	RT->CreateBitmap
-	(
-		D2D1::SizeU(width, height),
-		D2D1::BitmapProperties
-		(
-			D2D1::PixelFormat
-			(
-				DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM,
-				D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_IGNORE
-			)
-		),
-		&pixelBitmap
-	);
 
-	// ------------------
-	RT->CreateCompatibleRenderTarget(&BRT);
-	BRT->CreateSolidColorBrush
-	(
-		D2D1::ColorF(0x00FF88, 1.0f),
-		&brush
-	);
+	// [>] Create brushes
+	// solid brush
+	m_ppBrush = (ID2D1Brush**)&m_pSolidBrush;
+	m_pHwndRenderTarget->CreateSolidColorBrush(D2D1::ColorF((0x00 << 16) | (0x00 << 8) | (0x00), 1.0f), &m_pSolidBrush);
+	// TODO: linear gradient brush
+
+	// TODO: radial gradient brush
+
+
+	// [>] Initialize text writing objects
+	// create direct write factory
+	DWriteCreateFactory(
+		DWRITE_FACTORY_TYPE::DWRITE_FACTORY_TYPE_SHARED,
+		__uuidof(m_pDWriteFactory),
+		reinterpret_cast<IUnknown**>(&m_pDWriteFactory));
+
+	// create and setup text format
+	m_pDWriteFactory->CreateTextFormat(
+		L"Verdana",
+		NULL,
+		DWRITE_FONT_WEIGHT::DWRITE_FONT_WEIGHT_NORMAL,
+		DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_NORMAL,
+		DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
+		15.0f,
+		L"en-us",
+		&m_pTextFormat);
+
+	m_pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_LEADING);
+	m_pTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+	m_pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING::DWRITE_WORD_WRAPPING_WRAP);
 
 	return true;
 }
-void GraphicsBox::Graphics::Resize(unsigned int newWidth, unsigned int newHeight)
+void GraphicsBox::GBGraphics::Resize(unsigned int newWidth, unsigned int newHeight)
 {
 	// set new dimensions
-	width = newWidth;
-	height = newHeight;
+	m_width = newWidth;
+	m_height = newHeight;
 
 	// resize pixelMap
-	bitmap->Resize(width, height);
-	RT->Resize(D2D1::SizeU(width, height));
-
-	// resize pixelBitmap
-	if (pixelBitmap) pixelBitmap->Release();
-	RT->CreateBitmap
-	(
-		D2D1::SizeU(width, height),
-		D2D1::BitmapProperties
-		(
-			D2D1::PixelFormat
-			(
-				DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM,
-				D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_IGNORE
-			)
-		),
-		&pixelBitmap
-	);
-
-	SafeRelease(&BRT);
-	RT->CreateCompatibleRenderTarget(&BRT);
+	m_pHwndRenderTarget->Resize(D2D1::SizeU(m_width, m_height));
 }
 // public:
-void GraphicsBox::Graphics::Render()
+void GraphicsBox::GBGraphics::SetInterpolationMode(GBGraphics::InterpolationMode newInterpolationMode)
 {
-	// copy data from pixelMap to bitmap
-	pixelBitmap->CopyFromMemory
-	(
-		&D2D1::RectU(0, 0, width, height),
-		bitmap->GetMapAddress(),
-		width * sizeof(G::Color)
-	);
+	m_interpolationMode = newInterpolationMode;
+}
 
-	// render bitmap from pixelMap
-	RT->BeginDraw();
-	RT->DrawBitmap
-	(
-		pixelBitmap,
-		&D2D1::RectF(0.0f, 0.0f, (float)width, (float)height),
-		1.0f,
-		D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
-		&D2D1::RectF(0.0f, 0.0f, (float)width, (float)height)
-	);
-
-	// render bitmap from BitmapRenderTarget
-	BRT->GetBitmap(&compBitmap);
-	RT->DrawBitmap
-	(
-		compBitmap,
-		&D2D1::RectF(0.0f, 0.0f, (float)width, (float)height),
-		1.0f,
-		D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
-		&D2D1::RectF(0.0f, 0.0f, (float)width, (float)height)
-	);
-	RT->EndDraw();
-}
-void GraphicsBox::Graphics::SetPixel(const unsigned int& x, const unsigned int& y, const unsigned int& colorValue)
+void GraphicsBox::GBGraphics::ChangeActiveBrush(BrushType newBrushType)
 {
-	bitmap->SetPixel(x, y, colorValue);
-}
-void GraphicsBox::Graphics::SetPixel(const unsigned int& x, const unsigned int& y, const unsigned char& r, const unsigned char& g, const unsigned char& b)
-{
-	bitmap->SetPixel(x, y, 0xFF000000 | (r << 16) | (g << 8) | b);
-}
-void GraphicsBox::Graphics::SetPixel(const unsigned int& x, const unsigned int& y, const G::Color& color)
-{
-	bitmap->SetPixel(x, y, color);
-}
-void GraphicsBox::Graphics::SetBitmap(const G::Bitmap& newBitmap)
-{
-	if (newBitmap.Width == bitmap->Width && newBitmap.Height == bitmap->Height)
+	switch (newBrushType)
 	{
-		*bitmap = newBitmap;
+		case GraphicsBox::GBGraphics::BrushTypeSolid:
+			m_ppBrush = (ID2D1Brush**)m_pSolidBrush;
+			break;
+		case GraphicsBox::GBGraphics::BrushTypeLinearGradient:
+			m_ppBrush = (ID2D1Brush**)m_pLinearGradientBrush;
+			break;
+		case GraphicsBox::GBGraphics::BrushTypeRadialGradient:
+			m_ppBrush = (ID2D1Brush**)m_pRadialGradientBrush;
+			break;
+		default:
+			break;
 	}
 }
-void GraphicsBox::Graphics::ClearPixelMap(const unsigned char& r, const unsigned char& g, const unsigned char& b)
+void GraphicsBox::GBGraphics::SetSolidBrush(const G::Color& brushColor, const float opacity)
 {
-	bitmap->Clear(0xFF000000 | (r << 16) | (g << 8) | b);
-}
-void GraphicsBox::Graphics::ClearPixelMap(const G::Color& color)
-{
-	bitmap->Clear(color);
-}
-void GraphicsBox::Graphics::ClearGraphicsMap(const unsigned char& r, const unsigned char& g, const unsigned char& b)
-{
-	BRT->BeginDraw();
-	BRT->Clear(D2D1::ColorF((r << 16) | (g << 8) | b, 0.0f));
-	BRT->EndDraw();
-}
-void GraphicsBox::Graphics::ClearGraphicsMap(const G::Color& color)
-{
-	BRT->BeginDraw();
-	BRT->Clear(D2D1::ColorF(color.GetColor(), 0.0f));
-	BRT->EndDraw();
-}
-void GraphicsBox::Graphics::Clear(const unsigned char& r, const unsigned char& g, const unsigned char& b)
-{
-	ClearPixelMap(r, g, b);
-	ClearGraphicsMap(r, g, b);
-}
-void GraphicsBox::Graphics::Clear(const G::Color& color)
-{
-	ClearPixelMap(color);
-	ClearGraphicsMap(color);
+	m_pSolidBrush->SetColor(D2D1::ColorF((brushColor.GetR() << 16) | (brushColor.GetG() << 8) | (brushColor.GetB()), brushColor.GetA()));
+	m_pSolidBrush->SetOpacity(opacity);
 }
 
-void GraphicsBox::Graphics::SetBrushColor(const G::Color& color)
+void GraphicsBox::GBGraphics::BeginDraw()
 {
-	brush->SetColor(D2D1::ColorF(color.GetColor(), 1.0f));
+	m_pHwndRenderTarget->BeginDraw();
 }
-void GraphicsBox::Graphics::DrawLine(const G::Point2D<float>& p0, const G::Point2D<float>& p1, const float& width)
+void GraphicsBox::GBGraphics::EndDraw()
 {
-	BRT->BeginDraw();
-	BRT->DrawLine
+	m_pHwndRenderTarget->EndDraw();
+}
+void GraphicsBox::GBGraphics::Clear(const G::Color& color)
+{
+	m_pHwndRenderTarget->Clear(D2D1::ColorF((color.GetR() << 16) | (color.GetG() << 8) | color.GetB(), 1.0f));
+}
+
+void GraphicsBox::GBGraphics::DrawString(std::wstring text, G::Rect<float> rect)
+{
+	m_pHwndRenderTarget->DrawText(
+		text.c_str(),
+		text.size(),
+		m_pTextFormat,
+		D2D1::RectF(rect.left, rect.top, rect.right, rect.bottom),
+		m_pSolidBrush);
+}
+
+void GraphicsBox::GBGraphics::DrawBitmap(
+	const G::Bitmap& bitmap,
+	const G::Rect<float>& destinationRect,
+	const G::Rect<float>& sourceRect,
+	const float opacity,
+	GBGraphics::InterpolationMode interpolationMode)
+{
+	// [>] Create bitmap
+	ID2D1Bitmap *pBitmap;
+	HRESULT hr = m_pHwndRenderTarget->CreateBitmap(
+		D2D1::SizeU(bitmap.Width, bitmap.Height),
+		D2D1::BitmapProperties(
+			D2D1::PixelFormat(
+				DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM,
+				D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_PREMULTIPLIED)),
+		&pBitmap);
+
+
+	// [>] Copy G::bitmap to pBitmap
+	pBitmap->CopyFromMemory(
+		&D2D1::RectU(0, 0, bitmap.Width, bitmap.Height),
+		bitmap.GetMapAddress(),
+		bitmap.Width * sizeof(*bitmap.GetMapAddress()));
+
+
+	// [>] create bitmap drawing configuration
+	// set interpolation mode
+	D2D1_BITMAP_INTERPOLATION_MODE interpMode;
+	switch (interpolationMode)
+	{
+		case GraphicsBox::GBGraphics::InterpolationModeLinear:
+			interpMode = D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
+			break;
+		case GraphicsBox::GBGraphics::InterpolationModeNearestNeighbor:
+			interpMode = D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
+			break;
+	}
+
+
+	// [>] Draw bitmap
+	m_pHwndRenderTarget->DrawBitmap(
+		pBitmap,
+		D2D1::RectF(destinationRect.left, destinationRect.top, destinationRect.right, destinationRect.bottom),
+		opacity,
+		interpMode,
+		D2D1::RectF(sourceRect.left, sourceRect.top, sourceRect.right, sourceRect.bottom));
+}
+void GraphicsBox::GBGraphics::DrawBitmap(
+	const G::Bitmap& bitmap,
+	const float opacity,
+	GBGraphics::InterpolationMode interpolationMode)
+{
+	DrawBitmap(
+		bitmap,
+		G::Rect<float>(0.0f, 0.0f, static_cast<float>(this->m_width), static_cast<float>(this->m_height)),
+		G::Rect<float>(0.0f, 0.0f, static_cast<float>(this->m_width), static_cast<float>(this->m_height)),
+		opacity,
+		interpolationMode);
+}
+void GraphicsBox::GBGraphics::DrawLine(
+	const G::Point<float>& p0, 
+	const G::Point<float>& p1, 
+	const float& stroke)
+{
+	m_pHwndRenderTarget->DrawLine
 	(
 		D2D1::Point2F(p0.x, p0.y),
 		D2D1::Point2F(p1.x, p1.y),
-		brush,
-		width
-	);
-	BRT->EndDraw();
+		*m_ppBrush,
+		stroke);
 }
-void GraphicsBox::Graphics::DrawEllipse(const G::Point2D<float>& center, const G::Point2D<float>& size, const float& width)
+void GraphicsBox::GBGraphics::DrawEllipse(const G::Point<float>& center, const G::Point<float>& size, const float& stroke)
 {
-	BRT->BeginDraw();
-	BRT->DrawEllipse
-	(
+	m_pHwndRenderTarget->DrawEllipse(
 		D2D1::Ellipse(D2D1::Point2F(center.x, center.y), size.x, size.y),
-		brush,
-		width
-	);
-	BRT->EndDraw();
+		*m_ppBrush,
+		stroke);
 }
-void GraphicsBox::Graphics::FillEllipse(const G::Point2D<float>& center, const G::Point2D<float>& size)
+void GraphicsBox::GBGraphics::DrawRectangle(const G::Point<float>& topLeft, const G::Point<float>& bottomRight, const float& stroke)
 {
-	BRT->BeginDraw();
-	BRT->FillEllipse
-	(
+	m_pHwndRenderTarget->DrawRectangle(
+		D2D1::RectF(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y),
+		*m_ppBrush,
+		stroke);
+}
+void GraphicsBox::GBGraphics::DrawRoundedRectangle(
+	const G::Point<float>& topLeft,
+	const G::Point<float>& bottomRight,
+	const float& radiousX, const float& radiousY,
+	const float& stroke)
+{
+	m_pHwndRenderTarget->DrawRoundedRectangle(
+		D2D1::RoundedRect(
+			D2D1::RectF(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y), 
+			radiousX, radiousY), 
+		*m_ppBrush, 
+		stroke);
+}
+
+void GraphicsBox::GBGraphics::FillEllipse(const G::Point<float>& center, const G::Point<float>& size)
+{
+	m_pHwndRenderTarget->FillEllipse(
 		D2D1::Ellipse(D2D1::Point2F(center.x, center.y), size.x, size.y),
-		brush
-	);
-	BRT->EndDraw();
+		*m_ppBrush);
 }
-void GraphicsBox::Graphics::DrawRectangle(const G::Point2D<float>& point, const G::Point2D<float>& size, const float& brushWidth)
+void GraphicsBox::GBGraphics::FillRectangle(const G::Point<float>& topLeft, const G::Point<float>& bottomRight)
 {
-	BRT->BeginDraw();
-	BRT->DrawRectangle
-	(
-		D2D1::RectF(point.x, point.y, point.x + size.x, point.y + size.y),
-		brush,
-		brushWidth
-	);
-	BRT->EndDraw();
+	m_pHwndRenderTarget->FillRectangle(
+		D2D1::RectF(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y),
+		*m_ppBrush);
 }
-void GraphicsBox::Graphics::FillRectangle(const G::Point2D<float>& point, const G::Point2D<float>& size)
+void GraphicsBox::GBGraphics::FillRoundedRectangle(
+	const G::Point<float>& topLeft,
+	const G::Point<float>& bottomRight,
+	const float& radiousX, const float& radiousY)
 {
-	BRT->BeginDraw();
-	BRT->FillRectangle
-	(
-		D2D1::RectF(point.x, point.y, point.x + size.x, point.y + size.y),
-		brush
-	);
-	BRT->EndDraw();
+	m_pHwndRenderTarget->FillRoundedRectangle(
+		D2D1::RoundedRect(
+			D2D1::RectF(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y),
+			radiousX, radiousY),
+		*m_ppBrush);
 }
-// [CLASS] GraphicsBox::Graphics ---------------|
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

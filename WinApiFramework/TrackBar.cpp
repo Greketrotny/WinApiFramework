@@ -1,5 +1,7 @@
+#include "Precompiled.h"
 #include "TrackBar.h"
-#include "WinApiWindow.h"
+#include "WinApiFramework.h"
+
 
 using namespace WinApiFramework;
 
@@ -12,7 +14,8 @@ TrackBar::TrackBar(const TrackBar::Config& config)
 	TrackMax(trackRange.max),
 	Orientation(orientation),
 	SmallStep(smallStep),
-	LargeStep(largeStep)
+	LargeStep(largeStep),
+	Events(events)
 {
 	thumbPosition = config.startPosition;
 	trackRange = config.trackRange;
@@ -22,11 +25,6 @@ TrackBar::TrackBar(const TrackBar::Config& config)
 	smallStep = config.smallStep;
 	largeStep = config.largeStep;
 	selectRangeEnabled = config.EnableSelectRange;
-}
-TrackBar::TrackBar(const TrackBar::Config& config, TrackBar::EventHandler *eventHandler)
-	: TrackBar(config)
-{
-	events.SetEventHandler(eventHandler);
 }
 TrackBar::~TrackBar()
 {
@@ -49,7 +47,7 @@ int TrackBar::ControlProc(WPARAM wParam, LPARAM lParam)
 	case TB_PAGEDOWN:		// PageDown
 	case TB_THUMBTRACK:		// Mouse drag
 		thumbPosition = SendMessage(hControl, TBM_GETPOS, 0, 0);
-		events.PushEvent(TrackBar::Event::Type::TrackPosChange);
+		events.PushEvent(TrackBar::Event::Type::ThumbPosChange);
 		break;
 
 	default:
@@ -123,6 +121,7 @@ void TrackBar::SetMinTrackValue(int value)
 		trackRange.min = value;
 		SendMessage(hControl, TBM_SETRANGEMIN, TRUE, value);
 		SendMessage(hControl, TBM_SETTICFREQ, 1, 0);
+		events.PushEvent(TrackBar::Event(TrackBar::Event::Type::MinTrackValueChange));
 	}
 }
 void TrackBar::SetMaxTrackValue(int value)
@@ -132,6 +131,7 @@ void TrackBar::SetMaxTrackValue(int value)
 		trackRange.max = value;
 		SendMessage(hControl, TBM_SETRANGEMAX, TRUE, value);
 		SendMessage(hControl, TBM_SETTICFREQ, 1, 0);
+		events.PushEvent(TrackBar::Event(TrackBar::Event::Type::MaxTrackValueChange));
 	}
 }
 void TrackBar::SetMinSelectValue(int value)
@@ -140,6 +140,7 @@ void TrackBar::SetMinSelectValue(int value)
 	{
 		selectRange.min = value;
 		SendMessage(hControl, TBM_SETSELSTART, TRUE, value);
+		events.PushEvent(TrackBar::Event(TrackBar::Event::Type::MinSelectValueChange));
 	}
 }
 void TrackBar::SetMaxSelectValue(int value)
@@ -147,6 +148,7 @@ void TrackBar::SetMaxSelectValue(int value)
 	if (value < trackRange.max && value > selectRange.min)
 	{
 		SendMessage(hControl, TBM_SETSELEND, TRUE, value);
+		events.PushEvent(TrackBar::Event(TrackBar::Event::Type::MinSelectValueChange));
 	}
 }
 void TrackBar::SetTrackRange(TrackBar::Range newRange)
@@ -168,6 +170,8 @@ void TrackBar::SetTrackRange(int minValue, int maxValue)
 			SendMessage(hControl, TBM_SETRANGEMAX, TRUE, maxValue);
 		}
 
+		if (minValue != trackRange.min) events.PushEvent(TrackBar::Event(TrackBar::Event::Type::MinTrackValueChange));
+		if (maxValue != trackRange.max) events.PushEvent(TrackBar::Event(TrackBar::Event::Type::MaxTrackValueChange));
 		trackRange.min = minValue;
 		trackRange.max = maxValue;
 	}
@@ -180,7 +184,12 @@ void TrackBar::SetSelectRange(int minValue, int maxValue)
 {
 	if (selectRangeEnabled)
 	{
-		SendMessage(hControl, TBM_SETSEL, TRUE, minValue | (maxValue << 16));
+		SendMessage(hControl, TBM_SETSEL, TRUE, MAKELPARAM(minValue, maxValue));
+
+		if (minValue != selectRange.min) events.PushEvent(TrackBar::Event(TrackBar::Event::Type::MinSelectValueChange));
+		if (maxValue != selectRange.max) events.PushEvent(TrackBar::Event(TrackBar::Event::Type::MaxSelectValueChange));
+		selectRange.min = minValue;
+		selectRange.max = maxValue;
 	}
 }
 void TrackBar::SetThumbPosition(int newThumbPosition)
@@ -190,16 +199,20 @@ void TrackBar::SetThumbPosition(int newThumbPosition)
 
 	thumbPosition = newThumbPosition;
 	SendMessage(hControl, TBM_SETPOS, TRUE, thumbPosition);
+
+	events.PushEvent(TrackBar::Event(TrackBar::Event::Type::ThumbPosChange));
 }
 void TrackBar::SetSmallStep(unsigned int smallStep)
 {
 	this->smallStep = smallStep;
 	SendMessage(hControl, TBM_SETLINESIZE, 0, smallStep);
+	events.PushEvent(TrackBar::Event(TrackBar::Event::Type::SmallStepChange));
 }
 void TrackBar::SetLargeStep(unsigned int largeStep)
 {
 	this->largeStep = largeStep;
 	SendMessage(hControl, TBM_SETPAGESIZE, 0, largeStep);
+	events.PushEvent(TrackBar::Event(TrackBar::Event::Type::LargeStepChange));
 }
 void TrackBar::EnableSelectRange()
 {

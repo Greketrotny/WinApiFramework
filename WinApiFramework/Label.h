@@ -2,7 +2,6 @@
 #define LABEL_H
 
 #include "WindowControl.h"
-#include <string>
 
 namespace WinApiFramework
 {
@@ -37,32 +36,13 @@ namespace WinApiFramework
 			};
 			Type type;
 
-			Event()
-			{
-				type = Invalid;
-			}
-			Event(Label::Event::Type type)
+			Event(Label::Event::Type type = Label::Event::Type::Invalid)
 			{
 				this->type = type;
 			}
 		};
-		struct EventHandler : public WindowControl::EventHandler<Label::Event>
-		{
-			virtual void HandleEvent(Label::Event event)
-			{
-				HandleBaseEvent((WindowControl::Event::Type)event.type);
-
-				switch (event.type)
-				{
-				case Label::Event::Type::CaptionChange:			CaptionChange();		break;
-				case Label::Event::Type::TextAlignmentChange:	TextAlignmentChange();	break;
-				}
-			}
-			virtual void CaptionChange() {};
-			virtual void TextAlignmentChange() {};
-		};
 	private:
-		WindowControl::Events<Label::Event> events;
+		WindowControl::EventsManager<Label::Event> events;
 		TextAlignment textAlignment;
 
 
@@ -71,7 +51,6 @@ namespace WinApiFramework
 		Label(const Label& label) = delete;
 		Label(const Label&& label) = delete;
 		Label(const Config &config);
-		Label(const Config &config, EventHandler *eventHandler);
 		~Label();
 
 
@@ -97,7 +76,7 @@ namespace WinApiFramework
 	public:
 		const std::wstring& Caption;
 		const TextAlignment& Alignment;
-		WindowControl::Events<Label::Event>& Events;
+		WindowControl::EventsManager<Label::Event>& Events;
 	};
 }
 

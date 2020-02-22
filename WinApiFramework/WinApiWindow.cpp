@@ -1,10 +1,10 @@
+#include "Precompiled.h"
 #include "WinApiWindow.h"
 #include "WinApiFramework.h"
 
-#include <algorithm>		// for min()/max()
-#include <string>
-
 using namespace WinApiFramework;
+
+#undef IsMinimized
 
 // [CLASS] Window ------------------------------|
 // -- fields -- //
@@ -54,7 +54,8 @@ Window::Window()
 	ClientRect(clientRect),
 	Caption(caption),
 	MinWidth(sizeRect.minWidth), MinHeight(sizeRect.minHeight),
-	MaxWidth(sizeRect.maxWidth), MaxHeight(sizeRect.maxHeight)
+	MaxWidth(sizeRect.maxWidth), MaxHeight(sizeRect.maxHeight),
+	Events(events)
 {
 	// register self in framework
 	Framework::AddWindow(this);
@@ -72,11 +73,6 @@ Window::Window(const Window::Config &config)
 
 	// create window
 	CreateWinApiWindow(config);
-}
-Window::Window(const Window::Config &config, Window::EventHandler *eh)
-	:Window(config)
-{
-	events.eventHandler = eh;
 }
 Window::~Window()
 {
@@ -299,7 +295,7 @@ bool Window::CreateWinApiWindow(Window::Config config)
 		windowStyle |= WS_MINIMIZE;
 
 	// setup window rect
-	RECT r = { windowRect.x, windowRect.y, windowRect.x + windowRect.width, windowRect.y + windowRect.height };
+	RECT r = { (LONG)windowRect.x, (LONG)windowRect.y, (LONG)(windowRect.x + windowRect.width), (LONG)(windowRect.y + windowRect.height) };
 	AdjustWindowRect(&r, windowStyle, FALSE);
 	windowRect.x = r.left;
 	windowRect.y = r.top;
@@ -321,7 +317,7 @@ bool Window::CreateWinApiWindow(Window::Config config)
 	}
 
 	// create window
-	hWindow = CreateWindow(window_class_name.c_str(), caption.c_str(),
+	hWindow = CreateWindow((LPCWSTR)window_class_name.c_str(), (LPCWSTR)caption.c_str(),
 		windowStyle,
 		windowRect.x, windowRect.y, windowRect.width, windowRect.height,
 		nullptr, nullptr, Framework::hProgramInstance, nullptr);
@@ -352,10 +348,18 @@ void Window::ClearEventBuffer()
 {
 	events.ClearBuffer();
 }
+void Window::EnableEventHandlers()
+{
+	events.EnableEventHandlers();
+}
+void Window::DisableEventHandlers()
+{
+	events.DisableEventHandlers();
+}
 void Window::SetCaption(std::wstring new_caption)
 {
 	caption = new_caption;
-	SetWindowText(hWindow, (((isMainWindow) ? L"[Main Window] " : L"") + caption).c_str());
+	SetWindowText(hWindow, (LPCWSTR)(((isMainWindow) ? L"[Main Window] " : L"") + caption).c_str());
 	events.PushEvent(Window::Event(Event::Type::CaptionChange));
 }
 void Window::SetPosition(unsigned int x, unsigned int y)
@@ -487,10 +491,6 @@ void Window::Show()
 void Window::Hide()
 {
 	ShowWindow(hWindow, SW_HIDE);
-}
-void Window::SetEventHandler(Window::EventHandler *eh)
-{
-	this->events.eventHandler = eh;
 }
 int Window::ShowMessageBox(std::wstring text, std::wstring caption, UINT message_box_style)
 {

@@ -4,7 +4,7 @@
 //#define _WIN32_WINNT 0x0601
 //#include <sdkddkver.h>
 
-#define WIN32_LEAN_AND_MEAN
+//#define WIN32_LEAN_AND_MEAN
 //#define NOGDICAPMASKS
 //#define NOSYSMETRICS
 //#define NOMENUS
@@ -34,5 +34,12 @@
 #define UNICODE
 
 #include <Windows.h>
+#include <windowsx.h>
+
+#pragma comment(linker,"\"/manifestdependency:type='win32' \
+name='Microsoft.Windows.Common-controls' version='6.0.0.0' \
+processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#include <CommCtrl.h>
+
 
 #endif // !WINDOW_INCLUDE_H

@@ -20,8 +20,7 @@ namespace WinApiFramework
 		};
 		struct Config : WindowControl::Config
 		{
-			unsigned int minValue = 0;
-			unsigned int maxValue = 100;
+			Range range;
 			unsigned int position = 0;
 			unsigned int step = 1;
 		};
@@ -42,39 +41,14 @@ namespace WinApiFramework
 			};
 			Type type;
 
-			Event()
-			{
-				type = Invalid;
-			}
-			Event(ProgressBar::Event::Type type)
+			Event(ProgressBar::Event::Type type = ProgressBar::Event::Type::Invalid)
 			{
 				this->type = type;
 			}
 		};
-		struct EventHandler : public WindowControl::EventHandler<ProgressBar::Event>
-		{
-			virtual void HandleEvent(ProgressBar::Event event)
-			{
-				HandleBaseEvent((WindowControl::Event::Type)event.type);
-
-				switch (event.type)
-				{
-				case ProgressBar::Event::Type::MinValueChange:	MinValueChange();	break;
-				case ProgressBar::Event::Type::MaxValueChange:	MaxValueChange();	break;
-				case ProgressBar::Event::Type::PositionChange:	PositionChange();	break;
-				case ProgressBar::Event::Type::StepChange:		StepChange();		break;
-				case ProgressBar::Event::Type::BarStateChange:	BarStateChange();	break;
-				}
-			}
-			virtual void MinValueChange() {};
-			virtual void MaxValueChange() {};
-			virtual void PositionChange() {};
-			virtual void StepChange() {};
-			virtual void BarStateChange() {};
-		};
 	private:
 		BarState barState;
-		WindowControl::Events<ProgressBar::Event> events;
+		WindowControl::EventsManager<ProgressBar::Event> events;
 
 
 		// -- constrctor -- //
@@ -82,7 +56,6 @@ namespace WinApiFramework
 		ProgressBar(const ProgressBar &progressBar) = delete;
 		ProgressBar(const ProgressBar &&progressBar) = delete;
 		ProgressBar(const Config& config);
-		ProgressBar(const Config& config, EventHandler *eventHandler);
 		~ProgressBar();
 
 
@@ -117,7 +90,7 @@ namespace WinApiFramework
 		const unsigned int& Position;
 		const unsigned int& Step;
 		const BarState& State;
-		WindowControl::Events<ProgressBar::Event>& Events;
+		WindowControl::EventsManager<ProgressBar::Event>& Events;
 	};
 }
 
