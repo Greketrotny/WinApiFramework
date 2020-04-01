@@ -78,17 +78,6 @@ GraphicsBox::GBGraphics::GBGraphics(GraphicsBox *control, const GraphicsBox::GBG
 }
 GraphicsBox::GBGraphics::~GBGraphics()
 {
-	// release brushes
-	SafeRelease(&m_pSolidBrush);
-	SafeRelease(&m_pLinearGradientBrush);
-	SafeRelease(&m_pRadialGradientBrush);
-
-	// release render target
-	SafeRelease(&m_pHwndRenderTarget);
-
-	// release factory
-	SafeRelease(&m_pD2DFactory);
-	SafeRelease(&m_pDWriteFactory);
 }
 
 // -- GraphicsBox::GBGraphics::methods -- //
@@ -97,7 +86,7 @@ bool GraphicsBox::GBGraphics::InitGraphics()
 {
 	m_width = m_pControl->rect.width - 2;
 	m_height = m_pControl->rect.height - 2;
-	
+
 
 	// [>] Create D2D1Factory
 	D2D1CreateFactory(
@@ -108,13 +97,13 @@ bool GraphicsBox::GBGraphics::InitGraphics()
 	D2D1_RENDER_TARGET_TYPE renderTargetType;
 	switch (m_renderType)
 	{
-		case WinApiFramework::GraphicsBox::GBGraphics::RenderTypeDefault:
+		case WinApiFramework::GraphicsBox::RenderTypeDefault:
 			renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_DEFAULT;
 			break;
-		case WinApiFramework::GraphicsBox::GBGraphics::RenderTypeSoftware:
+		case WinApiFramework::GraphicsBox::RenderTypeSoftware:
 			renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_SOFTWARE;
 			break;
-		case WinApiFramework::GraphicsBox::GBGraphics::RenderTypeHardware:
+		case WinApiFramework::GraphicsBox::RenderTypeHardware:
 			renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_HARDWARE;
 			break;
 	}
@@ -122,18 +111,18 @@ bool GraphicsBox::GBGraphics::InitGraphics()
 	D2D1_PRESENT_OPTIONS presentOptions;
 	switch (m_presentOption)
 	{
-		case WinApiFramework::GraphicsBox::GBGraphics::PresentOptionWaitForDisplay:
+		case WinApiFramework::GraphicsBox::PresentOptionWaitForDisplay:
 			presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_NONE;
 			break;
-		case WinApiFramework::GraphicsBox::GBGraphics::PresentOptionRenderImmediately:
+		case WinApiFramework::GraphicsBox::PresentOptionRenderImmediately:
 			presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_IMMEDIATELY;
 			break;
-		case WinApiFramework::GraphicsBox::GBGraphics::PresentOptionRetainContents:
+		case WinApiFramework::GraphicsBox::PresentOptionRetainContents:
 			presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS;
 			break;
 	}
 
-	// [>] Create render target
+	// create render target object
 	m_pD2DFactory->CreateHwndRenderTarget(
 		D2D1::RenderTargetProperties(
 			renderTargetType,
@@ -166,20 +155,11 @@ bool GraphicsBox::GBGraphics::InitGraphics()
 		__uuidof(m_pDWriteFactory),
 		reinterpret_cast<IUnknown**>(&m_pDWriteFactory));
 
-	// create and setup text format
-	m_pDWriteFactory->CreateTextFormat(
-		L"Verdana",
-		NULL,
-		DWRITE_FONT_WEIGHT::DWRITE_FONT_WEIGHT_NORMAL,
-		DWRITE_FONT_STYLE::DWRITE_FONT_STYLE_NORMAL,
-		DWRITE_FONT_STRETCH::DWRITE_FONT_STRETCH_NORMAL,
-		15.0f,
-		L"en-us",
-		&m_pTextFormat);
+	// get system font collection
+	m_pDWriteFactory->GetSystemFontCollection(&m_pFontCollection);
 
-	m_pTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT::DWRITE_TEXT_ALIGNMENT_LEADING);
-	m_pTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT::DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
-	m_pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING::DWRITE_WORD_WRAPPING_WRAP);
+	// create and setup defaultTextFormat
+	SetDefaultTextFormat(GraphicsBox::TextFormatDescription());
 
 	return true;
 }
@@ -192,8 +172,30 @@ void GraphicsBox::GBGraphics::Resize(unsigned int newWidth, unsigned int newHeig
 	// resize pixelMap
 	m_pHwndRenderTarget->Resize(D2D1::SizeU(m_width, m_height));
 }
+
+void GraphicsBox::GBGraphics::SetDefaultTextFormat(GraphicsBox::TextFormatDescription textFormatDesc)
+{
+	defaultTextFormat.reset(new GraphicsBox::TextFormat(textFormatDesc, this->m_pDWriteFactory));
+}
+const GraphicsBox::TextFormat* const GraphicsBox::GBGraphics::CreateTextFormat(GraphicsBox::TextFormatDescription textFormatDesc)
+{
+	customTextFormats.push_back(std::make_unique<GraphicsBox::TextFormat>(textFormatDesc, this->m_pDWriteFactory));
+	return customTextFormats.back().get();
+}
+void GraphicsBox::GBGraphics::DestroytextFormat(const GraphicsBox::TextFormat*& textFormat)
+{
+	for (size_t i = 0; i < customTextFormats.size(); ++i)
+	{
+		if (customTextFormats[i].get() == textFormat)
+		{
+			customTextFormats.erase(customTextFormats.begin() + i);
+		}
+	}
+	textFormat = nullptr;
+}
+
 // public:
-void GraphicsBox::GBGraphics::SetInterpolationMode(GBGraphics::InterpolationMode newInterpolationMode)
+void GraphicsBox::GBGraphics::SetInterpolationMode(GraphicsBox::InterpolationMode newInterpolationMode)
 {
 	m_interpolationMode = newInterpolationMode;
 }
@@ -202,14 +204,14 @@ void GraphicsBox::GBGraphics::ChangeActiveBrush(BrushType newBrushType)
 {
 	switch (newBrushType)
 	{
-		case GraphicsBox::GBGraphics::BrushTypeSolid:
-			m_ppBrush = (ID2D1Brush**)m_pSolidBrush;
+		case GraphicsBox::BrushTypeSolid:
+			m_ppBrush = (ID2D1Brush**)&(*m_pSolidBrush);
 			break;
-		case GraphicsBox::GBGraphics::BrushTypeLinearGradient:
-			m_ppBrush = (ID2D1Brush**)m_pLinearGradientBrush;
+		case GraphicsBox::BrushTypeLinearGradient:
+			m_ppBrush = (ID2D1Brush**)&(*m_pLinearGradientBrush);
 			break;
-		case GraphicsBox::GBGraphics::BrushTypeRadialGradient:
-			m_ppBrush = (ID2D1Brush**)m_pRadialGradientBrush;
+		case GraphicsBox::BrushTypeRadialGradient:
+			m_ppBrush = (ID2D1Brush**)&(*m_pRadialGradientBrush);
 			break;
 		default:
 			break;
@@ -239,7 +241,19 @@ void GraphicsBox::GBGraphics::DrawString(std::wstring text, G::Rect<float> rect)
 	m_pHwndRenderTarget->DrawText(
 		text.c_str(),
 		text.size(),
-		m_pTextFormat,
+		this->defaultTextFormat->writeTextFormat,
+		D2D1::RectF(rect.left, rect.top, rect.right, rect.bottom),
+		m_pSolidBrush);
+}
+void GraphicsBox::GBGraphics::DrawString(std::wstring text, G::Rect<float> rect, const TextFormat* textFormat)
+{
+	if (textFormat == nullptr)
+		return;
+
+	m_pHwndRenderTarget->DrawText(
+		text.c_str(),
+		text.size(),
+		textFormat->writeTextFormat,
 		D2D1::RectF(rect.left, rect.top, rect.right, rect.bottom),
 		m_pSolidBrush);
 }
@@ -249,10 +263,10 @@ void GraphicsBox::GBGraphics::DrawBitmap(
 	const G::Rect<float>& destinationRect,
 	const G::Rect<float>& sourceRect,
 	const float opacity,
-	GBGraphics::InterpolationMode interpolationMode)
+	GraphicsBox::InterpolationMode interpolationMode)
 {
 	// [>] Create bitmap
-	ID2D1Bitmap *pBitmap;
+	CComPtr<ID2D1Bitmap> pBitmap;
 	HRESULT hr = m_pHwndRenderTarget->CreateBitmap(
 		D2D1::SizeU(bitmap.Width, bitmap.Height),
 		D2D1::BitmapProperties(
@@ -274,10 +288,10 @@ void GraphicsBox::GBGraphics::DrawBitmap(
 	D2D1_BITMAP_INTERPOLATION_MODE interpMode;
 	switch (interpolationMode)
 	{
-		case GraphicsBox::GBGraphics::InterpolationModeLinear:
+		case GraphicsBox::InterpolationModeLinear:
 			interpMode = D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
 			break;
-		case GraphicsBox::GBGraphics::InterpolationModeNearestNeighbor:
+		case GraphicsBox::InterpolationModeNearestNeighbor:
 			interpMode = D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
 			break;
 	}
@@ -294,7 +308,7 @@ void GraphicsBox::GBGraphics::DrawBitmap(
 void GraphicsBox::GBGraphics::DrawBitmap(
 	const G::Bitmap& bitmap,
 	const float opacity,
-	GBGraphics::InterpolationMode interpolationMode)
+	GraphicsBox::InterpolationMode interpolationMode)
 {
 	DrawBitmap(
 		bitmap,

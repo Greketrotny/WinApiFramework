@@ -19,7 +19,7 @@
 //#define NONLS
 //#define NOMEMMGR
 //#define NOMETAFILE
-//#define NOMINMAX // for testing
+#define NOMINMAX // for testing
 //#define NOOPENFILE
 //#define NOSERVICE
 //#define NOTEXTMETRIC

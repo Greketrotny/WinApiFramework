@@ -307,8 +307,8 @@ bool Window::CreateWinApiWindow(Window::Config config)
 		unsigned int w = GetSystemMetrics(SM_CXSCREEN);
 		unsigned int h = GetSystemMetrics(SM_CYSCREEN);
 
-		windowRect.x = (w - min(windowRect.width, w)) / 2;
-		windowRect.y = (h - min(windowRect.height, h)) / 2;
+		windowRect.x = (w - std::min(windowRect.width, w)) / 2;
+		windowRect.y = (h - std::min(windowRect.height, h)) / 2;
 	}
 	else if (position == Position::Default)
 	{
