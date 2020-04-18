@@ -15,11 +15,22 @@ namespace WinApiFramework
 			Check,
 			MiddleState
 		};
-		struct Config : public WindowControl::Config
+		struct ConStruct : public WindowControl::ConStruct
 		{
-			std::wstring caption = L"Default";
-			bool isTripleState = 0;
-			BoxState boxState = UnCheck;
+			std::wstring caption;
+			bool isTripleState;
+			BoxState boxState;
+
+			ConStruct(WindowControl::ConStruct windowControlConStruct = WindowControl::ConStruct(),
+					  const std::wstring& caption = L"caption",
+					  bool isTripleState = false,
+					  BoxState boxState = UnCheck)
+				: WindowControl::ConStruct(windowControlConStruct)
+				, caption(caption)
+				, isTripleState(isTripleState)
+				, boxState(boxState)
+			{
+			}
 		};
 		struct Event
 		{
@@ -42,8 +53,8 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		std::wstring caption = L"Default";
-		bool isTripleState = 0;
+		std::wstring caption;
+		bool isTripleState;
 		BoxState boxState;
 		WindowControl::EventsManager<CheckBox::Event> events;
 
@@ -52,7 +63,7 @@ namespace WinApiFramework
 	public:
 		CheckBox(const CheckBox& checkBox) = delete;
 		CheckBox(const CheckBox&& checkBox) = delete;
-		CheckBox(const Config& config);
+		CheckBox(const ConStruct& conStruct);
 		~CheckBox();
 
 

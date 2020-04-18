@@ -38,16 +38,6 @@ namespace WinApiFramework
 			Maximized,
 			Normal
 		};
-		struct Rect
-		{
-			int x = 50, y = 50;
-			unsigned int width = 800, height = 600;
-		};
-		struct SizeRect
-		{
-			unsigned int minWidth = 0, minHeight = 0;
-			unsigned int maxWidth = 0x0FFFFFFF, maxHeight = 0x0FFFFFFF;
-		};
 		struct Event
 		{
 			enum Type
@@ -85,13 +75,34 @@ namespace WinApiFramework
 				this->type = type;
 			}
 		};
-		struct Config
+		struct ConStruct
 		{
-			Position position = Position::Center;
-			StartStyle startStyle = StartStyle::Normal;
+			// -- ConStruct::fields -- //
+		public:
+			std::wstring caption;
 			Rect rect;
-			std::wstring caption = L"default title";
+			Position position;
+			StartStyle startStyle;
 			SizeRect sizeRect;
+
+
+			// -- ConStruct::constructor -- //
+		public:
+			ConStruct(const std::wstring& caption = L"default title",
+					  const Rect rect = Rect(),
+					  Position position = Position::Center,
+					  StartStyle startStyle = StartStyle::Normal,
+					  SizeRect sizeRect = SizeRect())
+				: caption(caption)
+				, rect(rect)
+				, position(position)
+				, startStyle(startStyle)
+				, sizeRect(sizeRect)
+			{
+			}
+			~ConStruct()
+			{
+			}
 		};
 	private:
 		struct EventsManager
@@ -157,6 +168,12 @@ namespace WinApiFramework
 				f = std::bind(eventFunction, receiverObject, _1);
 				eventHandlers.push_back(f);
 			}
+			void AddEventHandler(void(*eventFunction)(Window::Event))
+			{
+				if (eventFunction == nullptr) return;
+				std::function<void(Window::Event)> f(eventFunction);
+				eventHandlers.push_back(f);
+			}
 			void RemoveAllEventHandlers()
 			{
 				eventHandlers.clear();
@@ -204,7 +221,7 @@ namespace WinApiFramework
 	public:
 		Window(const Window &wnd) = delete;
 		Window(const Window &&wnd) = delete;
-		Window(const Config &config);
+		Window(const ConStruct &config);
 		~Window();
 
 
@@ -218,7 +235,7 @@ namespace WinApiFramework
 	private:
 		LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
 		bool CreateAndRegisterWindowClass();
-		bool CreateWinApiWindow(Config config);
+		bool CreateWinApiWindow(ConStruct config);
 	public:
 		void PushEvent(Window::Event newEvent);
 		Window::Event GetEvent();
@@ -249,21 +266,19 @@ namespace WinApiFramework
 		{
 			events.AddEventHandler<EventReceiver>(receivingObject, eventFunction);
 		}
-		int ShowMessageBox
-		(
+		int ShowMessageBox(
 			std::wstring text = L"default text",
 			std::wstring caption = L"Default caption",
-			UINT message_box_style = 0
-		);
+			UINT message_box_style = 0);
 
 		int GetWindowX() const;
 		int GetWindowY() const;
 		int GetClientX() const;
 		int GetClientY() const;
-		unsigned int GetWindowWidth() const;
-		unsigned int GetWindowHeight() const;
-		unsigned int GetClientWidth() const;
-		unsigned int GetClientHeight() const;
+		int GetWindowWidth() const;
+		int GetWindowHeight() const;
+		int GetClientWidth() const;
+		int GetClientHeight() const;
 		const HWND& GetWindowHandle() const;
 		const std::wstring& GetCaption() const;
 		int GetMouseX() const;
@@ -287,17 +302,17 @@ namespace WinApiFramework
 		const int& WindowY;
 		const int& ClientX;
 		const int& ClientY;
-		const unsigned int& WindowWidth;
-		const unsigned int& WindowHeight;
-		const unsigned int& ClientWidth;
-		const unsigned int& ClientHeight;
+		const int& WindowWidth;
+		const int& WindowHeight;
+		const int& ClientWidth;
+		const int& ClientHeight;
 		const Rect& WindowRect;
 		const Rect& ClientRect;
 		const std::wstring& Caption;
-		const unsigned int& MinWidth;
-		const unsigned int& MinHeight;
-		const unsigned int& MaxWidth;
-		const unsigned int& MaxHeight;
+		const int& MinWidth;
+		const int& MinHeight;
+		const int& MaxWidth;
+		const int& MaxHeight;
 		EventsManager& Events;
 
 

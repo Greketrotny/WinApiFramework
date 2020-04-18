@@ -19,7 +19,7 @@ namespace WinApiFramework
 		static HINSTANCE hProgramInstance;
 		static std::vector<Window*> windows;
 		static Window* mainWindow;
-		static void(*FreeTimeProcess)();
+		static std::function<void()> callBack;
 		static HHOOK InputHook;
 		static Mouse mouse;
 		static Keyboard keyboard;
@@ -80,20 +80,27 @@ namespace WinApiFramework
 	public:
 		static UINT ProcessMessages();
 		static void Exit(int return_value);
-		static int ShowGlobalMessageBox
-		(
+		static int ShowGlobalMessageBox(
 			std::wstring text = L"default text",
 			std::wstring caption = L"Default caption",
-			UINT message_box_style = 0
-		);
-		static MessBoxButtonPressed ShowGlobalMessageBox
-		(
+			UINT message_box_style = 0);
+		static MessBoxButtonPressed ShowGlobalMessageBox(
 			std::wstring text = L"default text",
 			std::wstring caption = L"Default caption",
 			MessBoxButtonLayout buttons = MessBoxButtonLayout::Ok,
-			MessBoxIcon icon = MessBoxIcon::IconInformation
-		);
-		static void SetFreeTimeFunction(void(*freeTimeFunction)());
+			MessBoxIcon icon = MessBoxIcon::IconInformation);
+		static void SetCallBackFunction(void(*callBackFunction)())
+		{
+			std::function<void()> f(callBackFunction);
+			Framework::callBack = f;
+		}
+		template <class ReceivingObject> static void SetCallBackFunction(ReceivingObject* receivingObject, void(ReceivingObject::*callBackFunction)())
+		{
+			if (receivingObject == nullptr || callBackFunction == nullptr) 
+				return;
+
+			Framework::callBack = std::bind(callBackFunction, receivingObject);;
+		}
 		static void UnsetFreeTimeFunction();
 
 

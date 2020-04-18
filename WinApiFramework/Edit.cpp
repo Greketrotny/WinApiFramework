@@ -6,20 +6,20 @@ using namespace WinApiFramework;
 
 // [CLASS] Edit --------------------------------|
 // -- constructors -- //
-Edit::Edit(const Edit::Config& config)
-	:WindowControl(config),
+Edit::Edit(const Edit::ConStruct& conStruct)
+	:WindowControl(conStruct),
 	PasswordMode(passwordMode),
 	NumberOnlyMode(numberOnly),
 	Alignment(textAlignment),
 	LetterMode(lettersMode),
 	Events(events)
 {
-	text = config.text;
-	passwordMode = config.passwordMode;
-	numberOnly = config.numberOnly;
-	textAlignment = config.textAlignment;
-	lettersMode = config.lettersMode;
-	textLengthLimit = config.textLengthLimit;
+	text = conStruct.text;
+	passwordMode = conStruct.passwordMode;
+	numberOnly = conStruct.numberOnly;
+	textAlignment = conStruct.textAlignment;
+	lettersMode = conStruct.lettersMode;
+	textLengthLimit = conStruct.textLengthLimit;
 
 	controlStyle |= WS_BORDER;
 }
@@ -42,6 +42,7 @@ int Edit::ControlProc(WPARAM wParam, LPARAM lParam)
 	case EN_UPDATE:
 		events.PushEvent(Edit::Event(Edit::Event::Type::Text));
 		break;
+
 
 	default:
 		return 1;	// if did't handle
@@ -72,6 +73,7 @@ bool Edit::CreateControlWindow()
 	if (numberOnly)
 		controlStyle |= ES_NUMBER;
 
+	controlStyle |= ES_MULTILINE;
 
 	// create window
 	hControl = CreateWindow(L"EDIT", text.c_str(),

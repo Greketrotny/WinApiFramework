@@ -6,8 +6,8 @@ using namespace WinApiFramework;
 
 // [CLASS] ProgressBar -------------------------|
 // -- constructors -- //
-ProgressBar::ProgressBar(const ProgressBar::Config& config)
-	: WindowControl(config),
+ProgressBar::ProgressBar(const ProgressBar::ConStruct& conStruct)
+	: WindowControl(conStruct),
 	MinValue(minValue),
 	MaxValue(maxValue),
 	Position(position),
@@ -15,14 +15,14 @@ ProgressBar::ProgressBar(const ProgressBar::Config& config)
 	State(barState),
 	Events(events)
 {
-	minValue = config.range.min;
-	if (config.range.max > config.range.min)
-		maxValue = config.range.max;
+	minValue = conStruct.range.min;
+	if (conStruct.range.max > conStruct.range.min)
+		maxValue = conStruct.range.max;
 	else
 		maxValue = minValue + 10;
 
-	position = config.position;
-	step = config.step;
+	position = conStruct.position;
+	step = conStruct.step;
 }
 ProgressBar::~ProgressBar()
 {

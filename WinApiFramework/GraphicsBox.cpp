@@ -6,9 +6,9 @@ using namespace WinApiFramework;
 
 // ~~~~~~~~ [CLASS] GraphicsBox ~~~~~~~~
 // -- GraphicsBox::constructors -- //
-GraphicsBox::GraphicsBox(const GraphicsBox::Config &config)
-	:WindowControl(config),
-	graphics(this, config.graphicsConfiguration),
+GraphicsBox::GraphicsBox(const GraphicsBox::ConStruct &conStruct)
+	:WindowControl(conStruct),
+	graphics(this, conStruct.graphics),
 	Gfx(graphics),
 	Events(events)
 {
@@ -67,13 +67,13 @@ void GraphicsBox::Resize(unsigned int newWidth, unsigned int newHeight)
 
 // ~~~~~~~~ [CLASS] GBGraphics ~~~~~~~~
 // -- GraphicsBox::GBGraphics::constructors -- //
-GraphicsBox::GBGraphics::GBGraphics(GraphicsBox *control, const GraphicsBox::GBGraphics::Configuration& config)
+GraphicsBox::GBGraphics::GBGraphics(GraphicsBox *control, const GraphicsBox::GBGraphics::ConStruct& conStruct)
 	: Width(m_width)
 	, Height(m_height)
 	, m_pControl(control)
-	, m_renderType(config.renderType)
-	, m_presentOption(config.presentOption)
-	, m_interpolationMode(config.interpolationMode)
+	, m_renderType(conStruct.renderType)
+	, m_presentOption(conStruct.presentOption)
+	, m_interpolationMode(conStruct.interpolationMode)
 {
 }
 GraphicsBox::GBGraphics::~GBGraphics()

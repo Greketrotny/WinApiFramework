@@ -3,6 +3,7 @@
 
 #include "WindowInclude.h"
 #include "ExternIncludes.h"
+#include "DataTypes.h"
 
 namespace WinApiFramework
 {
@@ -17,34 +18,18 @@ namespace WinApiFramework
 		DWORD controlStyle = WS_CHILD | WS_VISIBLE;
 		unsigned int id;
 	public:
-		struct Rect
-		{
-			int x = 50, y = 50;
-			unsigned int width = 100, height = 100;
-
-			Rect() {}
-
-			Rect(int x, int y, unsigned int width, unsigned int height)
-				:x(x),
-				y(y),
-				width(width),
-				height(height)
-			{}
-		};
-		struct Range
-		{
-			int min = 0, max = 100;
-
-			Range() {};
-			Range(int min, int max)
-			{
-				this->min = min;
-				this->max = max;
-			}
-		};
-		struct Config
+		struct ConStruct
 		{
 			Rect rect;
+
+			ConStruct(const ConStruct& conStruct)
+				: rect(conStruct.rect)
+			{
+			}
+			ConStruct(Rect rect = Rect())
+				: rect(rect)
+			{
+			}
 		};
 		struct Event
 		{
@@ -141,7 +126,7 @@ namespace WinApiFramework
 
 		// -- constructors -- //
 	protected:
-		WindowControl(const WindowControl::Config& config);
+		WindowControl(const WindowControl::ConStruct& conStruct);
 		virtual ~WindowControl();
 
 
@@ -155,7 +140,7 @@ namespace WinApiFramework
 		void EnableControl();
 		void DisableControl();
 		virtual void Move(int x, int y);
-		virtual void Resize(unsigned int width, unsigned int height);
+		virtual void Resize(int width, int height);
 		int GetMouseX();
 		int GetMouseY();
 
@@ -164,8 +149,8 @@ namespace WinApiFramework
 	public:
 		const int& X;
 		const int& Y;
-		const unsigned int& Width;
-		const unsigned int& Height;
+		const int& Width;
+		const int& Height;
 		const Rect& Rectangle;
 
 

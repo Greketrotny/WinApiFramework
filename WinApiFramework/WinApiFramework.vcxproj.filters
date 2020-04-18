@@ -19,6 +19,24 @@
     <Filter Include="Header Files\WinApiFramework">
       <UniqueIdentifier>{1d608254-ab42-4a92-8c46-8ceed668c18b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\WinApiFramework\Controls">
+      <UniqueIdentifier>{914dbc71-82a3-4f27-8b33-a6b22f5321d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\WinApiFramework\BaseClasses">
+      <UniqueIdentifier>{99d8c84c-1b7d-443c-b585-75bb3faa886c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\WinApiFramework\Input">
+      <UniqueIdentifier>{dd8d3966-0e37-495e-adee-d92ffab9831b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\WinApiFramework\Controls">
+      <UniqueIdentifier>{ee63fc79-b222-4d41-9008-e08668049371}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\WinApiFramework\BaseClasses">
+      <UniqueIdentifier>{44358320-5191-4b3a-b023-0a90366e4d4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\WinApiFramework\Input">
+      <UniqueIdentifier>{44a737b2-01d8-4d9c-b539-4efb67accd9e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinApiFramework.cpp">
@@ -27,38 +45,41 @@
     <ClCompile Include="WinApiWindow.cpp">
       <Filter>Source Files\WinApiFramework</Filter>
     </ClCompile>
-    <ClCompile Include="Mouse.cpp">
-      <Filter>Source Files\WinApiFramework</Filter>
-    </ClCompile>
-    <ClCompile Include="Keyboard.cpp">
-      <Filter>Source Files\WinApiFramework</Filter>
-    </ClCompile>
-    <ClCompile Include="Button.cpp">
-      <Filter>Source Files\WinApiFramework</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphicsBox.cpp">
-      <Filter>Source Files\WinApiFramework</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowControl.cpp">
-      <Filter>Source Files\WinApiFramework</Filter>
-    </ClCompile>
-    <ClCompile Include="CheckBox.cpp">
-      <Filter>Source Files\WinApiFramework</Filter>
-    </ClCompile>
-    <ClCompile Include="Edit.cpp">
-      <Filter>Source Files\WinApiFramework</Filter>
-    </ClCompile>
-    <ClCompile Include="Label.cpp">
-      <Filter>Source Files\WinApiFramework</Filter>
-    </ClCompile>
-    <ClCompile Include="ProgressBar.cpp">
-      <Filter>Source Files\WinApiFramework</Filter>
-    </ClCompile>
-    <ClCompile Include="TrackBar.cpp">
-      <Filter>Source Files\WinApiFramework</Filter>
-    </ClCompile>
     <ClCompile Include="Precompiled.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DataTypes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Button.cpp">
+      <Filter>Source Files\WinApiFramework\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="CheckBox.cpp">
+      <Filter>Source Files\WinApiFramework\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="Edit.cpp">
+      <Filter>Source Files\WinApiFramework\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsBox.cpp">
+      <Filter>Source Files\WinApiFramework\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="Label.cpp">
+      <Filter>Source Files\WinApiFramework\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="ProgressBar.cpp">
+      <Filter>Source Files\WinApiFramework\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="TrackBar.cpp">
+      <Filter>Source Files\WinApiFramework\Controls</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowControl.cpp">
+      <Filter>Source Files\WinApiFramework\BaseClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyboard.cpp">
+      <Filter>Source Files\WinApiFramework\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse.cpp">
+      <Filter>Source Files\WinApiFramework\Input</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -71,36 +92,6 @@
     <ClInclude Include="WinApiFramework.h">
       <Filter>Header Files\WinApiFramework</Filter>
     </ClInclude>
-    <ClInclude Include="Mouse.h">
-      <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="Keyboard.h">
-      <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="Button.h">
-      <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="GraphicsBox.h">
-      <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowControl.h">
-      <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="CheckBox.h">
-      <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="Edit.h">
-      <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="Label.h">
-      <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="ProgressBar.h">
-      <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="TrackBar.h">
-      <Filter>Header Files\WinApiFramework</Filter>
-    </ClInclude>
     <ClInclude Include="ExternIncludes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -109,6 +100,39 @@
     </ClInclude>
     <ClInclude Include="Precompiled.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Button.h">
+      <Filter>Header Files\WinApiFramework\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="CheckBox.h">
+      <Filter>Header Files\WinApiFramework\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="Edit.h">
+      <Filter>Header Files\WinApiFramework\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsBox.h">
+      <Filter>Header Files\WinApiFramework\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="Label.h">
+      <Filter>Header Files\WinApiFramework\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="ProgressBar.h">
+      <Filter>Header Files\WinApiFramework\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="TrackBar.h">
+      <Filter>Header Files\WinApiFramework\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowControl.h">
+      <Filter>Header Files\WinApiFramework\BaseClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard.h">
+      <Filter>Header Files\WinApiFramework\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
+      <Filter>Header Files\WinApiFramework\Input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

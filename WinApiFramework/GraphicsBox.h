@@ -235,14 +235,14 @@ namespace WinApiFramework
 			CComPtr<IDWriteFactory> m_pDWriteFactory = nullptr;
 			CComPtr<IDWriteFontCollection> m_pFontCollection = nullptr;
 		public:
-			struct Configuration
+			struct ConStruct
 			{
 				RenderType renderType;
 				PresentOption presentOption;
 				InterpolationMode interpolationMode;
 				TextFormatDescription defaultTextFormatDesc;
 
-				Configuration(
+				ConStruct(
 					RenderType renderType = RenderType::RenderTypeDefault,
 					PresentOption presentOption = PresentOption::PresentOptionWaitForDisplay,
 					InterpolationMode interpolationMode = InterpolationMode::InterpolationModeLinear,
@@ -253,9 +253,6 @@ namespace WinApiFramework
 					, defaultTextFormatDesc(defaultTextFormatDesc)
 				{
 				}
-				~Configuration()
-				{
-				}
 			};
 
 
@@ -263,7 +260,7 @@ namespace WinApiFramework
 		private:
 			GBGraphics(const GBGraphics& graphics) = delete;
 			GBGraphics(GBGraphics&& graphics) = delete;
-			GBGraphics(GraphicsBox *control, const Configuration& config);
+			GBGraphics(GraphicsBox *control, const ConStruct& config);
 			~GBGraphics();
 
 
@@ -340,14 +337,14 @@ namespace WinApiFramework
 			friend class GraphicsBox;
 		};
 	public:
-		struct Config : public WindowControl::Config
+		struct ConStruct : public WindowControl::ConStruct
 		{
-			GBGraphics::Configuration graphicsConfiguration;
+			GBGraphics::ConStruct graphics;
 
-			Config()
-			{
-			}
-			~Config()
+			ConStruct(WindowControl::ConStruct windowControlConStruct = WindowControl::ConStruct(),
+					  GBGraphics::ConStruct graphicsConStruct = GBGraphics::ConStruct())
+				: WindowControl::ConStruct(windowControlConStruct)
+				, graphics(graphicsConStruct)
 			{
 			}
 		};
@@ -381,7 +378,7 @@ namespace WinApiFramework
 	public:
 		GraphicsBox(const GraphicsBox& graphicsBox) = delete;
 		GraphicsBox(const GraphicsBox&& graphicsBox) = delete;
-		GraphicsBox(const Config &config);
+		GraphicsBox(const ConStruct &conStruct);
 		~GraphicsBox();
 
 

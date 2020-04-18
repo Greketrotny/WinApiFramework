@@ -30,79 +30,38 @@ void StratifiedUniform(float& x, float& y)
 
 const WAF::GraphicsBox::TextFormat *format1, *format2;
 
+void CallBackFunction();
+
 class MainForm
 {
 	// -- MainForm::fields -- //
 public:
 	WAF::Window *MainWindow = nullptr;
-	WAF::GraphicsBox* gfxBox1 = nullptr;
-	WAF::GraphicsBox* gfxBox2 = nullptr;
 
 
 	// -- MainForm::constructors -- //
 public:
 	MainForm()
 	{
-		srand(time(NULL));
-
 		// MainWindow
-		WAF::Window::Config wc;
-		wc.rect.width = 1000;
-		wc.rect.height = 600;
-		wc.caption = L"WinApiFramework Test";
-		wc.sizeRect.minWidth = 400;
-		wc.sizeRect.minHeight = 200;
-		wc.startStyle = WAF::Window::StartStyle::Normal;
-		MainWindow = new WAF::Window(wc);
-		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindowEventsReceiver);
-
-		// gfxBox1
-		WAF::GraphicsBox::Config gbc;
-		gbc.rect = WAF::GraphicsBox::Rect(10, 10, MainWindow->ClientWidth / 2 - 20, MainWindow->ClientHeight - 20);
-		gbc.graphicsConfiguration.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
-		gbc.graphicsConfiguration.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
-		gfxBox1 = new WAF::GraphicsBox(gbc);
-		gfxBox1->Events.AddEventHandler<MainForm>(this, &MainForm::gfxBox1_EH);
-		MainWindow->AddControl(gfxBox1);
-		gfxBox1_EH(WAF::GraphicsBox::Event(WAF::GraphicsBox::Event::Type::Resize));
-
-		format1 = gfxBox1->Gfx.CreateTextFormat(
-			WAF::GraphicsBox::TextFormatDescription(
-				L"Ghotic", 25.0f,
-				WAF::GraphicsBox::FontWeightBold));
-
-		format2 = gfxBox1->Gfx.CreateTextFormat(
-			WAF::GraphicsBox::TextFormatDescription(
-				L"Ghotic", 60.0f,
-				WAF::GraphicsBox::FontWeightExtraLight,
-				WAF::GraphicsBox::FontStyleItalic));
-
-
-
-		// gfxBox2
-		gbc.rect = WAF::GraphicsBox::Rect(MainWindow->ClientWidth / 2 + 10, 10, MainWindow->ClientWidth / 2 - 20, MainWindow->ClientHeight - 20);
-		gbc.graphicsConfiguration.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
-		gbc.graphicsConfiguration.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
-		gfxBox2 = new WAF::GraphicsBox(gbc);
-		gfxBox2->Events.AddEventHandler<MainForm>(this, &MainForm::gfxBox2_EH);
-		MainWindow->AddControl(gfxBox2);
-		gfxBox2_EH(WAF::GraphicsBox::Event(WAF::GraphicsBox::Event::Type::Resize));
-
-
+		MainWindow = new WAF::Window(
+			WAF::Window::ConStruct(L"WinApiFramework test",
+								   WAF::Rect(50, 50, 1000, 600),
+								   WAF::Window::Position::Center,
+								   WAF::Window::StartStyle::Normal,
+								   WAF::SizeRect(200u, 100u, 2000u, 1000u)));
+		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindow_EH);
 		WAF::Framework::Keyboard.KeyEvents.AddEventHandler<MainForm>(this, &MainForm::FrameworkKeyboardEventHandler);
 	}
 	~MainForm()
 	{
-		if (gfxBox1) delete gfxBox1;
-		if (gfxBox2) delete gfxBox2;
-
 		if (MainWindow) delete MainWindow;
 	}
 
 
 	// -- MainForm::event_handlers -- //
-	// MainWindow events receiver
-	void MainWindowEventsReceiver(WAF::Window::Event event)
+	// MainWindow events handler
+	void MainWindow_EH(WAF::Window::Event event)
 	{
 		switch (event.type)
 		{
@@ -115,48 +74,11 @@ public:
 			{
 				// display new MainWindow properties
 				DisplayMainWindowProps();
-
-				// restore gfxBox1
-				gfxBox1->Move(10, 10);
-				gfxBox1->Resize(MainWindow->ClientWidth / 2 - 20, MainWindow->ClientHeight - 20);
-
-				// restore gfxBox2
-				gfxBox2->Move(MainWindow->ClientWidth / 2 + 10, 10);
-				gfxBox2->Resize(MainWindow->ClientWidth / 2 - 20, MainWindow->ClientHeight - 20);
 				break;
 			}
 		}
 	}
-
-	// gfxBox1 events handlers
-	void gfxBox1_EH(WAF::GraphicsBox::Event event)
-	{
-		switch (event.type)
-		{
-			case WAF::GraphicsBox::Event::Type::Resize:
-			{
-				gfxBox1->Gfx.BeginDraw();
-				gfxBox1->Gfx.Clear(Graphics::Color(0xFF, 0xFF, 0xFF));
-				gfxBox1->Gfx.EndDraw();
-				break;
-			}
-		}
-	}
-	void gfxBox2_EH(WAF::GraphicsBox::Event event)
-	{
-		switch (event.type)
-		{
-			case WAF::GraphicsBox::Event::Type::Resize:
-			{
-				gfxBox2->Gfx.BeginDraw();
-				gfxBox2->Gfx.Clear(Graphics::Color(0xFF, 0xFF, 0xFF));
-				gfxBox2->Gfx.EndDraw();
-				break;
-			}
-		}
-	}
-
-
+	   
 	// FrameworkKeyboard
 	void FrameworkKeyboardEventHandler(WAF::Keyboard::KeyEvent event)
 	{
@@ -179,48 +101,27 @@ public:
 							   std::to_wstring(MainWindow->WindowX) + L":" + std::to_wstring(MainWindow->WindowY) + L"] Resolution: [" +
 							   std::to_wstring(MainWindow->WindowWidth) + L":" + std::to_wstring(MainWindow->WindowHeight) + L"]");
 	}
+
+
+	// --MainForm::callBacks -- //
+	void MainFormCallBack()
+	{
+		CallBackFunction();
+	}
 };
 MainForm *MF;
 
-void FreeTimeFunction()
+void CallBackFunction()
 {
-	MF->gfxBox1->Gfx.BeginDraw();
-	MF->gfxBox1->Gfx.Clear(Graphics::Color(0xFF, 0x00, 0x00));
-	MF->gfxBox1->Gfx.DrawEllipse(Graphics::Point<float>(
-		UniformRandom() * MF->gfxBox1->Gfx.Width, 
-		UniformRandom() * MF->gfxBox1->Gfx.Height), 
-		Graphics::Point<float>(2.0f, 2.0f), 2.0f);
-
-	MF->gfxBox1->Gfx.DrawString(L"Lorem Ipsum dolor sit amet.", Graphics::Rect<float>(0.0f, 0.0f, MF->gfxBox1->GetMouseX(), 100.0f), format1);
-	MF->gfxBox1->Gfx.DrawString(L"Lorem Ipsum dolor sit amet.", Graphics::Rect<float>(0.0f, 100.0f, MF->gfxBox1->GetMouseX(), 100.0f), format2);
-	MF->gfxBox1->Gfx.EndDraw();
-
-	static int counter = 0;
-	counter += 1;
-	if (format2 && counter > 100)
-	{
-		MF->gfxBox1->Gfx.DestroytextFormat(format2);
-	}
-
-	float x, y;
-	StratifiedUniform(x, y);
-	MF->gfxBox2->Gfx.BeginDraw();
-	MF->gfxBox2->Gfx.DrawEllipse(Graphics::Point<float>(
-		x * MF->gfxBox2->Gfx.Width,
-		y * MF->gfxBox2->Gfx.Height),
-		Graphics::Point<float>(2.0f, 2.0f), 2.0f);
-	MF->gfxBox2->Gfx.EndDraw();
-
-
-	//Sleep(1);
+	Sleep(1);
 }
-
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, INT ncmd)
 {
 	MF = new MainForm();
 
-	WAF::Framework::SetFreeTimeFunction(FreeTimeFunction);
+	//WAF::Framework::SetCallBackFunction(CallBackFunction);
+	WAF::Framework::SetCallBackFunction<MainForm>(MF, &MainForm::MainFormCallBack);
 	WAF::Framework::ProcessMessages();
 
 	delete MF;

@@ -8,12 +8,6 @@ namespace WinApiFramework
 	class Edit : public WindowControl
 	{
 		// -- fields -- //
-	private:
-		std::wstring text = L"";
-		bool passwordMode = false;
-		bool numberOnly = false;
-		unsigned int textLengthLimit = 0xFFFF;
-
 	public:
 		enum TextAlignment
 		{
@@ -27,14 +21,31 @@ namespace WinApiFramework
 			LowerCase,
 			Either
 		};
-		struct Config : public WindowControl::Config
+		struct ConStruct : public WindowControl::ConStruct
 		{
+			std::wstring text = L"";
 			TextAlignment textAlignment = TextAlignment::Left;
 			LettersMode lettersMode = LettersMode::Either;
-			std::wstring text = L"";
 			bool passwordMode = false;
 			bool numberOnly = false;
 			unsigned int textLengthLimit = 0xFFFF;
+
+			ConStruct(WindowControl::ConStruct windowControlConStruct = WindowControl::ConStruct(),
+					  const std::wstring& text = L"",
+					  TextAlignment textAlignment = TextAlignment::Left,
+					  LettersMode lettersMode = LettersMode::Either,
+					  bool passwordMode	= false,
+					  bool numberOnly = false,
+					  unsigned int textLengthLimit = 0xFFFF)
+				: WindowControl::ConStruct(windowControlConStruct)
+				, text(text)
+				, textAlignment(textAlignment)
+				, lettersMode(lettersMode)
+				, passwordMode(passwordMode)
+				, numberOnly(numberOnly)
+				, textLengthLimit(textLengthLimit)
+			{
+			}
 		};
 		struct Event
 		{
@@ -60,16 +71,21 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		WindowControl::EventsManager<Edit::Event> events;
+		std::wstring text = L"";
 		TextAlignment textAlignment = TextAlignment::Left;
 		LettersMode lettersMode = LettersMode::Either;
+		bool passwordMode = false;
+		bool numberOnly = false;
+		unsigned int textLengthLimit = 0xFFFF;
+
+		WindowControl::EventsManager<Edit::Event> events;
 
 
 		// -- contstructors -- //
 	public:
 		Edit(const Edit& edit) = delete;
 		Edit(const Edit&& edit) = delete;
-		Edit(const Config& config);
+		Edit(const ConStruct& config);
 		~Edit();
 
 

@@ -18,11 +18,22 @@ namespace WinApiFramework
 			Pause,
 			Error
 		};
-		struct Config : WindowControl::Config
+		struct ConStruct : WindowControl::ConStruct
 		{
 			Range range;
-			unsigned int position = 0;
+			int position = 0;
 			unsigned int step = 1;
+
+			ConStruct(WindowControl::ConStruct winCtrlConStrut = WindowControl::ConStruct(),
+					  Range range = Range(0, 100),
+					  int position = 0,
+					  unsigned int step = 1u)
+				: WindowControl::ConStruct(winCtrlConStrut)
+				, range(range)
+				, position(position)
+				, step(step)
+			{
+			}
 		};
 		struct Event
 		{
@@ -55,7 +66,7 @@ namespace WinApiFramework
 	public:
 		ProgressBar(const ProgressBar &progressBar) = delete;
 		ProgressBar(const ProgressBar &&progressBar) = delete;
-		ProgressBar(const Config& config);
+		ProgressBar(const ConStruct& conStruct);
 		~ProgressBar();
 
 

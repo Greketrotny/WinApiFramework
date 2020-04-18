@@ -9,11 +9,6 @@ namespace WinApiFramework
 	class TrackBar : public WindowControl
 	{
 		// -- fields -- //
-	private:
-		bool selectRangeEnabled = false;
-		unsigned int smallStep = 1u, largeStep = 10u;
-		int thumbPosition;
-		HWND hLabel1, hLabel2;
 	public:
 		struct Labels
 		{
@@ -25,15 +20,31 @@ namespace WinApiFramework
 			Horizontal,
 			Vertical
 		};
-		struct Config : public WindowControl::Config
+		struct ConStruct : public WindowControl::ConStruct
 		{
+			int startPosition;
 			Range trackRange;
 			Range selectRange;
-			Labels labels;
 			Orientation orientation;
-			int startPosition;
 			unsigned int smallStep, largeStep;
-			bool EnableSelectRange = false;
+			bool EnableSelectRange;
+
+			ConStruct(WindowControl::ConStruct winCtrlConStruct = WindowControl::ConStruct(),
+					  int startPosition = 0,
+					  Range trackRange = Range(0, 100),
+					  Range selectRange = Range(0, 100),
+					  Orientation orientation = Orientation::Horizontal,
+					  unsigned int smallStep = 1u, unsigned int largeStep = 5u,
+					  bool enagleSelectRange = false)
+				: WindowControl::ConStruct(winCtrlConStruct)
+				, startPosition(startPosition)
+				, trackRange(trackRange)
+				, selectRange(selectRange)
+				, orientation(orientation)
+				, smallStep(smallStep), largeStep(largeStep)
+				, EnableSelectRange(enagleSelectRange)
+			{
+			}
 		};
 		struct Event
 		{
@@ -48,7 +59,7 @@ namespace WinApiFramework
 				MaxTrackValueChange,
 				MinSelectValueChange,
 				MaxSelectValueChange,
-				ThumbPosChange,
+				PositionChange,
 				SmallStepChange,
 				LargeStepChange
 			};
@@ -60,18 +71,23 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		WindowControl::EventsManager<TrackBar::Event> events;
+		int position;
 		Range trackRange;
 		Range selectRange;
-		Labels labels;
 		Orientation orientation;
+		unsigned int smallStep, largeStep;
+		bool selectRangeEnabled;
+		HWND hLabel1, hLabel2;
+		Labels labels;
+
+		WindowControl::EventsManager<TrackBar::Event> events;
 
 
 		// -- constructors -- //
 	public:
 		TrackBar(const TrackBar &TrackBar) = delete;
 		TrackBar(const TrackBar &&TrackBar) = delete;
-		TrackBar(const Config &config);
+		TrackBar(const ConStruct &conStruct);
 		~TrackBar();
 
 

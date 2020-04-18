@@ -10,7 +10,7 @@ HINSTANCE Framework::hProgramInstance = GetModuleHandle(NULL);
 const HINSTANCE& Framework::ProgramInstance(hProgramInstance);
 std::vector<Window*> Framework::windows;
 Window* Framework::mainWindow = nullptr;
-void(*Framework::FreeTimeProcess)() = nullptr;
+std::function<void()> Framework::callBack = nullptr;
 HHOOK Framework::InputHook = SetWindowsHookEx(WH_GETMESSAGE, Framework::InputProcedure, NULL, GetThreadId(GetCurrentThread()));
 Mouse Framework::mouse;
 Keyboard Framework::keyboard;
@@ -176,14 +176,9 @@ Framework::MessBoxButtonLayout buttons, Framework::MessBoxIcon icon)
 	return (Framework::MessBoxButtonPressed)MessageBox(NULL, text.c_str(), caption.c_str(),
 		buttons | icon);
 }
-void Framework::SetFreeTimeFunction(void(*freeTimeFunction)())
-{
-	if (freeTimeFunction == nullptr) return;
-	FreeTimeProcess = freeTimeFunction;
-}
 void Framework::UnsetFreeTimeFunction()
 {
-	FreeTimeProcess = nullptr;
+	callBack = nullptr;
 }
 
 UINT Framework::ProcessMessages()
@@ -217,8 +212,8 @@ UINT Framework::ProcessMessages()
 
 		return 0; // temporary for get message...*/
 
-		// call function between messages
-		if (FreeTimeProcess) (*FreeTimeProcess)();
+		// call callBackFunction between messages
+		if (callBack != nullptr) callBack();
 	}
 	return 0;
 }

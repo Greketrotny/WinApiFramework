@@ -7,13 +7,14 @@ using namespace WinApiFramework;
 
 // [CLASS] Button ------------------------------|
 // -- constructors -- //
-Button::Button(const Button::Config& config)
-	: WindowControl(config),
+Button::Button(const Button::ConStruct& conStruct)
+	: WindowControl(conStruct),
 	Rect(rect),
 	Caption(caption),
 	Events(events)
 {
-	caption = config.caption;
+
+	caption = conStruct.caption;
 }
 Button::~Button()
 {

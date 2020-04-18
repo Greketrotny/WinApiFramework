@@ -60,19 +60,19 @@ Window::Window()
 	// register self in framework
 	Framework::AddWindow(this);
 }
-Window::Window(const Window::Config &config)
+Window::Window(const Window::ConStruct &conStruct)
 	:Window()
 {
-	windowRect = config.rect;
-	position = config.position;
-	sizeRect = config.sizeRect;
-	caption = config.caption;
+	windowRect = conStruct.rect;
+	SetSizeRect(conStruct.sizeRect);
+	position = conStruct.position;
+	caption = conStruct.caption;
 
 	// create window class
 	CreateAndRegisterWindowClass();
 
 	// create window
-	CreateWinApiWindow(config);
+	CreateWinApiWindow(conStruct);
 }
 Window::~Window()
 {
@@ -286,12 +286,12 @@ bool Window::CreateAndRegisterWindowClass()
 	}
 	return true;
 }
-bool Window::CreateWinApiWindow(Window::Config config)
+bool Window::CreateWinApiWindow(Window::ConStruct conStruct)
 {
 	// set start window style
-	if (config.startStyle == Window::StartStyle::Maximized)
+	if (conStruct.startStyle == Window::StartStyle::Maximized)
 		windowStyle |= WS_MAXIMIZE;
-	else if (config.startStyle == Window::StartStyle::Minimized)
+	else if (conStruct.startStyle == Window::StartStyle::Minimized)
 		windowStyle |= WS_MINIMIZE;
 
 	// setup window rect
@@ -304,8 +304,8 @@ bool Window::CreateWinApiWindow(Window::Config config)
 
 	if (position == Position::Center)
 	{
-		unsigned int w = GetSystemMetrics(SM_CXSCREEN);
-		unsigned int h = GetSystemMetrics(SM_CYSCREEN);
+		int w = GetSystemMetrics(SM_CXSCREEN);
+		int h = GetSystemMetrics(SM_CYSCREEN);
 
 		windowRect.x = (w - std::min(windowRect.width, w)) / 2;
 		windowRect.y = (h - std::min(windowRect.height, h)) / 2;
@@ -390,15 +390,24 @@ void Window::SetMinSize(unsigned int minWidth, unsigned int minHeight)
 {
 	sizeRect.minWidth = minWidth;
 	sizeRect.minHeight = minHeight;
+
+	if (sizeRect.minWidth > sizeRect.maxWidth) sizeRect.minWidth = sizeRect.maxWidth;
+	if (sizeRect.minHeight > sizeRect.maxHeight) sizeRect.minHeight = sizeRect.maxHeight;
 }
 void Window::SetMaxSize(unsigned int maxWidth, unsigned int maxHeight)
 {
 	sizeRect.maxWidth = maxWidth;
 	sizeRect.maxHeight = maxHeight;
+
+	if (sizeRect.maxWidth < sizeRect.minWidth)  sizeRect.maxWidth = sizeRect.minWidth;
+	if (sizeRect.maxHeight < sizeRect.minHeight)  sizeRect.maxHeight = sizeRect.minHeight;
 }
-void Window::SetSizeRect(Window::SizeRect newSizeRect)
+void Window::SetSizeRect(SizeRect newSizeRect)
 {
 	sizeRect = newSizeRect;
+
+	if (sizeRect.maxWidth < sizeRect.minWidth) sizeRect.maxWidth = sizeRect.minWidth;
+	if (sizeRect.maxHeight < sizeRect.minHeight) sizeRect.maxHeight = sizeRect.minHeight;
 }
 void Window::SetAsMainWindow()
 {
@@ -513,19 +522,19 @@ int Window::GetClientY() const
 {
 	return clientRect.y;
 }
-unsigned int Window::GetWindowWidth() const
+int Window::GetWindowWidth() const
 {
 	return windowRect.width;
 }
-unsigned int Window::GetWindowHeight() const
+int Window::GetWindowHeight() const
 {
 	return windowRect.height;
 }
-unsigned int Window::GetClientWidth() const
+int Window::GetClientWidth() const
 {
 	return clientRect.width;
 }
-unsigned int Window::GetClientHeight() const
+int Window::GetClientHeight() const
 {
 	return clientRect.height;
 }

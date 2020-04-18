@@ -6,7 +6,7 @@ using namespace WinApiFramework;
 
 // [CLASS] WindowConrtol -----------------------|
 // -- constructors -- //
-WindowControl::WindowControl(const WindowControl::Config& config)
+WindowControl::WindowControl(const WindowControl::ConStruct& config)
 	:Rectangle(rect),
 	X(rect.x),
 	Y(rect.y),
@@ -58,10 +58,13 @@ void WindowControl::Move(int x, int y)
 
 	PushBaseEvent(WindowControl::Event::Type::Move);
 }
-void WindowControl::Resize(unsigned int width, unsigned int height)
+void WindowControl::Resize(int width, int height)
 {
 	rect.width = width;
 	rect.height = height;
+
+	if (rect.width < 0) rect.width = 0;
+	if (rect.height < 0) rect.height = 0;
 
 	SetWindowPos(hControl, nullptr,
 		rect.x, rect.y,

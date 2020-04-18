@@ -11,9 +11,16 @@ namespace WinApiFramework
 	private:
 		std::wstring caption;
 	public:
-		struct Config : public WindowControl::Config
+		struct ConStruct : public WindowControl::ConStruct
 		{
-			std::wstring caption = L"Default";
+			std::wstring caption;
+
+			ConStruct(WindowControl::ConStruct conStruct = WindowControl::ConStruct(),
+					  std::wstring caption = L"text")
+				: WindowControl::ConStruct(conStruct)
+				, caption(caption)
+			{
+			}
 		};
 		struct Event
 		{
@@ -45,7 +52,7 @@ namespace WinApiFramework
 	public:
 		Button(const Button &otherButton) = delete;
 		Button(const Button &&otherButton) = delete;
-		Button(const Config &config);
+		Button(const ConStruct &conStruct);
 		~Button();
 
 

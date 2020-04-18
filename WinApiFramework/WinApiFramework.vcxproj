@@ -173,6 +173,7 @@
   <ItemGroup>
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="CheckBox.cpp" />
+    <ClCompile Include="DataTypes.cpp" />
     <ClCompile Include="Edit.cpp" />
     <ClCompile Include="GraphicsBox.cpp" />
     <ClCompile Include="Keyboard.cpp" />
@@ -194,6 +195,7 @@
   <ItemGroup>
     <ClInclude Include="Button.h" />
     <ClInclude Include="CheckBox.h" />
+    <ClInclude Include="DataTypes.h" />
     <ClInclude Include="Edit.h" />
     <ClInclude Include="ExternIncludes.h" />
     <ClInclude Include="GraphicsBox.h" />

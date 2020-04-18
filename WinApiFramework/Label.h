@@ -17,10 +17,19 @@ namespace WinApiFramework
 			Center,
 			Right
 		};
-		struct Config : public WindowControl::Config
+		struct ConStruct : public WindowControl::ConStruct
 		{
-			std::wstring caption = L"default";
-			TextAlignment textAlignment = TextAlignment::Left;
+			std::wstring caption;
+			TextAlignment textAlignment;
+
+			ConStruct(WindowControl::ConStruct windowControlConStruct = WindowControl::ConStruct(),
+					  const std::wstring& caption = L"caption",
+					  TextAlignment textAlignment = TextAlignment::Left)
+				: WindowControl::ConStruct(windowControlConStruct)
+				, caption(caption)
+				, textAlignment(textAlignment)
+			{
+			}
 		};
 		struct Event
 		{
@@ -50,7 +59,7 @@ namespace WinApiFramework
 	public:
 		Label(const Label& label) = delete;
 		Label(const Label&& label) = delete;
-		Label(const Config &config);
+		Label(const ConStruct &conStruct);
 		~Label();
 
 

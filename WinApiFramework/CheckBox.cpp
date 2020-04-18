@@ -7,16 +7,16 @@ using namespace WinApiFramework;
 
 // [CLASS] CheckBox ----------------------------|
 // -- constructors -- //
-CheckBox::CheckBox(const CheckBox::Config& config)
-	: WindowControl(config),
+CheckBox::CheckBox(const CheckBox::ConStruct& conStruct)
+	: WindowControl(conStruct),
 	State(boxState),
 	Caption(caption),
 	IsTripleState(isTripleState),
 	Events(events)
 {
-	caption = config.caption;
-	isTripleState = config.isTripleState;
-	boxState = config.boxState;
+	caption = conStruct.caption;
+	isTripleState = conStruct.isTripleState;
+	boxState = conStruct.boxState;
 
 	if (!this->isTripleState && this->boxState == MiddleState)
 	{

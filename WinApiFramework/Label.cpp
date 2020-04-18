@@ -6,15 +6,15 @@ using namespace WinApiFramework;
 
 // [CLASS] Label -------------------------------|
 // -- constructors -- //
-Label::Label(const Label::Config& config)
-	:WindowControl(config),
+Label::Label(const Label::ConStruct& conStruct)
+	:WindowControl(conStruct),
 	Caption(caption),
 	Alignment(textAlignment),
 	Events(events)
 {
-	rect = config.rect;
-	caption = config.caption;
-	textAlignment = config.textAlignment;
+	rect = conStruct.rect;
+	caption = conStruct.caption;
+	textAlignment = conStruct.textAlignment;
 }
 Label::~Label()
 {
