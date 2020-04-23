@@ -78,7 +78,7 @@ bool CheckBox::CreateControlWindow()
 	// create window
 	hControl = CreateWindow(L"BUTTON", caption.c_str(),
 		controlStyle,
-		rect.x, rect.y, rect.width, rect.height,
+		rect.position.x, rect.position.y, rect.size.width, rect.size.height,
 		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 	if (!hControl)

@@ -271,14 +271,6 @@ namespace WinApiFramework
 			std::wstring caption = L"Default caption",
 			UINT message_box_style = 0);
 
-		int GetWindowX() const;
-		int GetWindowY() const;
-		int GetClientX() const;
-		int GetClientY() const;
-		int GetWindowWidth() const;
-		int GetWindowHeight() const;
-		int GetClientWidth() const;
-		int GetClientHeight() const;
 		const HWND& GetWindowHandle() const;
 		const std::wstring& GetCaption() const;
 		int GetMouseX() const;
@@ -298,21 +290,10 @@ namespace WinApiFramework
 		const bool& IsActivated;
 		const bool& IsMinimized;
 		const unsigned int& Id;
-		const int& WindowX;
-		const int& WindowY;
-		const int& ClientX;
-		const int& ClientY;
-		const int& WindowWidth;
-		const int& WindowHeight;
-		const int& ClientWidth;
-		const int& ClientHeight;
 		const Rect& WindowRect;
 		const Rect& ClientRect;
+		const SizeRect& WindowSizeRect;		
 		const std::wstring& Caption;
-		const int& MinWidth;
-		const int& MinHeight;
-		const int& MaxWidth;
-		const int& MaxHeight;
 		EventsManager& Events;
 
 

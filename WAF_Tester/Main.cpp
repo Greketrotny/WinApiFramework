@@ -98,8 +98,10 @@ public:
 	void DisplayMainWindowProps()
 	{
 		MainWindow->SetCaption(L"Position: [" +
-							   std::to_wstring(MainWindow->WindowX) + L":" + std::to_wstring(MainWindow->WindowY) + L"] Resolution: [" +
-							   std::to_wstring(MainWindow->WindowWidth) + L":" + std::to_wstring(MainWindow->WindowHeight) + L"]");
+							   std::to_wstring(MainWindow->WindowRect.position.x) + L":" + std::to_wstring(MainWindow->WindowRect.position.y) + 
+							   L"] Resolution: [" +
+							   std::to_wstring(MainWindow->WindowRect.size.width) + L":" + std::to_wstring(MainWindow->WindowRect.size.height) +
+							   L"]");
 	}
 
 
@@ -173,7 +175,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 //	MainForm()
 //	{
 //		// MainWindow
-//		WAF::Window::Config wc;
+//		WAF::Window::ConStruct wc;
 //		wc.rect.width = 1000;
 //		wc.rect.height = 600;
 //		wc.caption = L"WinApiFramework Test";
@@ -184,22 +186,22 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 //		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindowEventsReceiver);
 //
 //		// gfxBox
-//		WAF::GraphicsBox::Config gbc;
-//		gbc.rect = WAF::GraphicsBox::Rect(10, 10, MainWindow->ClientWidth - 20, MainWindow->ClientHeight - 20);
-//		gbc.graphicsConfiguration.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
-//		gbc.graphicsConfiguration.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
+//		WAF::GraphicsBox::ConStruct gbc;
+//		gbc.rect = WAF::Rect(10, 10, MainWindow->ClientWidth - 20, MainWindow->ClientHeight - 20);
+//		gbc.graphics.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
+//		gbc.graphics.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
 //		gfxBox = new WAF::GraphicsBox(gbc);
 //		gfxBox->Events.AddEventHandler<MainForm>(this, &MainForm::gfxBoxEventsReceiver);
 //		MainWindow->AddControl(gfxBox);
 //
-//		WAF::GraphicsBox::GBGraphics::TextFormatDescription tfd;
+//		WAF::GraphicsBox::TextFormatDescription tfd;
 //		tfd.flowDirection = WAF::GraphicsBox::FlowDirection::FlowDirectionBottomToTop;
 //		gfxBox->Gfx.SetDefaultTextFormat(tfd);
 //
 //		// trackBar1
-//		WAF::TrackBar::Config tbc;
-//		tbc.rect = WAF::TrackBar::Rect(10, MainWindow->ClientHeight - 40, 300, 30);
-//		tbc.trackRange = WAF::TrackBar::Range(0, 255);
+//		WAF::TrackBar::ConStruct tbc;
+//		tbc.rect = WAF::Rect(10, MainWindow->ClientHeight - 40, 300, 30);
+//		tbc.trackRange = WAF::Range(0, 255);
 //		tbc.startPosition = 0;
 //		tbc.smallStep = 5;
 //		tbc.largeStep = 20;
@@ -255,7 +257,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 //	{
 //		switch (event.type)
 //		{
-//			case WAF::TrackBar::Event::Type::ThumbPosChange:
+//			case WAF::TrackBar::Event::Type::PositionChange:
 //				//gfxBox->Gfx.SetBrushColor(Graphics::Color(trackBar1->Position, 0x00, 0x00));
 //				break;
 //		}
@@ -325,7 +327,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 //
 //	MF = new MainForm();
 //
-//	WAF::Framework::SetFreeTimeFunction(FreeTimeFunction);
+//	WAF::Framework::SetCallBackFunction(FreeTimeFunction);
 //	WAF::Framework::ProcessMessages();
 //
 //	delete MF;

@@ -3,35 +3,53 @@
 
 namespace WinApiFramework
 {
-	struct Rect
+	struct Point
 	{
-	public:
-		int x, y, width, height;
+		int x, y;
 
-	public:
-		Rect(int x = 0, int y = 0, int width = 100, int height = 50)
+		Point(int x = 0, int y = 0)
 			: x(x)
 			, y(y)
-			, width(width)
+		{}
+	};
+	struct Size
+	{
+		int width, height;
+
+		Size(int width = 0, int height = 0)
+			: width(width)
 			, height(height)
-		{
-		}
+		{}
+	};
+
+	struct Rect
+	{
+		Point position;
+		Size size;
+
+		Rect(int x = 0, int y = 0, int width = 100, int height = 50)
+			: position(x, y)
+			, size(width, height)
+		{}
+		Rect(const Point& position, const Size& size)
+			: position(position)
+			, size(size)
+		{}
 	};
 	struct SizeRect
 	{
-	public:
-		int minWidth, minHeight;
-		int maxWidth, maxHeight;
+		Size minSize, maxSize;
 
-	public:
-		SizeRect(int minWidth = 0, int minHeight = 0, int maxWidth = 0x0FFFFFFF, int maxHeight = 0x0FFFFFFF)
-			: minWidth(minWidth)
-			, minHeight(minHeight)
-			, maxWidth(maxWidth)
-			, maxHeight(maxHeight)
-		{
-		}
+		SizeRect(int minWidth = 0, int minHeight = 0, int maxWidth = 0x7FFFFFFF, int maxHeight = 0x7FFFFFFF)
+			: minSize(minWidth, minHeight)
+			, maxSize(maxWidth, maxHeight)
+		{}
+		SizeRect(const Size& minSize, const Size& maxSize)
+			: minSize(minSize)
+			, maxSize(maxSize)
+		{}
 	};
+
 	struct Range
 	{
 		int min, max;
@@ -40,6 +58,7 @@ namespace WinApiFramework
 			: min(min)
 			, max(max)
 		{
+			if (this->max < this->min) this->max = this->min;
 		}
 	};
 }

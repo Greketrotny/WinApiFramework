@@ -46,7 +46,7 @@ bool ProgressBar::CreateControlWindow()
 	// create window
 	hControl = CreateWindow(PROGRESS_CLASS, NULL,
 		WS_CHILD | WS_VISIBLE,
-		rect.x, rect.y, rect.width, rect.height,
+		rect.position.x, rect.position.y, rect.size.width, rect.size.height,
 		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 	// check control creation

@@ -68,7 +68,7 @@ bool TrackBar::CreateControlWindow()
 	// create window
 	hControl = CreateWindow(TRACKBAR_CLASS, L"TrackBar",
 		controlStyle,
-		rect.x, rect.y, rect.width, rect.height,
+		rect.position.x, rect.position.y, rect.size.width, rect.size.height,
 		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 	if (!hControl)

@@ -8,10 +8,10 @@ using namespace WinApiFramework;
 // -- constructors -- //
 WindowControl::WindowControl(const WindowControl::ConStruct& config)
 	:Rectangle(rect),
-	X(rect.x),
-	Y(rect.y),
-	Width(rect.width),
-	Height(rect.height)
+	X(rect.position.x),
+	Y(rect.position.y),
+	Width(rect.size.width),
+	Height(rect.size.height)
 {
 	rect = config.rect;
 }
@@ -48,37 +48,37 @@ void WindowControl::DisableControl()
 // public:
 void WindowControl::Move(int x, int y)
 {
-	rect.x = x;
-	rect.y = y;
+	rect.position.x = x;
+	rect.position.y = y;
 
 	SetWindowPos(hControl, nullptr,
-		rect.x, rect.y,
-		rect.width, rect.height,
+		rect.position.x, rect.position.y,
+		rect.size.width, rect.size.height,
 		SWP_NOSIZE);
 
 	PushBaseEvent(WindowControl::Event::Type::Move);
 }
 void WindowControl::Resize(int width, int height)
 {
-	rect.width = width;
-	rect.height = height;
+	rect.size.width = width;
+	rect.size.height = height;
 
-	if (rect.width < 0) rect.width = 0;
-	if (rect.height < 0) rect.height = 0;
+	if (rect.size.width < 0) rect.size.width = 0;
+	if (rect.size.height < 0) rect.size.height = 0;
 
 	SetWindowPos(hControl, nullptr,
-		rect.x, rect.y,
-		rect.width, rect.height,
+		rect.position.x, rect.position.y,
+		rect.size.width, rect.size.height,
 		SWP_NOMOVE);
 
 	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Resize));
 }
 int WindowControl::GetMouseX()
 {
-	return parentWindow->GetClientMouseX() - rect.x;
+	return parentWindow->GetClientMouseX() - rect.position.x;
 }
 int WindowControl::GetMouseY()
 {
-	return parentWindow->GetClientMouseY() - rect.y;
+	return parentWindow->GetClientMouseY() - rect.position.y;
 }
 // [CLASS] WindowConrtol -----------------------|

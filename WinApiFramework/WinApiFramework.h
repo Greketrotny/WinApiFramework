@@ -17,13 +17,15 @@ namespace WinApiFramework
 		// -- fields -- //
 	private:
 		static HINSTANCE hProgramInstance;
+
 		static std::vector<Window*> windows;
 		static Window* mainWindow;
-		static std::function<void()> callBack;
+
 		static HHOOK InputHook;
 		static Mouse mouse;
 		static Keyboard keyboard;
 
+		static std::function<void()> callBack;
 	public:
 		enum MessBoxButtonLayout
 		{

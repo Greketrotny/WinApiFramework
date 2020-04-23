@@ -37,7 +37,7 @@ bool GraphicsBox::CreateControlWindow()
 	// create window
 	hControl = CreateWindowW(L"STATIC", NULL,
 		controlStyle,
-		rect.x, rect.y, rect.width, rect.height,
+		rect.position.x, rect.position.y, rect.size.width, rect.size.height,
 		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 	// check control creation
@@ -84,8 +84,8 @@ GraphicsBox::GBGraphics::~GBGraphics()
 // private:
 bool GraphicsBox::GBGraphics::InitGraphics()
 {
-	m_width = m_pControl->rect.width - 2;
-	m_height = m_pControl->rect.height - 2;
+	m_width = m_pControl->rect.size.width - 2;
+	m_height = m_pControl->rect.size.height - 2;
 
 
 	// [>] Create D2D1Factory
