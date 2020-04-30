@@ -2,11 +2,12 @@
 #define TRACK_BAR_H
 
 #include "WindowControl.h"
+#include "BaseControl.h"
 
 
 namespace WinApiFramework
 {
-	class TrackBar : public WindowControl
+	class TrackBar : public WindowControl, public ChildControl
 	{
 		// -- fields -- //
 	public:
@@ -99,8 +100,9 @@ namespace WinApiFramework
 
 		// -- methods -- //
 	private:
-		int ControlProc(WPARAM wParam, LPARAM lParam) override;
+		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
+		void DestroyControlWindow() override;
 		void PushBaseEvent(WindowControl::Event event) override
 		{
 			events.PushEvent(TrackBar::Event((TrackBar::Event::Type)event.type));

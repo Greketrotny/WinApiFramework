@@ -2,10 +2,11 @@
 #define LABEL_H
 
 #include "WindowControl.h"
+#include "BaseControl.h"
 
 namespace WinApiFramework
 {
-	class Label : public WindowControl
+	class Label : public WindowControl, public ChildControl
 	{
 		// -- fields -- //
 	private:
@@ -70,8 +71,9 @@ namespace WinApiFramework
 
 		// -- methods -- //
 	private:
-		int ControlProc(WPARAM wParam, LPARAM lParam) override;
+		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
+		void DestroyControlWindow() override;
 		void PushBaseEvent(WindowControl::Event event) override
 		{
 			events.PushEvent(Label::Event((Label::Event::Type)event.type));

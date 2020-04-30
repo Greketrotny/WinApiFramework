@@ -14,7 +14,7 @@ namespace WinApiFramework
 {
 	class Framework
 	{
-		// -- fields -- //
+		// ~~ Framework::fields ~~ //
 	private:
 		static HINSTANCE hProgramInstance;
 
@@ -59,19 +59,19 @@ namespace WinApiFramework
 		};
 
 
-		// -- constructor -- //
+		// ~~ Framework::constructor ~~ //
 	public:
 		Framework(const Framework &framework) = delete;
 		Framework(const Framework &&framework) = delete;
 
 
-		// -- operators -- //
+		// ~~ Framework::operators ~~ //
 	public:
 		Framework& operator=(const Framework &framework) = delete;
 		Framework& operator=(const Framework &&framework) = delete;
 
 
-		// -- methods -- //
+		// ~~ Framework::methods ~~ //
 	private:
 		static LRESULT WINAPI WinApiProcedure(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 		static LRESULT WINAPI InputProcedure(int code, WPARAM wParam, LPARAM lParam);
@@ -82,6 +82,7 @@ namespace WinApiFramework
 	public:
 		static UINT ProcessMessages();
 		static void Exit(int return_value);
+
 		static int ShowGlobalMessageBox(
 			std::wstring text = L"default text",
 			std::wstring caption = L"Default caption",
@@ -91,29 +92,42 @@ namespace WinApiFramework
 			std::wstring caption = L"Default caption",
 			MessBoxButtonLayout buttons = MessBoxButtonLayout::Ok,
 			MessBoxIcon icon = MessBoxIcon::IconInformation);
+
 		static void SetCallBackFunction(void(*callBackFunction)())
 		{
-			std::function<void()> f(callBackFunction);
-			Framework::callBack = f;
+			if (callBackFunction == nullptr)
+			{
+				Framework::callBack = nullptr;
+				return;
+			}
+			else
+			{
+				std::function<void()> f(callBackFunction);
+				Framework::callBack = f;
+			}
 		}
 		template <class ReceivingObject> static void SetCallBackFunction(ReceivingObject* receivingObject, void(ReceivingObject::*callBackFunction)())
 		{
-			if (receivingObject == nullptr || callBackFunction == nullptr) 
+			if (receivingObject == nullptr || callBackFunction == nullptr)
+			{
+				Framework::callBack = nullptr;
 				return;
-
-			Framework::callBack = std::bind(callBackFunction, receivingObject);;
+			}
+			else
+			{
+				Framework::callBack = std::bind(callBackFunction, receivingObject);;
+			}
 		}
-		static void UnsetFreeTimeFunction();
 
 
-		// -- property fields -- //
+		// ~~ Framework::property fields ~~ //
 	public:
 		static const HINSTANCE &ProgramInstance;
 		static Mouse &Mouse;
 		static Keyboard &Keyboard;
 
 
-		// -- friend relationship -- //
+		// ~~ Framework::friends ~~ //
 		friend class Window;
 	};
 }

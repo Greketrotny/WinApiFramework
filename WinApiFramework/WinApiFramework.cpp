@@ -4,8 +4,8 @@
 
 using namespace WinApiFramework;
 
-// [CLASS] Framework ---------------------------|
-// -- fields -- //
+// ~~~~~~~~ [CLASS] Framework ~~~~~~~~
+// ~~ Framework::fields ~~
 HINSTANCE Framework::hProgramInstance = GetModuleHandle(NULL);
 const HINSTANCE& Framework::ProgramInstance(hProgramInstance);
 std::vector<Window*> Framework::windows;
@@ -18,15 +18,15 @@ Mouse& Framework::Mouse(Framework::mouse);
 Keyboard& Framework::Keyboard(Framework::keyboard);
 
 
-// -- methods -- //
+// ~~ Framework::methods ~~
 LRESULT WINAPI Framework::WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	// find destination window for the event
 	for (Window *w : windows)
 	{
-		if (w->hWindow == hWnd)
+		if (w->GetWindowHandle() == hWnd)
 		{
-			if (!w->WndProc(msg, wParam, lParam)) return 0;
+			if (!w->WndProcedure(msg, wParam, lParam)) return 0;
 			else return DefWindowProc(hWnd, msg, wParam, lParam);
 		}
 	}
@@ -36,8 +36,7 @@ LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
 {
 	if (code >= 0 && code == HC_ACTION)
 	{
-		MSG *msg;
-		msg = (MSG*)lParam;
+		MSG *msg = (MSG*)lParam;
 
 		switch (msg->message)
 		{
@@ -134,7 +133,7 @@ void Framework::AddWindow(Window *newWindow)
 	newWindow->window_id = next_id;
 	newWindow->window_class_name = L"WindowClass" + std::to_wstring((next_id));
 
-	// add new window to framework (program)
+	// add new window to framework window vector
 	windows.push_back(newWindow);
 }
 void Framework::RemoveWindow(Window *oldWindow)
@@ -162,10 +161,12 @@ void Framework::SetAsMainWindow(Window *window)
 	window->isMainWindow = true;
 	window->SetCaption(window->GetCaption());
 }
+
 void Framework::Exit(int return_value)
 {
 	PostQuitMessage(return_value);
 }
+
 int Framework::ShowGlobalMessageBox(std::wstring text, std::wstring caption, UINT message_box_style)
 {
 	return MessageBoxW(NULL, text.c_str(), caption.c_str(), message_box_style);
@@ -175,10 +176,6 @@ Framework::MessBoxButtonLayout buttons, Framework::MessBoxIcon icon)
 {
 	return (Framework::MessBoxButtonPressed)MessageBox(NULL, text.c_str(), caption.c_str(),
 		buttons | icon);
-}
-void Framework::UnsetFreeTimeFunction()
-{
-	callBack = nullptr;
 }
 
 UINT Framework::ProcessMessages()
@@ -217,4 +214,4 @@ UINT Framework::ProcessMessages()
 	}
 	return 0;
 }
-// [CLASS] Framework ---------------------------|
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

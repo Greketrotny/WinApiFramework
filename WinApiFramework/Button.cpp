@@ -7,41 +7,42 @@ using namespace WinApiFramework;
 
 // [CLASS] Button ------------------------------|
 // -- constructors -- //
-Button::Button(const Button::ConStruct& conStruct)
-	: WindowControl(conStruct),
-	Rect(rect),
-	Caption(caption),
-	Events(events)
+Button::Button(ParentControl* parentControl, const Button::ConStruct& conStruct)
+	: WindowControl(conStruct)
+	, ChildControl(parentControl)
+	, Caption(m_caption)
+	, Events(m_events)
 {
+	m_caption = conStruct.caption;
 
-	caption = conStruct.caption;
+	CreateControlWindow();
 }
 Button::~Button()
 {
-
+	DestroyControlWindow();
 }
 
 // -- methods -- //
 // private:
-int Button::ControlProc(WPARAM wParam, LPARAM lParam)
+int Button::ControlProcedure(WPARAM wParam, LPARAM lParam)
 {
 	UINT event = HIWORD(wParam);
 	switch (event)
 	{
 	case BN_CLICKED:
-		events.PushEvent(Button::Event(Button::Event::Type::Click));
+		m_events.PushEvent(Button::Event(Button::Event::Type::Click, this));
 		break;
 
 	case BN_DBLCLK:
-		events.PushEvent(Button::Event(Button::Event::Type::DoubleClick));
+		m_events.PushEvent(Button::Event(Button::Event::Type::DoubleClick, this));
 		break;
 
 	case BN_SETFOCUS:
-		events.PushEvent(Button::Event(Button::Event::Type::Focus));
+		m_events.PushEvent(Button::Event(Button::Event::Type::Focus, this));
 		break;
 
 	case BN_KILLFOCUS:
-		events.PushEvent(Button::Event(Button::Event::Type::Unfocus));
+		m_events.PushEvent(Button::Event(Button::Event::Type::Unfocus, this));
 		break;
 
 	default:
@@ -51,30 +52,34 @@ int Button::ControlProc(WPARAM wParam, LPARAM lParam)
 }
 bool Button::CreateControlWindow()
 {
-	controlStyle |= BS_NOTIFY | BS_PUSHBUTTON | BS_MULTILINE;
+	m_controlStyle |= BS_NOTIFY | BS_PUSHBUTTON | BS_MULTILINE | BS_CENTER;
 
 	// create window
-	hControl = CreateWindow(L"BUTTON", caption.c_str(),
-		controlStyle,
-		rect.position.x, rect.position.y, rect.size.width, rect.size.height,
-		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+	m_hWindow = CreateWindow(L"BUTTON", m_caption.c_str(),
+		m_controlStyle,
+		m_rect.position.x, m_rect.position.y, m_rect.size.width, m_rect.size.height,
+		m_pParentControl->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
-	if (!hControl)
+	if (!m_hWindow)
 	{
 		MessageBox(nullptr, L"Button creation failed.", L"Button create error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 	HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
-	SendMessage(hControl, WM_SETFONT, (WPARAM)hNormalFont, 0);
+	SendMessage(m_hWindow, WM_SETFONT, (WPARAM)hNormalFont, 0);
 
 	return true;
+}
+void Button::DestroyControlWindow()
+{
+	DestroyWindow(m_hWindow);
 }
 
 // public:
 void Button::SetCaption(std::wstring newCaption)
 {
-	caption = newCaption;
-	SetWindowText(hControl, caption.c_str());
-	events.PushEvent(Button::Event(Button::Event::Type::CaptionChanged));
+	m_caption = newCaption;
+	SetWindowText(m_hWindow, m_caption.c_str());
+	m_events.PushEvent(Button::Event(Button::Event::Type::CaptionChanged, this));
 }
 // [CLASS] Button ------------------------------|

@@ -2,10 +2,11 @@
 #define PROGRESS_BAR_H
 
 #include "WindowControl.h"
+#include "BaseControl.h"
 
 namespace WinApiFramework
 {
-	class ProgressBar : public WindowControl
+	class ProgressBar : public WindowControl, public ChildControl
 	{
 		// -- fields -- //
 	private:
@@ -78,8 +79,9 @@ namespace WinApiFramework
 
 		// -- methods -- //
 	private:
-		int ControlProc(WPARAM wParam, LPARAM lParam) override;
+		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
+		void DestroyControlWindow() override;
 		void PushBaseEvent(WindowControl::Event event) override
 		{
 			events.PushEvent(ProgressBar::Event((ProgressBar::Event::Type)event.type));

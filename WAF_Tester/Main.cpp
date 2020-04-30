@@ -1,3 +1,7 @@
+#define _CRTDBG_MAP_ALLOC  
+#include <stdlib.h>  
+#include <crtdbg.h>  
+
 #include "WinApiFramework.h"
 
 #include <math.h>
@@ -5,38 +9,13 @@
 
 namespace WAF = WinApiFramework;
 
-float UniformRandom()
-{
-	return (rand() % RAND_MAX / (float)RAND_MAX);
-}
-float SignedUniformRandom()
-{
-	return (UniformRandom() - 0.5f) * 2.0f;
-}
-
-void StratifiedUniform(float& x, float& y)
-{
-	const float stratRes = 10;
-
-	const float x1 = floorf(UniformRandom() * stratRes) / stratRes + 0.5f / stratRes;
-	const float y1 = floorf(UniformRandom() * stratRes) / stratRes + 0.5f / stratRes;
-
-	const float x2 = SignedUniformRandom() / stratRes * 0.5f;
-	const float y2 = SignedUniformRandom() / stratRes * 0.5f;
-
-	x = x1 + x2;
-	y = y1 + y2;
-}
-
-const WAF::GraphicsBox::TextFormat *format1, *format2;
-
-void CallBackFunction();
-
 class MainForm
 {
 	// -- MainForm::fields -- //
 public:
 	WAF::Window *MainWindow = nullptr;
+	
+	std::vector<std::unique_ptr<WAF::Button>> buttons;
 
 
 	// -- MainForm::constructors -- //
@@ -52,9 +31,27 @@ public:
 								   WAF::SizeRect(200u, 100u, 2000u, 1000u)));
 		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindow_EH);
 		WAF::Framework::Keyboard.KeyEvents.AddEventHandler<MainForm>(this, &MainForm::FrameworkKeyboardEventHandler);
+
+		// buttons
+		int grid_size = 10;
+		int button_width = 100;
+		int button_height = 50;
+		for (int y = 0; y < grid_size; y++)
+		{
+			for (int x = 0; x < grid_size; x++)
+			{
+				buttons.push_back(std::make_unique<WAF::Button>(MainWindow, WAF::Button::ConStruct(
+					WAF::WindowControl::ConStruct(WAF::Rect(x * button_width, y * button_height, button_width, button_height)),
+					L"button1 caption")));
+
+				buttons[y * grid_size + x]->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
+			}
+		}
 	}
 	~MainForm()
 	{
+		buttons.clear();
+
 		if (MainWindow) delete MainWindow;
 	}
 
@@ -78,6 +75,22 @@ public:
 			}
 		}
 	}
+
+	void Button1_EH(WAF::Button::Event event)
+	{
+		switch (event.type)
+		{
+			case WAF::Button::Event::Type::Click:
+				event.button->SetCaption(L"button clicked!");
+				break;
+			case WAF::Button::Event::Type::DoubleClick:
+				event.button->SetCaption(L"button double clicked!");
+				break;
+			case WAF::Button::Event::Type::Push:
+				event.button->SetCaption(L"button pushed!");
+				break;
+		}
+	}
 	   
 	// FrameworkKeyboard
 	void FrameworkKeyboardEventHandler(WAF::Keyboard::KeyEvent event)
@@ -97,18 +110,12 @@ public:
 	// -- MainForm::methods -- //
 	void DisplayMainWindowProps()
 	{
-		MainWindow->SetCaption(L"Position: [" +
-							   std::to_wstring(MainWindow->WindowRect.position.x) + L":" + std::to_wstring(MainWindow->WindowRect.position.y) + 
-							   L"] Resolution: [" +
-							   std::to_wstring(MainWindow->WindowRect.size.width) + L":" + std::to_wstring(MainWindow->WindowRect.size.height) +
-							   L"]");
-	}
-
-
-	// --MainForm::callBacks -- //
-	void MainFormCallBack()
-	{
-		CallBackFunction();
+		MainWindow->SetCaption(
+			L"Position: [" +
+			std::to_wstring(MainWindow->WindowRect.position.x) + L":" + std::to_wstring(MainWindow->WindowRect.position.y) + 
+			L"] Resolution: [" +
+			std::to_wstring(MainWindow->WindowRect.size.width) + L":" + std::to_wstring(MainWindow->WindowRect.size.height) +
+			L"]");
 	}
 };
 MainForm *MF;
@@ -120,10 +127,12 @@ void CallBackFunction()
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, INT ncmd)
 {
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+
 	MF = new MainForm();
 
-	//WAF::Framework::SetCallBackFunction(CallBackFunction);
-	WAF::Framework::SetCallBackFunction<MainForm>(MF, &MainForm::MainFormCallBack);
+	WAF::Framework::SetCallBackFunction(CallBackFunction);
 	WAF::Framework::ProcessMessages();
 
 	delete MF;

@@ -81,6 +81,9 @@
     <ClCompile Include="Mouse.cpp">
       <Filter>Source Files\WinApiFramework\Input</Filter>
     </ClCompile>
+    <ClCompile Include="BaseControl.cpp">
+      <Filter>Source Files\WinApiFramework\BaseClasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WinApiWindow.h">
@@ -107,6 +110,18 @@
     <ClInclude Include="Button.h">
       <Filter>Header Files\WinApiFramework\Controls</Filter>
     </ClInclude>
+    <ClInclude Include="WindowControl.h">
+      <Filter>Header Files\WinApiFramework\BaseClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard.h">
+      <Filter>Header Files\WinApiFramework\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
+      <Filter>Header Files\WinApiFramework\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseControl.h">
+      <Filter>Header Files\WinApiFramework\BaseClasses</Filter>
+    </ClInclude>
     <ClInclude Include="CheckBox.h">
       <Filter>Header Files\WinApiFramework\Controls</Filter>
     </ClInclude>
@@ -124,15 +139,6 @@
     </ClInclude>
     <ClInclude Include="TrackBar.h">
       <Filter>Header Files\WinApiFramework\Controls</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowControl.h">
-      <Filter>Header Files\WinApiFramework\BaseClasses</Filter>
-    </ClInclude>
-    <ClInclude Include="Keyboard.h">
-      <Filter>Header Files\WinApiFramework\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="Mouse.h">
-      <Filter>Header Files\WinApiFramework\Input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

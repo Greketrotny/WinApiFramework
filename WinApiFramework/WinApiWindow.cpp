@@ -6,25 +6,28 @@ using namespace WinApiFramework;
 
 #undef IsMinimized
 
-// [CLASS] Window ------------------------------|
-// -- fields -- //
-// [STRUCT] Window::ControlsStorage-------------|
-// -- constructors -- //
+// ~~~~~~~~ [STRUCT] Window::ControlsStorage ~~~~~~~~
+// ~~ ControlsStorage::constructors ~~
 Window::ControlsStorage::ControlsStorage()
 {
 
 }
 Window::ControlsStorage::~ControlsStorage()
 {
+	for (ChildControl* control : controls)
+	{
+		delete control;
+	}
 
+	controls.clear();
 }
 
-// -- methods -- //
-void Window::ControlsStorage::AddControl(WindowControl* newControl)
+// ~~ ControlsStorage::methods ~~
+void Window::ControlsStorage::AddControl(ChildControl* newControl)
 {
 	this->controls.push_back(newControl);
 }
-void Window::ControlsStorage::RemoveControl(WindowControl* oldControl)
+void Window::ControlsStorage::RemoveControl(ChildControl* oldControl)
 {
 	for (unsigned int i = 0; i < controls.size(); i++)
 	{
@@ -35,12 +38,26 @@ void Window::ControlsStorage::RemoveControl(WindowControl* oldControl)
 		}
 	}
 }
-// [STRUCT] Window::ControlsStorage-------------|
+bool Window::ControlsStorage::FindMessageAddressee(WPARAM wParam, LPARAM lParam)
+{
+	for (ChildControl*& control : controls)
+	{
+		if (control->GetWindowHandle() == (HWND)lParam)
+		{
+			if (!control->ControlProcedure(wParam, lParam))
+				return 0;
+		}
+	}
+
+	return 1;
+}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+// ~~~~~~~~ [CLASS] Window ~~~~~~~~
 // -- constructor -- //
 Window::Window()
-	: WndHandle(hWindow)
+	: WndHandle(m_hWindow)
 	, IsMainWindow(isMainWindow)
 	, IsEnabled(isEnabled)
 	, IsActivated(isActivated)
@@ -71,13 +88,7 @@ Window::Window(const Window::ConStruct &conStruct)
 }
 Window::~Window()
 {
-	for (WindowControl *C : controls.controls)
-	{
-		if (C != nullptr)
-			C->DestroyControlWindow();
-	}
-
-	SendMessage(hWindow, WM_CLOSE, 0, 0);
+	SendMessage(m_hWindow, WM_CLOSE, 0, 0);
 	UnregisterClass(window_class_name.c_str(), Framework::hProgramInstance);
 	Framework::RemoveWindow(this);
 }
@@ -85,7 +96,7 @@ Window::~Window()
 
 // -- methods -- //
 // private:
-LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
+LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)	
 	{
@@ -94,22 +105,14 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_NOTIFY:
 	case WM_HSCROLL:
 	case WM_VSCROLL:
-		for (WindowControl *control : controls.controls)
-		{
-			if (control->hControl == (HWND)lParam)
-			{
-				if (!control->ControlProc(wParam, lParam))
-					return 0;
-			}
-		}
-		return 0;
+		return controls.FindMessageAddressee(wParam, lParam);
 		break;
 
 		// base events //
 	case WM_CLOSE:
 		events.PushEvent(Window::Event(Event::Type::Close));
-		DestroyWindow(hWindow);
-		hWindow = NULL;
+		DestroyWindow(m_hWindow);
+		m_hWindow = NULL;
 		return 0;
 		break;
 	case WM_DESTROY:
@@ -162,17 +165,17 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_MOVE:
 	{
 		RECT r;
-		if (GetWindowRect(hWindow, &r))
+		if (GetWindowRect(m_hWindow, &r))
 		{
 			windowRect.position.x = r.left;
 			windowRect.position.y = r.top;
 			windowRect.size.width = r.right - r.left;
 			windowRect.size.height = r.bottom - r.top;
 		}
-		if (GetClientRect(hWindow, &r))
+		if (GetClientRect(m_hWindow, &r))
 		{
 			POINT p{ 0, 0 };
-			ClientToScreen(hWindow, &p);
+			ClientToScreen(m_hWindow, &p);
 			clientRect.position.x = p.x;
 			clientRect.position.y = p.y;
 			clientRect.size.width = r.right - r.left;
@@ -186,17 +189,17 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 	{
 		RECT r;
-		if (GetWindowRect(hWindow, &r))
+		if (GetWindowRect(m_hWindow, &r))
 		{
 			windowRect.position.x = r.left;
 			windowRect.position.y = r.top;
 			windowRect.size.width = r.right - r.left;
 			windowRect.size.height = r.bottom - r.top;
 		}
-		if (GetClientRect(hWindow, &r))
+		if (GetClientRect(m_hWindow, &r))
 		{
 			POINT p{ 0, 0 };
-			ClientToScreen(hWindow, &p);
+			ClientToScreen(m_hWindow, &p);
 			clientRect.position.x = p.x;
 			clientRect.position.y = p.y;
 			clientRect.size.width = r.right - r.left;
@@ -227,7 +230,7 @@ LRESULT Window::WndProc(UINT msg, WPARAM wParam, LPARAM lParam)
 	//	{
 	//		if (!mouseOnWindow)
 	//		{
-	//			SetCapture(hWindow);
+	//			SetCapture(m_hWindow);
 	//			mouseOnWindow = true;
 	//		}
 	//	}
@@ -312,12 +315,12 @@ bool Window::CreateWinApiWindow(Window::ConStruct conStruct)
 	}
 
 	// create window
-	hWindow = CreateWindow((LPCWSTR)window_class_name.c_str(), (LPCWSTR)caption.c_str(),
+	m_hWindow = CreateWindow((LPCWSTR)window_class_name.c_str(), (LPCWSTR)caption.c_str(),
 		windowStyle,
 		windowRect.position.x, windowRect.position.y, windowRect.size.width, windowRect.size.height,
 		nullptr, nullptr, Framework::hProgramInstance, nullptr);
 
-	if (!hWindow)
+	if (!m_hWindow)
 	{
 		MessageBox(nullptr, L"Window creation failed.", L"Window create error", MB_OK | MB_ICONERROR);
 		return false;
@@ -325,8 +328,9 @@ bool Window::CreateWinApiWindow(Window::ConStruct conStruct)
 
 	SetCaption(GetCaption());
 
-	ShowWindow(hWindow, SW_SHOW);
-	UpdateWindow(hWindow);
+	ShowWindow(m_hWindow, SW_SHOW);
+	UpdateWindow(m_hWindow);
+
 	return true;
 }
 
@@ -351,10 +355,11 @@ void Window::DisableEventHandlers()
 {
 	events.DisableEventHandlers();
 }
+
 void Window::SetCaption(std::wstring new_caption)
 {
 	caption = new_caption;
-	SetWindowText(hWindow, (LPCWSTR)(((isMainWindow) ? L"[Main Window] " : L"") + caption).c_str());
+	SetWindowText(m_hWindow, (LPCWSTR)(((isMainWindow) ? L"[Main Window] " : L"") + caption).c_str());
 	events.PushEvent(Window::Event(Event::Type::CaptionChange));
 }
 void Window::SetPosition(unsigned int x, unsigned int y)
@@ -362,7 +367,7 @@ void Window::SetPosition(unsigned int x, unsigned int y)
 	windowRect.position.x = x;
 	windowRect.position.y = y;
 
-	SetWindowPos(hWindow, nullptr,
+	SetWindowPos(m_hWindow, nullptr,
 		windowRect.position.x, windowRect.position.y,
 		windowRect.size.width, windowRect.size.height,
 		0);
@@ -374,7 +379,7 @@ void Window::SetDimensions(unsigned int width, unsigned int height)
 	windowRect.size.width = width;
 	windowRect.size.height = height;
 
-	SetWindowPos(hWindow, nullptr,
+	SetWindowPos(m_hWindow, nullptr,
 		windowRect.position.x, windowRect.position.y,
 		windowRect.size.width, windowRect.size.height,
 		0);
@@ -408,12 +413,13 @@ void Window::SetAsMainWindow()
 {
 	Framework::SetAsMainWindow(this);
 }
+
 void Window::Enable()
 {
 	if (isMainWindow) return;
 	if (isEnabled) return;
 
-	::EnableWindow(hWindow, 1);
+	::EnableWindow(m_hWindow, 1);
 	isEnabled = true;
 
 	events.PushEvent(Window::Event(Event::Type::Enable));
@@ -423,127 +429,108 @@ void Window::Disable()
 	if (isMainWindow) return;
 	if (!isEnabled) return;
 
-	::EnableWindow(hWindow, 0);
+	::EnableWindow(m_hWindow, 0);
 	isEnabled = false;
 
 	events.PushEvent(Window::Event(Event::Type::Disable));
 }
 void Window::EnableResize()
 {
-	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
 	windowStyle = windowStyle | WS_SIZEBOX;
-	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+	SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
 	events.PushEvent(Window::Event::Type::EnableResize);
 }
 void Window::DisableResize()
 {
-	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
 	windowStyle = windowStyle & (~WS_SIZEBOX);
-	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+	SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
 	events.PushEvent(Window::Event::Type::DisableResize);
 }
 void Window::EnableMaximizeBox()
 {
-	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
 	windowStyle = windowStyle | WS_MAXIMIZEBOX;
-	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+	SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
 	events.PushEvent(Window::Event::Type::EnableMaximizeBox);
 }
 void Window::DisableMaximizeBox()
 {
-	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
 	windowStyle = windowStyle & (~WS_MAXIMIZEBOX);
-	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+	SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
 	events.PushEvent(Window::Event::Type::DisableMaximizeBox);
 }
 void Window::EnableMinimizeBox()
 {
-	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
 	windowStyle = windowStyle | WS_MINIMIZEBOX;
-	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+	SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
 	events.PushEvent(Window::Event::Type::EnableMinimizeBox);
 }
 void Window::DisableMinimizeBox()
 {
-	windowStyle = GetWindowLong(hWindow, GWL_STYLE);
+	windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
 	windowStyle = windowStyle & (~WS_MINIMIZEBOX);
-	SetWindowLong(hWindow, GWL_STYLE, windowStyle);
+	SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
 	events.PushEvent(Window::Event::Type::DisableMinimizeBox);
 }
 void Window::Activate()
 {
-	SetActiveWindow(hWindow);
+	SetActiveWindow(m_hWindow);
 }
 void Window::Maximize()
 {
-	ShowWindow(hWindow, SW_MAXIMIZE);
+	ShowWindow(m_hWindow, SW_MAXIMIZE);
 }
 void Window::Minimize()
 {
-	ShowWindow(hWindow, SW_MINIMIZE);
+	ShowWindow(m_hWindow, SW_MINIMIZE);
 }
 void Window::Show()
 {
-	ShowWindow(hWindow, SW_SHOW);
+	ShowWindow(m_hWindow, SW_SHOW);
 }
 void Window::Hide()
 {
-	ShowWindow(hWindow, SW_HIDE);
+	ShowWindow(m_hWindow, SW_HIDE);
 }
 int Window::ShowMessageBox(std::wstring text, std::wstring caption, UINT message_box_style)
 {
-	return MessageBoxW(hWindow, text.c_str(), caption.c_str(), message_box_style);
+	return MessageBoxW(m_hWindow, text.c_str(), caption.c_str(), message_box_style);
 }
 
 const HWND& Window::GetWindowHandle() const
 {
-	return hWindow;
+	return m_hWindow;
 }
 const std::wstring& Window::GetCaption() const
 {
 	return caption;
 }
-int Window::GetMouseX() const
-{
-	return Framework::Mouse.X - this->WindowRect.position.x;
-}
-int Window::GetMouseY() const
-{
-	return Framework::Mouse.Y - this->windowRect.position.y;
-}
-int Window::GetClientMouseX() const
-{
-	return Framework::Mouse.X - this->ClientRect.position.x;
-}
-int Window::GetClientMouseY() const
-{
-	return Framework::Mouse.Y - this->ClientRect.position.y;
-}
 
-void Window::AddControl(WindowControl* newControl)
+void Window::AddControl(ChildControl* newControl)
 {
 	if (newControl == nullptr) return;
-	if (newControl->parentWindow != nullptr) return;
-
 	controls.AddControl(newControl);
-	newControl->parentWindow = this;
-	newControl->CreateControlWindow();
-
 	events.PushEvent(Window::Event(Event::Type::ControlAdd));
 }
-void Window::RemoveControl(WindowControl* oldControl)
+void Window::RemoveControl(ChildControl* oldControl)
 {
 	if (oldControl == nullptr) return;
-
 	controls.RemoveControl(oldControl);
-	oldControl->DestroyControlWindow();
-
 	events.PushEvent(Window::Event(Event::Type::ControlRemove));
+}
+
+Point Window::GetMousePosition() const
+{
+	return Point(Framework::Mouse.X - ClientRect.position.x, Framework::Mouse.Y - ClientRect.position.y);
 }
 // [CLASS] Window ------------------------------|

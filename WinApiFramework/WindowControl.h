@@ -5,18 +5,18 @@
 #include "ExternIncludes.h"
 #include "DataTypes.h"
 
+#include "BaseControl.h"
+
 namespace WinApiFramework
 {
 	class Window;
 
-	class WindowControl
+	class WindowControl : virtual public BaseControl
 	{
-		// -- fields -- //
+		// ~~ WindowControl::fields ~~ //
 	protected:
-		HWND hControl;
-		Window* parentWindow = nullptr;
-		DWORD controlStyle = WS_CHILD | WS_VISIBLE;
-		unsigned int id;
+		DWORD m_controlStyle = WS_CHILD | WS_VISIBLE;
+		Rect m_rect;
 	public:
 		struct ConStruct
 		{
@@ -24,12 +24,10 @@ namespace WinApiFramework
 
 			ConStruct(const ConStruct& conStruct)
 				: rect(conStruct.rect)
-			{
-			}
+			{}
 			ConStruct(Rect rect = Rect())
 				: rect(rect)
-			{
-			}
+			{}
 		};
 		struct Event
 		{
@@ -121,41 +119,31 @@ namespace WinApiFramework
 				eventHandlersEnabled = false;
 			}
 		};
-		Rect rect;
 
 
-		// -- constructors -- //
+		// ~~ WindowControl::constructors ~~ //
 	protected:
 		WindowControl(const WindowControl::ConStruct& conStruct);
 		virtual ~WindowControl();
 
 
-		// -- methods -- //
+		// ~~ WindowControl::methods ~~ //
 	protected:
-		virtual int ControlProc(WPARAM wParam, LPARAM lParam) = 0;
 		virtual bool CreateControlWindow() = 0;
-		void DestroyControlWindow();
+		virtual void DestroyControlWindow() = 0;
+
 		virtual void PushBaseEvent(WindowControl::Event event) = 0;
 	public:
-		void EnableControl();
-		void DisableControl();
-		virtual void Move(int x, int y);
-		virtual void Resize(int width, int height);
-		int GetMouseX();
-		int GetMouseY();
+		void Enable();
+		void Disable();
 
+		void Move(int x, int y);
+		void Resize(int width, int height);
+		void SetRect(Rect rect);
 
-		// -- property fields -- //
+		// ~~ property fields ~~ //
 	public:
-		const int& X;
-		const int& Y;
-		const int& Width;
-		const int& Height;
 		const Rect& Rectangle;
-
-
-		// -- friends -- //
-		friend Window;
 	};
 }
 #endif // !WINDOW_CONTROL_H

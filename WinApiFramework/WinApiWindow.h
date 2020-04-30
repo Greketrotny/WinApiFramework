@@ -5,18 +5,18 @@
 #include "ExternIncludes.h"
 
 #include "WindowControl.h"
+#include "BaseControl.h"
 
 namespace WinApiFramework
 {
 	class Framework;
 
-	class Window
+	class Window : public ParentControl
 	{
 		// -- fields -- //
 	private:
-		HWND hWindow = NULL;
-		std::wstring window_class_name = L"WindowClassName";
-		std::wstring caption = L"Default caption";
+		std::wstring window_class_name;
+		std::wstring caption;
 		LONG windowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_BORDER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
 		unsigned int window_id;
 		bool isMainWindow = false;
@@ -119,7 +119,6 @@ namespace WinApiFramework
 		public:
 			EventsManager()
 			{
-
 			}
 			~EventsManager()
 			{
@@ -191,7 +190,7 @@ namespace WinApiFramework
 		{
 			// -- fields -- //
 		private:
-			std::vector<WindowControl*> controls;
+			std::vector<ChildControl*> controls;
 
 			// -- constructor -- //
 		public:
@@ -200,10 +199,9 @@ namespace WinApiFramework
 
 			// -- methods -- //
 		public:
-			void AddControl(WindowControl* newControl);
-			void RemoveControl(WindowControl* oldControl);
-
-			friend Window;
+			void AddControl(ChildControl* newControl);
+			void RemoveControl(ChildControl* oldControl);
+			bool FindMessageAddressee(WPARAM wParam, LPARAM lParam);
 		};
 
 	private:
@@ -233,7 +231,7 @@ namespace WinApiFramework
 
 		// -- methods -- // 
 	private:
-		LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+		LRESULT WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam);
 		bool CreateAndRegisterWindowClass();
 		bool CreateWinApiWindow(ConStruct config);
 	public:
@@ -242,6 +240,7 @@ namespace WinApiFramework
 		void ClearEventBuffer();
 		void EnableEventHandlers();
 		void DisableEventHandlers();
+
 		void SetCaption(std::wstring new_caption);
 		void SetPosition(unsigned int x, unsigned int y);
 		void SetDimensions(unsigned int width, unsigned int height);
@@ -249,6 +248,7 @@ namespace WinApiFramework
 		void SetMaxSize(unsigned int maxWidth, unsigned int maxHeight);
 		void SetSizeRect(SizeRect newSizeRect);
 		void SetAsMainWindow();
+
 		void Enable();
 		void Disable();
 		void EnableResize();
@@ -273,13 +273,11 @@ namespace WinApiFramework
 
 		const HWND& GetWindowHandle() const;
 		const std::wstring& GetCaption() const;
-		int GetMouseX() const;
-		int GetMouseY() const;
-		int GetClientMouseX() const;
-		int GetClientMouseY() const;
 
-		void AddControl(WindowControl* newControl);
-		void RemoveControl(WindowControl* oldControl);
+		void AddControl(ChildControl* newControl) override;
+		void RemoveControl(ChildControl* oldControl) override;
+
+		Point GetMousePosition() const override;
 
 
 		// -- property fields -- //

@@ -4,81 +4,70 @@
 
 using namespace WinApiFramework;
 
-// [CLASS] WindowConrtol -----------------------|
-// -- constructors -- //
+// ~~~~~~~~ [CLASS] WindowConrtol ~~~~~~~~
+// ~~ WindowControl::constructors ~~
 WindowControl::WindowControl(const WindowControl::ConStruct& config)
-	:Rectangle(rect),
-	X(rect.position.x),
-	Y(rect.position.y),
-	Width(rect.size.width),
-	Height(rect.size.height)
+	: Rectangle(m_rect)
 {
-	rect = config.rect;
+	m_rect = config.rect;
+
+	//SetRect(config.rect);
 }
 WindowControl::~WindowControl()
 {
-	if (parentWindow)
-	{
-		parentWindow->RemoveControl(this);
-		parentWindow = nullptr;
-	}
 }
 
-// -- methods -- //
-// protected:
-void WindowControl::DestroyControlWindow()
+// ~~ WindowControl::methods ~~
+void WindowControl::Enable()
 {
-	if (hControl != NULL)
-	{
-		DestroyWindow(hControl);
-		hControl = NULL;
-		parentWindow = nullptr;
-	}
-}
-void WindowControl::EnableControl()
-{
-	::EnableWindow(hControl, TRUE);
+	::EnableWindow(m_hWindow, TRUE);
 	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Enable));
 }
-void WindowControl::DisableControl()
+void WindowControl::Disable()
 {
-	::EnableWindow(hControl, FALSE);
+	::EnableWindow(m_hWindow, FALSE);
 	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Disable));
 }
 // public:
 void WindowControl::Move(int x, int y)
 {
-	rect.position.x = x;
-	rect.position.y = y;
+	m_rect.position.x = x;
+	m_rect.position.y = y;
 
-	SetWindowPos(hControl, nullptr,
-		rect.position.x, rect.position.y,
-		rect.size.width, rect.size.height,
-		SWP_NOSIZE);
+	SetWindowPos(this->m_hWindow, nullptr,
+				 m_rect.position.x, m_rect.position.y,
+				 m_rect.size.width, m_rect.size.height,
+				 SWP_NOSIZE);
 
-	PushBaseEvent(WindowControl::Event::Type::Move);
+	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Move));
 }
 void WindowControl::Resize(int width, int height)
 {
-	rect.size.width = width;
-	rect.size.height = height;
+	m_rect.size.width = width;
+	m_rect.size.height = height;
 
-	if (rect.size.width < 0) rect.size.width = 0;
-	if (rect.size.height < 0) rect.size.height = 0;
+	if (m_rect.size.width < 0) m_rect.size.width = 0;
+	if (m_rect.size.height < 0) m_rect.size.height = 0;
 
-	SetWindowPos(hControl, nullptr,
-		rect.position.x, rect.position.y,
-		rect.size.width, rect.size.height,
-		SWP_NOMOVE);
+	SetWindowPos(m_hWindow, nullptr,
+				 m_rect.position.x, m_rect.position.y,
+				 m_rect.size.width, m_rect.size.height,
+				 SWP_NOMOVE);
 
 	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Resize));
 }
-int WindowControl::GetMouseX()
+void WindowControl::SetRect(Rect rect)
 {
-	return parentWindow->GetClientMouseX() - rect.position.x;
+	m_rect = rect;
+
+	if (m_rect.size.width < 0) m_rect.size.width = 0;
+	if (m_rect.size.height < 0) m_rect.size.height = 0;
+
+	SetWindowPos(m_hWindow, nullptr,
+				 m_rect.position.x, m_rect.position.y,
+				 m_rect.size.width, m_rect.size.height, 0);
+
+	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Move));
+	PushBaseEvent(WindowControl::Event(WindowControl::Event::Type::Resize));
 }
-int WindowControl::GetMouseY()
-{
-	return parentWindow->GetClientMouseY() - rect.position.y;
-}
-// [CLASS] WindowConrtol -----------------------|
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

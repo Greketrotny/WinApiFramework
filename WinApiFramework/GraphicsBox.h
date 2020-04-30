@@ -2,6 +2,8 @@
 #define GRAPHICS_BOX_H
 
 #include "WindowControl.h"
+#include "BaseControl.h"
+
 #include "atlbase.h"
 #include <memory>
 
@@ -9,7 +11,7 @@ namespace G = Graphics;
 
 namespace WinApiFramework
 {
-	class GraphicsBox : public WindowControl
+	class GraphicsBox : public WindowControl, public ChildControl
 	{
 		class GBGraphics;
 
@@ -390,8 +392,9 @@ namespace WinApiFramework
 
 		// -- methods -- //
 	private:
-		int ControlProc(WPARAM wParam, LPARAM lParam) override;
+		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
+		void DestroyControlWindow() override;
 		void PushBaseEvent(WindowControl::Event event) override
 		{
 			events.PushEvent(GraphicsBox::Event((GraphicsBox::Event::Type)event.type));

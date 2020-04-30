@@ -1,15 +1,16 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
+#include "BaseControl.h"
 #include "WindowControl.h"
 
 namespace WinApiFramework
 {
-	class Button : public WindowControl
+	class Button : public WindowControl, public ChildControl
 	{
 		// -- fields -- //
 	private:
-		std::wstring caption;
+		std::wstring m_caption;
 	public:
 		struct ConStruct : public WindowControl::ConStruct
 		{
@@ -35,24 +36,29 @@ namespace WinApiFramework
 				DoubleClick,
 				Focus,
 				Unfocus,
-				CaptionChanged
+				CaptionChanged,
+				Hilite,
+				Push,
+				Unpush
 			};
 			Type type;
+			Button* button;
 
-			Event(Type type = Type::Invalid)
+			Event(Type type = Type::Invalid, Button* button = nullptr)
 			{
 				this->type = type;
+				this->button = button;
 			}
 		};
 	private:
-		WindowControl::EventsManager<Button::Event> events;
+		WindowControl::EventsManager<Button::Event> m_events;
 
 
 		// -- constructors -- //
 	public:
 		Button(const Button &otherButton) = delete;
 		Button(const Button &&otherButton) = delete;
-		Button(const ConStruct &conStruct);
+		Button(ParentControl* parentcontrol, const ConStruct &conStruct);
 		~Button();
 
 
@@ -63,18 +69,18 @@ namespace WinApiFramework
 
 		// -- methods -- //
 	private:
-		int ControlProc(WPARAM wParam, LPARAM lParam) override;
+		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
+		void DestroyControlWindow() override;
 		void PushBaseEvent(WindowControl::Event event) override
 		{
-			events.PushEvent(Button::Event((Button::Event::Type)event.type));
+			m_events.PushEvent(Button::Event((Button::Event::Type)event.type, this));
 		}
 	public:
 		void SetCaption(std::wstring newCaption);
 
 
 		// -- property fields -- //
-		const Rect& Rect;
 		const std::wstring& Caption;
 		WindowControl::EventsManager<Button::Event>& Events;
 	};
