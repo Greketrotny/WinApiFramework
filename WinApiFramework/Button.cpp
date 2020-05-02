@@ -5,9 +5,9 @@
 using namespace WinApiFramework;
 
 
-// [CLASS] Button ------------------------------|
-// -- constructors -- //
-Button::Button(ParentControl* parentControl, const Button::ConStruct& conStruct)
+// ~~~~~~~~ [CLASS] Button ~~~~~~~~
+// ~~ Button::constructors ~~
+Button::Button(ParentControl* parentControl, const ConStruct<Button>& conStruct)
 	: WindowControl(conStruct)
 	, ChildControl(parentControl)
 	, Caption(m_caption)
@@ -21,6 +21,10 @@ Button::~Button()
 {
 	DestroyControlWindow();
 }
+
+
+// ~~ Button::static methods ~~
+
 
 // -- methods -- //
 // private:
@@ -82,4 +86,4 @@ void Button::SetCaption(std::wstring newCaption)
 	SetWindowText(m_hWindow, m_caption.c_str());
 	m_events.PushEvent(Button::Event(Button::Event::Type::CaptionChanged, this));
 }
-// [CLASS] Button ------------------------------|
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -6,7 +6,7 @@ using namespace WinApiFramework;
 
 // ~~~~~~~~ [CLASS] WindowConrtol ~~~~~~~~
 // ~~ WindowControl::constructors ~~
-WindowControl::WindowControl(const WindowControl::ConStruct& config)
+WindowControl::WindowControl(const ConStruct<WindowControl>& config)
 	: Rectangle(m_rect)
 {
 	m_rect = config.rect;

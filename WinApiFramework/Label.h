@@ -6,6 +6,9 @@
 
 namespace WinApiFramework
 {
+	class Label;
+	template <> struct ConStruct<Label>;
+
 	class Label : public WindowControl, public ChildControl
 	{
 		// -- fields -- //
@@ -17,20 +20,6 @@ namespace WinApiFramework
 			Left,
 			Center,
 			Right
-		};
-		struct ConStruct : public WindowControl::ConStruct
-		{
-			std::wstring caption;
-			TextAlignment textAlignment;
-
-			ConStruct(WindowControl::ConStruct windowControlConStruct = WindowControl::ConStruct(),
-					  const std::wstring& caption = L"caption",
-					  TextAlignment textAlignment = TextAlignment::Left)
-				: WindowControl::ConStruct(windowControlConStruct)
-				, caption(caption)
-				, textAlignment(textAlignment)
-			{
-			}
 		};
 		struct Event
 		{
@@ -60,7 +49,7 @@ namespace WinApiFramework
 	public:
 		Label(const Label& label) = delete;
 		Label(const Label&& label) = delete;
-		Label(const ConStruct &conStruct);
+		Label(const ConStruct<Label> &conStruct);
 		~Label();
 
 
@@ -88,6 +77,20 @@ namespace WinApiFramework
 		const std::wstring& Caption;
 		const TextAlignment& Alignment;
 		WindowControl::EventsManager<Label::Event>& Events;
+	};
+
+	template <> struct ConStruct<Label> : ConStruct<WindowControl>
+	{
+		std::wstring caption;
+		Label::TextAlignment textAlignment;
+
+		ConStruct(ConStruct<WindowControl> windowControlConStruct = ConStruct<WindowControl>(),
+				  const std::wstring& caption = L"caption",
+				  Label::TextAlignment textAlignment = Label::TextAlignment::Left)
+			: ConStruct<WindowControl>::ConStruct(windowControlConStruct)
+			, caption(caption)
+			, textAlignment(textAlignment)
+		{}
 	};
 }
 

@@ -6,6 +6,9 @@
 
 namespace WinApiFramework
 {
+	class Edit;
+	template <> struct ConStruct<Edit>;
+
 	class Edit : public WindowControl, public ChildControl
 	{
 		// -- fields -- //
@@ -21,32 +24,6 @@ namespace WinApiFramework
 			UpperCase,
 			LowerCase,
 			Either
-		};
-		struct ConStruct : public WindowControl::ConStruct
-		{
-			std::wstring text = L"";
-			TextAlignment textAlignment = TextAlignment::Left;
-			LettersMode lettersMode = LettersMode::Either;
-			bool passwordMode = false;
-			bool numberOnly = false;
-			unsigned int textLengthLimit = 0xFFFF;
-
-			ConStruct(WindowControl::ConStruct windowControlConStruct = WindowControl::ConStruct(),
-					  const std::wstring& text = L"",
-					  TextAlignment textAlignment = TextAlignment::Left,
-					  LettersMode lettersMode = LettersMode::Either,
-					  bool passwordMode	= false,
-					  bool numberOnly = false,
-					  unsigned int textLengthLimit = 0xFFFF)
-				: WindowControl::ConStruct(windowControlConStruct)
-				, text(text)
-				, textAlignment(textAlignment)
-				, lettersMode(lettersMode)
-				, passwordMode(passwordMode)
-				, numberOnly(numberOnly)
-				, textLengthLimit(textLengthLimit)
-			{
-			}
 		};
 		struct Event
 		{
@@ -86,7 +63,7 @@ namespace WinApiFramework
 	public:
 		Edit(const Edit& edit) = delete;
 		Edit(const Edit&& edit) = delete;
-		Edit(const ConStruct& config);
+		Edit(const ConStruct<Edit>& config);
 		~Edit();
 
 
@@ -121,6 +98,32 @@ namespace WinApiFramework
 		const TextAlignment& Alignment;
 		const LettersMode& LetterMode;
 		WindowControl::EventsManager<Edit::Event>& Events;
+	};
+
+	template <> struct ConStruct<Edit> : ConStruct<WindowControl>
+	{
+		std::wstring text = L"";
+		Edit::TextAlignment textAlignment = Edit::TextAlignment::Left;
+		Edit::LettersMode lettersMode = Edit::LettersMode::Either;
+		bool passwordMode = false;
+		bool numberOnly = false;
+		unsigned int textLengthLimit = 0xFFFF;
+
+		ConStruct(ConStruct<WindowControl> windowControlConStruct = ConStruct<WindowControl>(),
+				  const std::wstring& text = L"",
+				  Edit::TextAlignment textAlignment = Edit::TextAlignment::Left,
+				  Edit::LettersMode lettersMode = Edit::LettersMode::Either,
+				  bool passwordMode = false,
+				  bool numberOnly = false,
+				  unsigned int textLengthLimit = 0xFFFF)
+			: ConStruct<WindowControl>::ConStruct(windowControlConStruct)
+			, text(text)
+			, textAlignment(textAlignment)
+			, lettersMode(lettersMode)
+			, passwordMode(passwordMode)
+			, numberOnly(numberOnly)
+			, textLengthLimit(textLengthLimit)
+		{}
 	};
 }
 

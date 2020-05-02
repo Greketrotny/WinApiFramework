@@ -6,6 +6,9 @@
 
 namespace WinApiFramework
 {
+	class ProgressBar;
+	template <> struct ConStruct<ProgressBar>;
+
 	class ProgressBar : public WindowControl, public ChildControl
 	{
 		// -- fields -- //
@@ -18,23 +21,6 @@ namespace WinApiFramework
 			Normal,
 			Pause,
 			Error
-		};
-		struct ConStruct : WindowControl::ConStruct
-		{
-			Range range;
-			int position = 0;
-			unsigned int step = 1;
-
-			ConStruct(WindowControl::ConStruct winCtrlConStrut = WindowControl::ConStruct(),
-					  Range range = Range(0, 100),
-					  int position = 0,
-					  unsigned int step = 1u)
-				: WindowControl::ConStruct(winCtrlConStrut)
-				, range(range)
-				, position(position)
-				, step(step)
-			{
-			}
 		};
 		struct Event
 		{
@@ -67,7 +53,7 @@ namespace WinApiFramework
 	public:
 		ProgressBar(const ProgressBar &progressBar) = delete;
 		ProgressBar(const ProgressBar &&progressBar) = delete;
-		ProgressBar(const ConStruct& conStruct);
+		ProgressBar(const ConStruct<ProgressBar>& conStruct);
 		~ProgressBar();
 
 
@@ -104,6 +90,23 @@ namespace WinApiFramework
 		const unsigned int& Step;
 		const BarState& State;
 		WindowControl::EventsManager<ProgressBar::Event>& Events;
+	};
+
+	template <> struct ConStruct<ProgressBar> : ConStruct<WindowControl>
+	{
+		Range range;
+		int position = 0;
+		unsigned int step = 1;
+
+		ConStruct(ConStruct<WindowControl> winCtrlConStrut = ConStruct<WindowControl>(),
+				  Range range = Range(0, 100),
+				  int position = 0,
+				  unsigned int step = 1u)
+			: ConStruct<WindowControl>::ConStruct(winCtrlConStrut)
+			, range(range)
+			, position(position)
+			, step(step)
+		{}
 	};
 }
 

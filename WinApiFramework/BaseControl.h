@@ -7,6 +7,8 @@
 
 namespace WinApiFramework
 {
+	class ParentControl;
+
 	// ~~~~~~~~ [CLASS] BaseControl ~~~~~~~~
 	class BaseControl
 	{

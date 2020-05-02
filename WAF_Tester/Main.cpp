@@ -24,7 +24,7 @@ public:
 	{
 		// MainWindow
 		MainWindow = new WAF::Window(
-			WAF::Window::ConStruct(L"WinApiFramework test",
+			WAF::ConStruct<WAF::Window>(L"WinApiFramework test",
 								   WAF::Rect(50, 50, 1000, 600),
 								   WAF::Window::Position::Center,
 								   WAF::Window::StartStyle::Normal,
@@ -40,8 +40,8 @@ public:
 		{
 			for (int x = 0; x < grid_size; x++)
 			{
-				buttons.push_back(std::make_unique<WAF::Button>(MainWindow, WAF::Button::ConStruct(
-					WAF::WindowControl::ConStruct(WAF::Rect(x * button_width, y * button_height, button_width, button_height)),
+				buttons.push_back(std::make_unique<WAF::Button>(MainWindow, WAF::ConStruct<WAF::Button>(
+					WAF::ConStruct<WAF::WindowControl>(WAF::Rect(x * button_width, y * button_height, button_width, button_height)),
 					L"button1 caption")));
 
 				buttons[y * grid_size + x]->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);

@@ -11,6 +11,10 @@ namespace WinApiFramework
 {
 	class Framework;
 
+	class Window;
+	template <> struct ConStruct<Window>;
+
+	// ~~~~~~~~ [CLASS] Window ~~~~~~~~
 	class Window : public ParentControl
 	{
 		// -- fields -- //
@@ -73,35 +77,6 @@ namespace WinApiFramework
 			Event(Type type)
 			{
 				this->type = type;
-			}
-		};
-		struct ConStruct
-		{
-			// -- ConStruct::fields -- //
-		public:
-			std::wstring caption;
-			Rect rect;
-			Position position;
-			StartStyle startStyle;
-			SizeRect sizeRect;
-
-
-			// -- ConStruct::constructor -- //
-		public:
-			ConStruct(const std::wstring& caption = L"default title",
-					  const Rect rect = Rect(),
-					  Position position = Position::Center,
-					  StartStyle startStyle = StartStyle::Normal,
-					  SizeRect sizeRect = SizeRect())
-				: caption(caption)
-				, rect(rect)
-				, position(position)
-				, startStyle(startStyle)
-				, sizeRect(sizeRect)
-			{
-			}
-			~ConStruct()
-			{
 			}
 		};
 	private:
@@ -219,7 +194,7 @@ namespace WinApiFramework
 	public:
 		Window(const Window &wnd) = delete;
 		Window(const Window &&wnd) = delete;
-		Window(const ConStruct &config);
+		Window(const ConStruct<Window> &config);
 		~Window();
 
 
@@ -233,7 +208,7 @@ namespace WinApiFramework
 	private:
 		LRESULT WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam);
 		bool CreateAndRegisterWindowClass();
-		bool CreateWinApiWindow(ConStruct config);
+		bool CreateWinApiWindow(ConStruct<Window> config);
 	public:
 		void PushEvent(Window::Event newEvent);
 		Window::Event GetEvent();
@@ -297,6 +272,36 @@ namespace WinApiFramework
 
 		// -- friends -- //
 		friend Framework;
+	};
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+	template <> struct ConStruct<Window>
+	{
+		// ~~ ConStruct<Window>::fields ~~
+	public:
+		std::wstring caption;
+		Rect rect;
+		Window::Position position;
+		Window::StartStyle startStyle;
+		SizeRect sizeRect;
+
+
+		// ~~ ConStruct<Window>::constructor ~~
+	public:
+		ConStruct(const std::wstring& caption = L"default title",
+				  const Rect rect = Rect(),
+				  Window::Position position = Window::Position::Center,
+				  Window::StartStyle startStyle = Window::StartStyle::Normal,
+				  SizeRect sizeRect = SizeRect())
+			: caption(caption)
+			, rect(rect)
+			, position(position)
+			, startStyle(startStyle)
+			, sizeRect(sizeRect)
+		{}
+		~ConStruct()
+		{}
 	};
 }
 

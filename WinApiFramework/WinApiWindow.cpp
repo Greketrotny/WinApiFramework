@@ -72,7 +72,7 @@ Window::Window()
 	// register self in framework
 	Framework::AddWindow(this);
 }
-Window::Window(const Window::ConStruct &conStruct)
+Window::Window(const ConStruct<Window> &conStruct)
 	:Window()
 {
 	windowRect = conStruct.rect;
@@ -284,7 +284,7 @@ bool Window::CreateAndRegisterWindowClass()
 	}
 	return true;
 }
-bool Window::CreateWinApiWindow(Window::ConStruct conStruct)
+bool Window::CreateWinApiWindow(ConStruct<Window> conStruct)
 {
 	// set start window style
 	if (conStruct.startStyle == Window::StartStyle::Maximized)

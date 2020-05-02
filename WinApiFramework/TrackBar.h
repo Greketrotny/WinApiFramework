@@ -7,6 +7,9 @@
 
 namespace WinApiFramework
 {
+	class TrackBar;
+	template <> struct ConStruct<Button>;
+
 	class TrackBar : public WindowControl, public ChildControl
 	{
 		// -- fields -- //
@@ -20,32 +23,6 @@ namespace WinApiFramework
 		{
 			Horizontal,
 			Vertical
-		};
-		struct ConStruct : public WindowControl::ConStruct
-		{
-			int startPosition;
-			Range trackRange;
-			Range selectRange;
-			Orientation orientation;
-			unsigned int smallStep, largeStep;
-			bool EnableSelectRange;
-
-			ConStruct(WindowControl::ConStruct winCtrlConStruct = WindowControl::ConStruct(),
-					  int startPosition = 0,
-					  Range trackRange = Range(0, 100),
-					  Range selectRange = Range(0, 100),
-					  Orientation orientation = Orientation::Horizontal,
-					  unsigned int smallStep = 1u, unsigned int largeStep = 5u,
-					  bool enagleSelectRange = false)
-				: WindowControl::ConStruct(winCtrlConStruct)
-				, startPosition(startPosition)
-				, trackRange(trackRange)
-				, selectRange(selectRange)
-				, orientation(orientation)
-				, smallStep(smallStep), largeStep(largeStep)
-				, EnableSelectRange(enagleSelectRange)
-			{
-			}
 		};
 		struct Event
 		{
@@ -88,7 +65,7 @@ namespace WinApiFramework
 	public:
 		TrackBar(const TrackBar &TrackBar) = delete;
 		TrackBar(const TrackBar &&TrackBar) = delete;
-		TrackBar(const ConStruct &conStruct);
+		TrackBar(const ConStruct<TrackBar> &conStruct);
 		~TrackBar();
 
 
@@ -132,10 +109,36 @@ namespace WinApiFramework
 		const int& Position;
 		const int& TrackMin;
 		const int& TrackMax;
-		const Orientation& Orientation;
+		const Orientation& TrackOrientation;
 		const unsigned int& SmallStep;
 		const unsigned int& LargeStep;
 		WindowControl::EventsManager<TrackBar::Event>& Events;
+	};
+
+	template <> struct ConStruct<TrackBar> : ConStruct<WindowControl>
+	{
+		int startPosition;
+		Range trackRange;
+		Range selectRange;
+		TrackBar::Orientation orientation;
+		unsigned int smallStep, largeStep;
+		bool EnableSelectRange;
+
+		ConStruct(ConStruct<WindowControl> winCtrlConStruct = ConStruct<WindowControl>(),
+				  int startPosition = 0,
+				  Range trackRange = Range(0, 100),
+				  Range selectRange = Range(0, 100),
+				  TrackBar::Orientation orientation = TrackBar::Orientation::Horizontal,
+				  unsigned int smallStep = 1u, unsigned int largeStep = 5u,
+				  bool enagleSelectRange = false)
+			: ConStruct<WindowControl>::ConStruct(winCtrlConStruct)
+			, startPosition(startPosition)
+			, trackRange(trackRange)
+			, selectRange(selectRange)
+			, orientation(orientation)
+			, smallStep(smallStep), largeStep(largeStep)
+			, EnableSelectRange(enagleSelectRange)
+		{}
 	};
 }
 

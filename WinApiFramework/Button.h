@@ -6,23 +6,17 @@
 
 namespace WinApiFramework
 {
+	// ConStruct specialization for Button
+	class Button;
+	template <> struct ConStruct<Button>;
+
+	// ~~~~~~~~ [CLASS] Button ~~~~~~~~
 	class Button : public WindowControl, public ChildControl
 	{
-		// -- fields -- //
+		// ~~ Button::fields ~~
 	private:
 		std::wstring m_caption;
 	public:
-		struct ConStruct : public WindowControl::ConStruct
-		{
-			std::wstring caption;
-
-			ConStruct(WindowControl::ConStruct conStruct = WindowControl::ConStruct(),
-					  std::wstring caption = L"text")
-				: WindowControl::ConStruct(conStruct)
-				, caption(caption)
-			{
-			}
-		};
 		struct Event
 		{
 			enum Type
@@ -58,13 +52,21 @@ namespace WinApiFramework
 	public:
 		Button(const Button &otherButton) = delete;
 		Button(const Button &&otherButton) = delete;
-		Button(ParentControl* parentcontrol, const ConStruct &conStruct);
+		Button(ParentControl* parentcontrol, const ConStruct<Button>& conStruct);
 		~Button();
 
 
 		// -- operators -- //
+	private:
 		Button& operator=(const Button &otherButton) = delete;
 		Button& operator=(const Button &&otherButton) = delete;
+
+
+		// ~~ Button::static methods ~~ //
+	private:
+		static Button* Create(ParentControl* parentControl, const ConStruct<Button> &conStruct);
+		static void Destroy(Button* button);
+		void Destroy();
 
 
 		// -- methods -- //
@@ -83,6 +85,19 @@ namespace WinApiFramework
 		// -- property fields -- //
 		const std::wstring& Caption;
 		WindowControl::EventsManager<Button::Event>& Events;
+	};
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+	template <> struct ConStruct<Button> : ConStruct<WindowControl>
+	{
+		std::wstring caption;
+
+		ConStruct(ConStruct<WindowControl> conStruct = ConStruct<WindowControl>(),
+				  std::wstring caption = L"text")
+			: ConStruct<WindowControl>::ConStruct(conStruct)
+			, caption(caption)
+		{}
 	};
 }
 #endif // !BUTTON_H_H

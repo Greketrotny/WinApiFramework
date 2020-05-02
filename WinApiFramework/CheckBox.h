@@ -6,6 +6,9 @@
 
 namespace WinApiFramework
 {
+	class CheckBox;
+	template <> struct ConStruct<CheckBox>;
+
 	class CheckBox : public WindowControl, public ChildControl
 	{
 		// -- fields -- //
@@ -15,23 +18,6 @@ namespace WinApiFramework
 			UnCheck,
 			Check,
 			MiddleState
-		};
-		struct ConStruct : public WindowControl::ConStruct
-		{
-			std::wstring caption;
-			bool isTripleState;
-			BoxState boxState;
-
-			ConStruct(WindowControl::ConStruct windowControlConStruct = WindowControl::ConStruct(),
-					  const std::wstring& caption = L"caption",
-					  bool isTripleState = false,
-					  BoxState boxState = UnCheck)
-				: WindowControl::ConStruct(windowControlConStruct)
-				, caption(caption)
-				, isTripleState(isTripleState)
-				, boxState(boxState)
-			{
-			}
 		};
 		struct Event
 		{
@@ -64,7 +50,7 @@ namespace WinApiFramework
 	public:
 		CheckBox(const CheckBox& checkBox) = delete;
 		CheckBox(const CheckBox&& checkBox) = delete;
-		CheckBox(const ConStruct& conStruct);
+		CheckBox(const ConStruct<CheckBox>& conStruct);
 		~CheckBox();
 
 
@@ -96,6 +82,23 @@ namespace WinApiFramework
 		const std::wstring& Caption;
 		const bool& IsTripleState;
 		WindowControl::EventsManager<CheckBox::Event>& Events;
+	};
+
+	template <> struct ConStruct<CheckBox> : ConStruct<WindowControl>
+	{
+		std::wstring caption;
+		bool isTripleState;
+		CheckBox::BoxState boxState;
+
+		ConStruct(ConStruct<WindowControl> windowControlConStruct = ConStruct<WindowControl>(),
+				  const std::wstring& caption = L"caption",
+				  bool isTripleState = false,
+				  CheckBox::BoxState boxState = CheckBox::UnCheck)
+			: ConStruct<WindowControl>::ConStruct(windowControlConStruct)
+			, caption(caption)
+			, isTripleState(isTripleState)
+			, boxState(boxState)
+		{}
 	};
 }
 

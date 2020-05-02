@@ -11,6 +11,9 @@ namespace G = Graphics;
 
 namespace WinApiFramework
 {
+	class GraphicsBox;
+	template <> struct ConStruct<GraphicsBox>;
+
 	class GraphicsBox : public WindowControl, public ChildControl
 	{
 		class GBGraphics;
@@ -339,17 +342,6 @@ namespace WinApiFramework
 			friend class GraphicsBox;
 		};
 	public:
-		struct ConStruct : public WindowControl::ConStruct
-		{
-			GBGraphics::ConStruct graphics;
-
-			ConStruct(WindowControl::ConStruct windowControlConStruct = WindowControl::ConStruct(),
-					  GBGraphics::ConStruct graphicsConStruct = GBGraphics::ConStruct())
-				: WindowControl::ConStruct(windowControlConStruct)
-				, graphics(graphicsConStruct)
-			{
-			}
-		};
 		struct Event
 		{
 			enum Type
@@ -380,7 +372,7 @@ namespace WinApiFramework
 	public:
 		GraphicsBox(const GraphicsBox& graphicsBox) = delete;
 		GraphicsBox(const GraphicsBox&& graphicsBox) = delete;
-		GraphicsBox(const ConStruct &conStruct);
+		GraphicsBox(const ConStruct<GraphicsBox> &conStruct);
 		~GraphicsBox();
 
 
@@ -407,6 +399,17 @@ namespace WinApiFramework
 	public:
 		GBGraphics& Gfx;
 		WindowControl::EventsManager<GraphicsBox::Event>& Events;
+	};
+
+	template <> struct ConStruct<GraphicsBox> : ConStruct<WindowControl>
+	{
+		GraphicsBox::GBGraphics::ConStruct graphics;
+
+		ConStruct(ConStruct<WindowControl> windowControlConStruct = ConStruct<WindowControl>(),
+				  GraphicsBox::GBGraphics::ConStruct graphicsConStruct = GraphicsBox::GBGraphics::ConStruct())
+			: ConStruct<WindowControl>::ConStruct(windowControlConStruct)
+			, graphics(graphicsConStruct)
+		{}
 	};
 }
 

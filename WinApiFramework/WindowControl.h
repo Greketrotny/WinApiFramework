@@ -9,8 +9,14 @@
 
 namespace WinApiFramework
 {
-	class Window;
+	// general ConStruct structure declaration
+	template <class T> struct ConStruct;
 
+	class WindowControl;
+	template <> struct ConStruct<WindowControl>;	// forward declaration
+
+
+	// ~~~~~~~ [CLASS] WindowControl ~~~~~~~~
 	class WindowControl : virtual public BaseControl
 	{
 		// ~~ WindowControl::fields ~~ //
@@ -18,17 +24,6 @@ namespace WinApiFramework
 		DWORD m_controlStyle = WS_CHILD | WS_VISIBLE;
 		Rect m_rect;
 	public:
-		struct ConStruct
-		{
-			Rect rect;
-
-			ConStruct(const ConStruct& conStruct)
-				: rect(conStruct.rect)
-			{}
-			ConStruct(Rect rect = Rect())
-				: rect(rect)
-			{}
-		};
 		struct Event
 		{
 			enum Type
@@ -123,7 +118,7 @@ namespace WinApiFramework
 
 		// ~~ WindowControl::constructors ~~ //
 	protected:
-		WindowControl(const WindowControl::ConStruct& conStruct);
+		WindowControl(const ConStruct<WindowControl>& conStruct);
 		virtual ~WindowControl();
 
 
@@ -144,6 +139,20 @@ namespace WinApiFramework
 		// ~~ property fields ~~ //
 	public:
 		const Rect& Rectangle;
+	};
+
+
+	// ConStruct specialization for WindowControl
+	template <> struct ConStruct<WindowControl>
+	{
+		Rect rect;
+
+		ConStruct(const ConStruct& conStruct)
+			: rect(conStruct.rect)
+		{}
+		ConStruct(Rect rect = Rect())
+			: rect(rect)
+		{}
 	};
 }
 #endif // !WINDOW_CONTROL_H
