@@ -5,7 +5,7 @@
 namespace WinApiFramework
 {
 	// ~~~~~~~~ [CLASS] BaseControl ~~~~~~~~
-	// ~~ BaseControl::constructor
+	// ~~ BaseControl::constructor ~~
 	BaseControl::BaseControl()
 	{
 	}
@@ -13,7 +13,7 @@ namespace WinApiFramework
 	{
 	}
 
-	// ~~ BaseControl::methods
+	// ~~ BaseControl::methods ~~
 	HWND BaseControl::GetWindowHandle() const
 	{
 		return m_hWindow;
@@ -23,22 +23,20 @@ namespace WinApiFramework
 
 
 	// ~~~~~~~~ [CLASS] ChildControl ~~~~~~~~
-	// ~~ ChildControl::constructor
+	// ~~ ChildControl::constructor ~~
 	ChildControl::ChildControl(ParentControl* const parentControl)
 		: m_pParentControl(parentControl)
 	{
-		m_pParentControl->AddControl(this);
 	}
 	ChildControl::~ChildControl()
 	{
-		m_pParentControl->RemoveControl(this);
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
 	// ~~~~~~~~ [CLASS] ParentControl ~~~~~~~~
-	// ~~ ParentControl::constructor
+	// ~~ ParentControl::constructor ~~
 	ParentControl::ParentControl()
 	{
 	}

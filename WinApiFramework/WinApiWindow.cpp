@@ -6,54 +6,6 @@ using namespace WinApiFramework;
 
 #undef IsMinimized
 
-// ~~~~~~~~ [STRUCT] Window::ControlsStorage ~~~~~~~~
-// ~~ ControlsStorage::constructors ~~
-Window::ControlsStorage::ControlsStorage()
-{
-
-}
-Window::ControlsStorage::~ControlsStorage()
-{
-	for (ChildControl* control : controls)
-	{
-		delete control;
-	}
-
-	controls.clear();
-}
-
-// ~~ ControlsStorage::methods ~~
-void Window::ControlsStorage::AddControl(ChildControl* newControl)
-{
-	this->controls.push_back(newControl);
-}
-void Window::ControlsStorage::RemoveControl(ChildControl* oldControl)
-{
-	for (unsigned int i = 0; i < controls.size(); i++)
-	{
-		if (controls[i] == oldControl)
-		{
-			controls.erase(controls.begin() + i);
-			return;
-		}
-	}
-}
-bool Window::ControlsStorage::FindMessageAddressee(WPARAM wParam, LPARAM lParam)
-{
-	for (ChildControl*& control : controls)
-	{
-		if (control->GetWindowHandle() == (HWND)lParam)
-		{
-			if (!control->ControlProcedure(wParam, lParam))
-				return 0;
-		}
-	}
-
-	return 1;
-}
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 // ~~~~~~~~ [CLASS] Window ~~~~~~~~
 // -- constructor -- //
 Window::Window()
@@ -88,6 +40,14 @@ Window::Window(const ConStruct<Window> &conStruct)
 }
 Window::~Window()
 {
+	// destroy all controls
+	for (size_t i = 0; i < controls.size(); i++)
+	{
+		DestroyControlAsParent(controls[i]);
+	}
+	controls.clear();
+
+	// destroy window
 	SendMessage(m_hWindow, WM_CLOSE, 0, 0);
 	UnregisterClass(window_class_name.c_str(), Framework::hProgramInstance);
 	Framework::RemoveWindow(this);
@@ -105,7 +65,15 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_NOTIFY:
 	case WM_HSCROLL:
 	case WM_VSCROLL:
-		return controls.FindMessageAddressee(wParam, lParam);
+		for (ChildControl*& control : controls)
+		{
+			if (control->GetWindowHandle() == (HWND)lParam)
+			{
+				if (!control->ControlProcedure(wParam, lParam))
+					return 0;
+			}
+		}
+		return 1;
 		break;
 
 		// base events //
@@ -516,17 +484,31 @@ const std::wstring& Window::GetCaption() const
 	return caption;
 }
 
-void Window::AddControl(ChildControl* newControl)
+bool Window::AddControl(ChildControl* newControl)
 {
-	if (newControl == nullptr) return;
-	controls.AddControl(newControl);
-	events.PushEvent(Window::Event(Event::Type::ControlAdd));
+	if (newControl == nullptr) return false;
+
+	controls.push_back(newControl);
+	events.PushEvent(Window::Event(Event::Type::ControlAdded));
+
+	return true;
 }
-void Window::RemoveControl(ChildControl* oldControl)
+bool Window::RemoveControl(ChildControl* oldControl)
 {
-	if (oldControl == nullptr) return;
-	controls.RemoveControl(oldControl);
-	events.PushEvent(Window::Event(Event::Type::ControlRemove));
+	if (oldControl == nullptr) return false;
+
+
+	for (unsigned int i = 0; i < controls.size(); i++)
+	{
+		if (controls[i] == oldControl)
+		{
+			controls.erase(controls.begin() + i);
+			events.PushEvent(Window::Event(Event::Type::ControlRemoved));
+			return true;
+		}
+	}
+
+	return false;
 }
 
 Point Window::GetMousePosition() const

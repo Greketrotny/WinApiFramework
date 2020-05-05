@@ -24,6 +24,14 @@ Button::~Button()
 
 
 // ~~ Button::static methods ~~
+Button* Button::Create(ParentControl* parentControl, const ConStruct<Button>& conStruct)
+{
+	return parentControl->CreateControl<Button>(conStruct);
+}
+void Button::Destroy(Button* button)
+{
+	button->m_pParentControl->DestroyControl(button);
+}
 
 
 // -- methods -- //
@@ -80,6 +88,10 @@ void Button::DestroyControlWindow()
 }
 
 // public:
+void Button::Destroy()
+{
+	this->m_pParentControl->DestroyControl(this);
+}
 void Button::SetCaption(std::wstring newCaption)
 {
 	m_caption = newCaption;

@@ -9,11 +9,9 @@
 
 namespace WinApiFramework
 {
-	// general ConStruct structure declaration
-	template <class T> struct ConStruct;
-
+	// forward declaration
 	class WindowControl;
-	template <> struct ConStruct<WindowControl>;	// forward declaration
+	template <> struct ConStruct<WindowControl>;
 
 
 	// ~~~~~~~ [CLASS] WindowControl ~~~~~~~~
@@ -142,7 +140,10 @@ namespace WinApiFramework
 	};
 
 
-	// ConStruct specialization for WindowControl
+	// ~~~~~~~~ [STRUCT] ConStruct<WindowControl> ~~~~~~~~
+	/* 
+	* ConStruct template specialization for WindowControl
+	*/
 	template <> struct ConStruct<WindowControl>
 	{
 		Rect rect;

@@ -49,7 +49,7 @@ namespace WinApiFramework
 
 
 		// -- constructors -- //
-	public:
+	private:
 		Button(const Button &otherButton) = delete;
 		Button(const Button &&otherButton) = delete;
 		Button(ParentControl* parentcontrol, const ConStruct<Button>& conStruct);
@@ -62,12 +62,10 @@ namespace WinApiFramework
 		Button& operator=(const Button &&otherButton) = delete;
 
 
-		// ~~ Button::static methods ~~ //
-	private:
-		static Button* Create(ParentControl* parentControl, const ConStruct<Button> &conStruct);
+		// -- static methods -- //
+	public:
+		static Button* Create(ParentControl* parentControl, const ConStruct<Button>& conStruct);
 		static void Destroy(Button* button);
-		void Destroy();
-
 
 		// -- methods -- //
 	private:
@@ -79,12 +77,17 @@ namespace WinApiFramework
 			m_events.PushEvent(Button::Event((Button::Event::Type)event.type, this));
 		}
 	public:
+		void Destroy();
 		void SetCaption(std::wstring newCaption);
 
 
 		// -- property fields -- //
 		const std::wstring& Caption;
 		WindowControl::EventsManager<Button::Event>& Events;
+
+		// -- friends -- //
+	public:
+		friend class ParentControl;
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

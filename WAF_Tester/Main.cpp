@@ -14,14 +14,17 @@ class MainForm
 	// -- MainForm::fields -- //
 public:
 	WAF::Window *MainWindow = nullptr;
-	
-	std::vector<std::unique_ptr<WAF::Button>> buttons;
+	std::vector<WAF::Button*> buttons;
+	WAF::Button* lastClickedButton = nullptr;
 
 
 	// -- MainForm::constructors -- //
 public:
 	MainForm()
 	{
+		WAF::Framework::Keyboard.KeyEvents.AddEventHandler<MainForm>(this, &MainForm::FrameworkKeyboardEventHandler);
+		WAF::Framework::Mouse.Events.AddEventHandler<MainForm>(this, &MainForm::FrameworkMouse_EH);
+
 		// MainWindow
 		MainWindow = new WAF::Window(
 			WAF::ConStruct<WAF::Window>(L"WinApiFramework test",
@@ -30,28 +33,33 @@ public:
 								   WAF::Window::StartStyle::Normal,
 								   WAF::SizeRect(200u, 100u, 2000u, 1000u)));
 		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindow_EH);
-		WAF::Framework::Keyboard.KeyEvents.AddEventHandler<MainForm>(this, &MainForm::FrameworkKeyboardEventHandler);
+
 
 		// buttons
-		int grid_size = 10;
-		int button_width = 100;
-		int button_height = 50;
-		for (int y = 0; y < grid_size; y++)
+		int size = 4;
+		int width = 100;
+		int height = 50;
+		for (int x = 0; x < size; x++)
 		{
-			for (int x = 0; x < grid_size; x++)
+			for (int y = 0; y < size; y++)
 			{
-				buttons.push_back(std::make_unique<WAF::Button>(MainWindow, WAF::ConStruct<WAF::Button>(
-					WAF::ConStruct<WAF::WindowControl>(WAF::Rect(x * button_width, y * button_height, button_width, button_height)),
-					L"button1 caption")));
+				/*WAF::Button* button = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
+					WAF::ConStruct<WAF::WindowControl>(WAF::Rect(x * width, y * height, width, height)),
+					L"button " + std::to_wstring(y * size + x)));
+				button->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
+				buttons.push_back(button);*/
 
-				buttons[y * grid_size + x]->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
+				WAF::Button* button = WAF::Button::Create(MainWindow, WAF::ConStruct<WAF::Button>(
+					WAF::ConStruct<WAF::WindowControl>(WAF::Rect(x * width, y * height, width, height)),
+					L"button " + std::to_wstring(y * size + x)));
+				button->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
+				buttons.push_back(button);
+
 			}
 		}
 	}
 	~MainForm()
 	{
-		buttons.clear();
-
 		if (MainWindow) delete MainWindow;
 	}
 
@@ -82,9 +90,12 @@ public:
 		{
 			case WAF::Button::Event::Type::Click:
 				event.button->SetCaption(L"button clicked!");
+				lastClickedButton = event.button;
 				break;
 			case WAF::Button::Event::Type::DoubleClick:
-				event.button->SetCaption(L"button double clicked!");
+				// event.button->SetCaption(L"button double clicked!");
+				// MainWindow->DestroyControl(event.button);
+				event.button->Destroy();
 				break;
 			case WAF::Button::Event::Type::Push:
 				event.button->SetCaption(L"button pushed!");
@@ -105,7 +116,18 @@ public:
 				break;
 		}
 	}
-
+	void FrameworkMouse_EH(WAF::Mouse::Event event)
+	{
+		switch (event.type)
+		{
+			case WAF::Mouse::Event::Type::RightPress:
+				if (lastClickedButton)
+				{
+					lastClickedButton->Move(MainWindow->GetMousePosition().x, MainWindow->GetMousePosition().y);
+				}
+				break;
+		}
+	}
 
 	// -- MainForm::methods -- //
 	void DisplayMainWindowProps()

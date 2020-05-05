@@ -62,8 +62,8 @@ namespace WinApiFramework
 				DisableMaximizeBox,
 				EnableMinimizeBox,
 				DisableMinimizeBox,
-				ControlAdd,
-				ControlRemove,
+				ControlAdded,
+				ControlRemoved,
 				CaptionChange,
 				Close,
 				Invalid
@@ -161,31 +161,14 @@ namespace WinApiFramework
 				eventHandlersEnabled = false;
 			}
 		};
-		struct ControlsStorage
-		{
-			// -- fields -- //
-		private:
-			std::vector<ChildControl*> controls;
-
-			// -- constructor -- //
-		public:
-			ControlsStorage();
-			~ControlsStorage();
-
-			// -- methods -- //
-		public:
-			void AddControl(ChildControl* newControl);
-			void RemoveControl(ChildControl* oldControl);
-			bool FindMessageAddressee(WPARAM wParam, LPARAM lParam);
-		};
-
+		
 	private:
 		Position position;
 		Rect windowRect;
 		Rect clientRect;
 		SizeRect sizeRect;
 		EventsManager events;
-		ControlsStorage controls;
+		std::vector<ChildControl*> controls;
 
 
 		// -- constructors -- //
@@ -249,9 +232,10 @@ namespace WinApiFramework
 		const HWND& GetWindowHandle() const;
 		const std::wstring& GetCaption() const;
 
-		void AddControl(ChildControl* newControl) override;
-		void RemoveControl(ChildControl* oldControl) override;
-
+	private:
+		bool AddControl(ChildControl* newControl) override;
+		bool RemoveControl(ChildControl* oldControl) override;
+	public:
 		Point GetMousePosition() const override;
 
 
@@ -265,7 +249,7 @@ namespace WinApiFramework
 		const unsigned int& Id;
 		const Rect& WindowRect;
 		const Rect& ClientRect;
-		const SizeRect& WindowSizeRect;		
+		const SizeRect& WindowSizeRect;
 		const std::wstring& Caption;
 		EventsManager& Events;
 

@@ -68,9 +68,35 @@ namespace WinApiFramework
 
 
 		// ~~ ParentControl::methods ~~ //
+	public:
+		template <class T> T* CreateControl(const ConStruct<T>& conStruct)
+		{
+			T* newControl = new T(this, conStruct);
+			AddControl(newControl);
+			return newControl;
+		}
+		void DestroyControl(ChildControl* control)
+		{
+			if (control == nullptr) return;
+
+			if (RemoveControl(control))
+				delete control;
+		}
 	protected:
-		virtual void AddControl(ChildControl* childControl) = 0;
-		virtual void RemoveControl(ChildControl* childControl) = 0;
+		template <class T> T* CreateControlAsParent(const ConStruct<T>& conStruct)
+		{
+			return new T(this, conStruct);
+		}
+		void DestroyControlAsParent(ChildControl*& control)
+		{
+			if (control == nullptr) return;
+
+			delete control;
+			control = nullptr;
+		}
+	protected:
+		virtual bool AddControl(ChildControl* childControl) = 0;
+		virtual bool RemoveControl(ChildControl* childControl) = 0;
 	public:
 		virtual Point GetMousePosition() const = 0;
 

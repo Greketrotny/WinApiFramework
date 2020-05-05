@@ -61,6 +61,14 @@ namespace WinApiFramework
 			if (this->max < this->min) this->max = this->min;
 		}
 	};
+
+
+	// ~~~~~~~~ [STRUCT] ConStruct ~~~~~~~~
+	/*
+	*  generic ConStruct structure for all controls
+	*/
+	template <class T> struct ConStruct;
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
 
 #endif // !DATA_TYPES_H
