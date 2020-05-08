@@ -8,8 +8,7 @@ using namespace WinApiFramework;
 // ~~~~~~~~ [CLASS] Button ~~~~~~~~
 // ~~ Button::constructors ~~
 Button::Button(ParentControl* parentControl, const ConStruct<Button>& conStruct)
-	: WindowControl(conStruct)
-	, ChildControl(parentControl)
+	: ChildControl(parentControl, conStruct)
 	, Caption(m_caption)
 	, Events(m_events)
 {

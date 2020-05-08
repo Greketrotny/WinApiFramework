@@ -7,7 +7,7 @@ using namespace WinApiFramework;
 // [CLASS] Label -------------------------------|
 // -- constructors -- //
 Label::Label(const Label::ConStruct& conStruct)
-	:WindowControl(conStruct),
+	:ChildControl(conStruct),
 	Caption(caption),
 	Alignment(textAlignment),
 	Events(events)

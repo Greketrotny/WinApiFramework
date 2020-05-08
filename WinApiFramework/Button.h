@@ -2,7 +2,6 @@
 #define BUTTON_H
 
 #include "BaseControl.h"
-#include "WindowControl.h"
 
 namespace WinApiFramework
 {
@@ -11,7 +10,7 @@ namespace WinApiFramework
 	template <> struct ConStruct<Button>;
 
 	// ~~~~~~~~ [CLASS] Button ~~~~~~~~
-	class Button : public WindowControl, public ChildControl
+	class Button : public ChildControl
 	{
 		// ~~ Button::fields ~~
 	private:
@@ -45,7 +44,7 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		WindowControl::EventsManager<Button::Event> m_events;
+		ChildControl::EventsManager<Button::Event> m_events;
 
 
 		// -- constructors -- //
@@ -72,7 +71,7 @@ namespace WinApiFramework
 		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
 		void DestroyControlWindow() override;
-		void PushBaseEvent(WindowControl::Event event) override
+		void PushBaseEvent(ChildControl::Event event) override
 		{
 			m_events.PushEvent(Button::Event((Button::Event::Type)event.type, this));
 		}
@@ -83,7 +82,7 @@ namespace WinApiFramework
 
 		// -- property fields -- //
 		const std::wstring& Caption;
-		WindowControl::EventsManager<Button::Event>& Events;
+		ChildControl::EventsManager<Button::Event>& Events;
 
 		// -- friends -- //
 	public:
@@ -92,13 +91,13 @@ namespace WinApiFramework
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-	template <> struct ConStruct<Button> : ConStruct<WindowControl>
+	template <> struct ConStruct<Button> : ConStruct<ChildControl>
 	{
 		std::wstring caption;
 
-		ConStruct(ConStruct<WindowControl> conStruct = ConStruct<WindowControl>(),
+		ConStruct(ConStruct<ChildControl> conStruct = ConStruct<ChildControl>(),
 				  std::wstring caption = L"text")
-			: ConStruct<WindowControl>::ConStruct(conStruct)
+			: ConStruct<ChildControl>::ConStruct(conStruct)
 			, caption(caption)
 		{}
 	};

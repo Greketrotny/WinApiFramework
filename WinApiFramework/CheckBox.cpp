@@ -8,7 +8,7 @@ using namespace WinApiFramework;
 // [CLASS] CheckBox ----------------------------|
 // -- constructors -- //
 CheckBox::CheckBox(const CheckBox::ConStruct& conStruct)
-	: WindowControl(conStruct),
+	: ChildControl(conStruct),
 	State(boxState),
 	Caption(caption),
 	IsTripleState(isTripleState),

@@ -1,7 +1,7 @@
 #ifndef CHECK_BOX_H
 #define CHECK_BOX_H
 
-#include "WindowControl.h"
+
 #include "BaseControl.h"
 
 namespace WinApiFramework
@@ -9,7 +9,7 @@ namespace WinApiFramework
 	class CheckBox;
 	template <> struct ConStruct<CheckBox>;
 
-	class CheckBox : public WindowControl, public ChildControl
+	class CheckBox : public ChildControl
 	{
 		// -- fields -- //
 	public:
@@ -43,7 +43,7 @@ namespace WinApiFramework
 		std::wstring caption;
 		bool isTripleState;
 		BoxState boxState;
-		WindowControl::EventsManager<CheckBox::Event> events;
+		ChildControl::EventsManager<CheckBox::Event> events;
 
 
 		// -- constructors -- //
@@ -65,7 +65,7 @@ namespace WinApiFramework
 		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
 		void DestroyControlWindow() override;
-		void PushBaseEvent(WindowControl::Event event) override
+		void PushBaseEvent(ChildControl::Event event) override
 		{
 			events.PushEvent(CheckBox::Event((CheckBox::Event::Type)event.type));
 		}
@@ -81,20 +81,20 @@ namespace WinApiFramework
 		const BoxState& State;
 		const std::wstring& Caption;
 		const bool& IsTripleState;
-		WindowControl::EventsManager<CheckBox::Event>& Events;
+		ChildControl::EventsManager<CheckBox::Event>& Events;
 	};
 
-	template <> struct ConStruct<CheckBox> : ConStruct<WindowControl>
+	template <> struct ConStruct<CheckBox> : ConStruct<ChildControl>
 	{
 		std::wstring caption;
 		bool isTripleState;
 		CheckBox::BoxState boxState;
 
-		ConStruct(ConStruct<WindowControl> windowControlConStruct = ConStruct<WindowControl>(),
+		ConStruct(ConStruct<ChildControl> windowControlConStruct = ConStruct<ChildControl>(),
 				  const std::wstring& caption = L"caption",
 				  bool isTripleState = false,
 				  CheckBox::BoxState boxState = CheckBox::UnCheck)
-			: ConStruct<WindowControl>::ConStruct(windowControlConStruct)
+			: ConStruct<ChildControl>::ConStruct(windowControlConStruct)
 			, caption(caption)
 			, isTripleState(isTripleState)
 			, boxState(boxState)

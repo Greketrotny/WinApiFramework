@@ -72,9 +72,6 @@
     <ClCompile Include="TrackBar.cpp">
       <Filter>Source Files\WinApiFramework\Controls</Filter>
     </ClCompile>
-    <ClCompile Include="WindowControl.cpp">
-      <Filter>Source Files\WinApiFramework\BaseClasses</Filter>
-    </ClCompile>
     <ClCompile Include="Keyboard.cpp">
       <Filter>Source Files\WinApiFramework\Input</Filter>
     </ClCompile>
@@ -109,9 +106,6 @@
     </ClInclude>
     <ClInclude Include="Button.h">
       <Filter>Header Files\WinApiFramework\Controls</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowControl.h">
-      <Filter>Header Files\WinApiFramework\BaseClasses</Filter>
     </ClInclude>
     <ClInclude Include="Keyboard.h">
       <Filter>Header Files\WinApiFramework\Input</Filter>

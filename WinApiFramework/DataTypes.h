@@ -11,6 +11,41 @@ namespace WinApiFramework
 			: x(x)
 			, y(y)
 		{}
+		Point(const Point& p)
+			: x(p.x)
+			, y(p.y)
+		{}
+		Point(Point&& p)
+			: x(p.x)
+			, y(p.y)
+		{}
+
+		Point& operator=(const Point& p)
+		{
+			this->x = p.x;
+			this->y = p.y;
+			return *this;
+		}
+		Point& operator+=(const Point& p)
+		{
+			this->x += p.x;
+			this->y += p.y;
+			return *this;
+		}
+		Point& operator-=(const Point& p)
+		{
+			this->x -= p.x;
+			this->y -= p.y;
+			return *this;
+		}
+		Point operator-(const Point& p) const
+		{
+			return Point(this->x - p.x, this->y - p.y);
+		}
+		Point operator+(const Point& p) const
+		{
+			return Point(this->x + p.x, this->y + p.y);
+		}
 	};
 	struct Size
 	{
@@ -35,6 +70,14 @@ namespace WinApiFramework
 			: position(position)
 			, size(size)
 		{}
+
+
+		Rect& operator=(const Rect& rect)
+		{
+			this->position = rect.position;
+			this->size = rect.size;
+			return *this;
+		}
 	};
 	struct SizeRect
 	{
@@ -47,6 +90,17 @@ namespace WinApiFramework
 		SizeRect(const Size& minSize, const Size& maxSize)
 			: minSize(minSize)
 			, maxSize(maxSize)
+		{}
+	};
+	struct BoundRect
+	{
+		int top, bottom, left, right;
+
+		BoundRect(int top, int bottom, int left, int right)
+			: top(top)
+			, bottom(bottom)
+			, left(left)
+			, right(right)
 		{}
 	};
 

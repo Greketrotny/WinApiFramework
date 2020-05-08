@@ -203,7 +203,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="WinApiWindow.cpp" />
-    <ClCompile Include="WindowControl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseControl.h" />
@@ -234,7 +233,6 @@
     <ClInclude Include="WinApiFramework.h" />
     <ClInclude Include="WinApiWindow.h" />
     <ClInclude Include="WinApiWindowControls.h" />
-    <ClInclude Include="WindowControl.h" />
     <ClInclude Include="WindowInclude.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

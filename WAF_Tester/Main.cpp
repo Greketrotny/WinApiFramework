@@ -27,16 +27,18 @@ public:
 
 		// MainWindow
 		MainWindow = new WAF::Window(
-			WAF::ConStruct<WAF::Window>(L"WinApiFramework test",
-								   WAF::Rect(50, 50, 1000, 600),
-								   WAF::Window::Position::Center,
-								   WAF::Window::StartStyle::Normal,
-								   WAF::SizeRect(200u, 100u, 2000u, 1000u)));
+			WAF::ConStruct<WAF::Window>(
+				L"WinApiFramework test",
+				WAF::Rect(50, 50, 800, 600),
+				WAF::Window::Position::Center,
+				WAF::Window::StartStyle::Normal,
+				WAF::SizeRect(200u, 100u, 2000u, 1000u),
+				WAF::Size(400, 400)));
 		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindow_EH);
 
 
 		// buttons
-		int size = 4;
+		int size = 2;
 		int width = 100;
 		int height = 50;
 		for (int x = 0; x < size; x++)
@@ -44,13 +46,13 @@ public:
 			for (int y = 0; y < size; y++)
 			{
 				/*WAF::Button* button = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
-					WAF::ConStruct<WAF::WindowControl>(WAF::Rect(x * width, y * height, width, height)),
+					WAF::ConStruct<WAF::ChildControl>(WAF::Rect(x * width, y * height, width, height)),
 					L"button " + std::to_wstring(y * size + x)));
 				button->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
 				buttons.push_back(button);*/
 
 				WAF::Button* button = WAF::Button::Create(MainWindow, WAF::ConStruct<WAF::Button>(
-					WAF::ConStruct<WAF::WindowControl>(WAF::Rect(x * width, y * height, width, height)),
+					WAF::ConStruct<WAF::ChildControl>(WAF::Rect(x * width, y * height, width, height)),
 					L"button " + std::to_wstring(y * size + x)));
 				button->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
 				buttons.push_back(button);
@@ -72,13 +74,13 @@ public:
 		{
 			case WAF::Window::Event::Type::Move:
 			{
-				DisplayMainWindowProps();
+				//DisplayMainWindowProps();
 				break;
 			}
 			case WAF::Window::Event::Type::Resize:
 			{
 				// display new MainWindow properties
-				DisplayMainWindowProps();
+				//DisplayMainWindowProps();
 				break;
 			}
 		}
@@ -91,6 +93,7 @@ public:
 			case WAF::Button::Event::Type::Click:
 				event.button->SetCaption(L"button clicked!");
 				lastClickedButton = event.button;
+				event.button->Move(event.button->Rectangle.position.x + 10, event.button->Rectangle.position.y);
 				break;
 			case WAF::Button::Event::Type::DoubleClick:
 				// event.button->SetCaption(L"button double clicked!");
@@ -123,8 +126,29 @@ public:
 			case WAF::Mouse::Event::Type::RightPress:
 				if (lastClickedButton)
 				{
-					lastClickedButton->Move(MainWindow->GetMousePosition().x, MainWindow->GetMousePosition().y);
+					lastClickedButton->Move(MainWindow->GetCanvasMousePosition());
 				}
+				break;
+			case WAF::Mouse::Event::Type::Move:
+				for (size_t i = 0; i < buttons.size(); i++)
+				{
+					buttons[i]->SetCaption(L"Mouse: " + 
+						std::to_wstring(buttons[i]->GetMousePosition().x) + L" : " +
+					std::to_wstring(buttons[i]->GetMousePosition().y));
+				}
+				MainWindow->SetCaption(
+					L"WindowM: " +
+					std::to_wstring(MainWindow->GetWindowMousePosition().x) + 
+					L" : " +
+					std::to_wstring(MainWindow->GetWindowMousePosition().y) +
+					L" ClientM: " + 
+					std::to_wstring(MainWindow->GetClientMousePosition().x) + 
+					L" : " +
+					std::to_wstring(MainWindow->GetClientMousePosition().y) +
+					L" CanvasM: " +
+					std::to_wstring(MainWindow->GetCanvasMousePosition().x) +
+					L" : " +
+					std::to_wstring(MainWindow->GetCanvasMousePosition().y));
 				break;
 		}
 	}

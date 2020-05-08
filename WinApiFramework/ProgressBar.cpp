@@ -7,7 +7,7 @@ using namespace WinApiFramework;
 // [CLASS] ProgressBar -------------------------|
 // -- constructors -- //
 ProgressBar::ProgressBar(const ProgressBar::ConStruct& conStruct)
-	: WindowControl(conStruct),
+	: ChildControl(conStruct),
 	MinValue(minValue),
 	MaxValue(maxValue),
 	Position(position),

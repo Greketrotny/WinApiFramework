@@ -8,7 +8,7 @@ using namespace WinApiFramework;
 // [CLASS] TrackBar ------------------------------|
 // -- constructor -- //
 TrackBar::TrackBar(const TrackBar::ConStruct& conStruct)
-	:WindowControl(conStruct),
+	:ChildControl(conStruct),
 	Position(position),
 	TrackMin(trackRange.min),
 	TrackMax(trackRange.max),
@@ -109,7 +109,7 @@ void TrackBar::SetPosition(int x, int y)
 	//SetWindowPos(hLabel1, NULL, label1Rect.left - parentWindow->X - (rect.x - x), label1Rect.top - parentWindow->Y - (rect.y - y), 0, 0, SWP_NOSIZE);
 	//SetWindowPos(hLabel2, NULL, label2Rect.left - parentWindow->X - (rect.x - x), label2Rect.top - parentWindow->Y - (rect.y - y), 0, 0, SWP_NOSIZE);
 
-	WindowControl::Move(x, y);
+	ChildControl::Move(x, y);
 
 	//SendMessage(hControl, TBM_SETBUDDY, TRUE, (LPARAM)hLabel1);
 	//SendMessage(hControl, TBM_SETBUDDY, FALSE, (LPARAM)hLabel2);

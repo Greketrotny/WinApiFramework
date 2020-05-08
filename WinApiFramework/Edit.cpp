@@ -7,7 +7,7 @@ using namespace WinApiFramework;
 // [CLASS] Edit --------------------------------|
 // -- constructors -- //
 Edit::Edit(const Edit::ConStruct& conStruct)
-	:WindowControl(conStruct),
+	:ChildControl(conStruct),
 	PasswordMode(passwordMode),
 	NumberOnlyMode(numberOnly),
 	Alignment(textAlignment),

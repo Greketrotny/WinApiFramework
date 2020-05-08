@@ -1,7 +1,6 @@
 #ifndef LABEL_H
 #define LABEL_H
 
-#include "WindowControl.h"
 #include "BaseControl.h"
 
 namespace WinApiFramework
@@ -9,7 +8,7 @@ namespace WinApiFramework
 	class Label;
 	template <> struct ConStruct<Label>;
 
-	class Label : public WindowControl, public ChildControl
+	class Label : public ChildControl
 	{
 		// -- fields -- //
 	private:
@@ -41,7 +40,7 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		WindowControl::EventsManager<Label::Event> events;
+		ChildControl::EventsManager<Label::Event> events;
 		TextAlignment textAlignment;
 
 
@@ -63,7 +62,7 @@ namespace WinApiFramework
 		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
 		void DestroyControlWindow() override;
-		void PushBaseEvent(WindowControl::Event event) override
+		void PushBaseEvent(ChildControl::Event event) override
 		{
 			events.PushEvent(Label::Event((Label::Event::Type)event.type));
 		}
@@ -76,18 +75,18 @@ namespace WinApiFramework
 	public:
 		const std::wstring& Caption;
 		const TextAlignment& Alignment;
-		WindowControl::EventsManager<Label::Event>& Events;
+		ChildControl::EventsManager<Label::Event>& Events;
 	};
 
-	template <> struct ConStruct<Label> : ConStruct<WindowControl>
+	template <> struct ConStruct<Label> : ConStruct<ChildControl>
 	{
 		std::wstring caption;
 		Label::TextAlignment textAlignment;
 
-		ConStruct(ConStruct<WindowControl> windowControlConStruct = ConStruct<WindowControl>(),
+		ConStruct(ConStruct<ChildControl> windowControlConStruct = ConStruct<ChildControl>(),
 				  const std::wstring& caption = L"caption",
 				  Label::TextAlignment textAlignment = Label::TextAlignment::Left)
-			: ConStruct<WindowControl>::ConStruct(windowControlConStruct)
+			: ConStruct<ChildControl>::ConStruct(windowControlConStruct)
 			, caption(caption)
 			, textAlignment(textAlignment)
 		{}

@@ -4,7 +4,6 @@
 #include "WindowInclude.h"
 #include "ExternIncludes.h"
 
-#include "WindowControl.h"
 #include "BaseControl.h"
 
 namespace WinApiFramework
@@ -163,7 +162,6 @@ namespace WinApiFramework
 		};
 		
 	private:
-		Position position;
 		Rect windowRect;
 		Rect clientRect;
 		SizeRect sizeRect;
@@ -236,7 +234,9 @@ namespace WinApiFramework
 		bool AddControl(ChildControl* newControl) override;
 		bool RemoveControl(ChildControl* oldControl) override;
 	public:
-		Point GetMousePosition() const override;
+		Point GetWindowMousePosition() const override;
+		Point GetClientMousePosition() const override;
+		Point GetCanvasMousePosition() const override;
 
 
 		// -- property fields -- //
@@ -269,20 +269,24 @@ namespace WinApiFramework
 		Window::Position position;
 		Window::StartStyle startStyle;
 		SizeRect sizeRect;
+		Size canvasSize;
 
 
 		// ~~ ConStruct<Window>::constructor ~~
 	public:
-		ConStruct(const std::wstring& caption = L"default title",
-				  const Rect rect = Rect(),
-				  Window::Position position = Window::Position::Center,
-				  Window::StartStyle startStyle = Window::StartStyle::Normal,
-				  SizeRect sizeRect = SizeRect())
+		ConStruct(
+			const std::wstring& caption = L"default title",
+			const Rect rect = Rect(),
+			Window::Position position = Window::Position::Center,
+			Window::StartStyle startStyle = Window::StartStyle::Normal,
+			SizeRect sizeRect = SizeRect(),
+			Size canvasSize = Size(800, 600))
 			: caption(caption)
 			, rect(rect)
 			, position(position)
 			, startStyle(startStyle)
 			, sizeRect(sizeRect)
+			, canvasSize(canvasSize)
 		{}
 		~ConStruct()
 		{}

@@ -1,7 +1,6 @@
 #ifndef TRACK_BAR_H
 #define TRACK_BAR_H
 
-#include "WindowControl.h"
 #include "BaseControl.h"
 
 
@@ -10,7 +9,7 @@ namespace WinApiFramework
 	class TrackBar;
 	template <> struct ConStruct<Button>;
 
-	class TrackBar : public WindowControl, public ChildControl
+	class TrackBar : public ChildControl
 	{
 		// -- fields -- //
 	public:
@@ -58,7 +57,7 @@ namespace WinApiFramework
 		HWND hLabel1, hLabel2;
 		Labels labels;
 
-		WindowControl::EventsManager<TrackBar::Event> events;
+		ChildControl::EventsManager<TrackBar::Event> events;
 
 
 		// -- constructors -- //
@@ -80,7 +79,7 @@ namespace WinApiFramework
 		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
 		void DestroyControlWindow() override;
-		void PushBaseEvent(WindowControl::Event event) override
+		void PushBaseEvent(ChildControl::Event event) override
 		{
 			events.PushEvent(TrackBar::Event((TrackBar::Event::Type)event.type));
 		}
@@ -112,10 +111,10 @@ namespace WinApiFramework
 		const Orientation& TrackOrientation;
 		const unsigned int& SmallStep;
 		const unsigned int& LargeStep;
-		WindowControl::EventsManager<TrackBar::Event>& Events;
+		ChildControl::EventsManager<TrackBar::Event>& Events;
 	};
 
-	template <> struct ConStruct<TrackBar> : ConStruct<WindowControl>
+	template <> struct ConStruct<TrackBar> : ConStruct<ChildControl>
 	{
 		int startPosition;
 		Range trackRange;
@@ -124,14 +123,14 @@ namespace WinApiFramework
 		unsigned int smallStep, largeStep;
 		bool EnableSelectRange;
 
-		ConStruct(ConStruct<WindowControl> winCtrlConStruct = ConStruct<WindowControl>(),
+		ConStruct(ConStruct<ChildControl> winCtrlConStruct = ConStruct<ChildControl>(),
 				  int startPosition = 0,
 				  Range trackRange = Range(0, 100),
 				  Range selectRange = Range(0, 100),
 				  TrackBar::Orientation orientation = TrackBar::Orientation::Horizontal,
 				  unsigned int smallStep = 1u, unsigned int largeStep = 5u,
 				  bool enagleSelectRange = false)
-			: ConStruct<WindowControl>::ConStruct(winCtrlConStruct)
+			: ConStruct<ChildControl>::ConStruct(winCtrlConStruct)
 			, startPosition(startPosition)
 			, trackRange(trackRange)
 			, selectRange(selectRange)

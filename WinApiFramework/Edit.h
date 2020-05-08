@@ -1,7 +1,6 @@
 #ifndef EDIT_H
 #define EDIT_H
 
-#include "WindowControl.h"
 #include "BaseControl.h"
 
 namespace WinApiFramework
@@ -9,7 +8,7 @@ namespace WinApiFramework
 	class Edit;
 	template <> struct ConStruct<Edit>;
 
-	class Edit : public WindowControl, public ChildControl
+	class Edit : public ChildControl
 	{
 		// -- fields -- //
 	public:
@@ -56,7 +55,7 @@ namespace WinApiFramework
 		bool numberOnly = false;
 		unsigned int textLengthLimit = 0xFFFF;
 
-		WindowControl::EventsManager<Edit::Event> events;
+		ChildControl::EventsManager<Edit::Event> events;
 
 
 		// -- contstructors -- //
@@ -78,7 +77,7 @@ namespace WinApiFramework
 		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
 		void DestroyControlWindow() override;
-		void PushBaseEvent(WindowControl::Event event) override
+		void PushBaseEvent(ChildControl::Event event) override
 		{
 			events.PushEvent(Edit::Event((Edit::Event::Type)event.type));
 		}
@@ -97,10 +96,10 @@ namespace WinApiFramework
 		const bool& NumberOnlyMode;
 		const TextAlignment& Alignment;
 		const LettersMode& LetterMode;
-		WindowControl::EventsManager<Edit::Event>& Events;
+		ChildControl::EventsManager<Edit::Event>& Events;
 	};
 
-	template <> struct ConStruct<Edit> : ConStruct<WindowControl>
+	template <> struct ConStruct<Edit> : ConStruct<ChildControl>
 	{
 		std::wstring text = L"";
 		Edit::TextAlignment textAlignment = Edit::TextAlignment::Left;
@@ -109,14 +108,14 @@ namespace WinApiFramework
 		bool numberOnly = false;
 		unsigned int textLengthLimit = 0xFFFF;
 
-		ConStruct(ConStruct<WindowControl> windowControlConStruct = ConStruct<WindowControl>(),
+		ConStruct(ConStruct<ChildControl> windowControlConStruct = ConStruct<ChildControl>(),
 				  const std::wstring& text = L"",
 				  Edit::TextAlignment textAlignment = Edit::TextAlignment::Left,
 				  Edit::LettersMode lettersMode = Edit::LettersMode::Either,
 				  bool passwordMode = false,
 				  bool numberOnly = false,
 				  unsigned int textLengthLimit = 0xFFFF)
-			: ConStruct<WindowControl>::ConStruct(windowControlConStruct)
+			: ConStruct<ChildControl>::ConStruct(windowControlConStruct)
 			, text(text)
 			, textAlignment(textAlignment)
 			, lettersMode(lettersMode)

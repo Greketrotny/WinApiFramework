@@ -27,10 +27,10 @@ Window::Window()
 Window::Window(const ConStruct<Window> &conStruct)
 	:Window()
 {
+	caption = conStruct.caption;
 	windowRect = conStruct.rect;
 	SetSizeRect(conStruct.sizeRect);
-	position = conStruct.position;
-	caption = conStruct.caption;
+	m_canvasRect.size = conStruct.canvasSize;
 
 	// create window class
 	CreateAndRegisterWindowClass();
@@ -63,8 +63,6 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 		// on window controls events //
 	case WM_COMMAND:
 	case WM_NOTIFY:
-	case WM_HSCROLL:
-	case WM_VSCROLL:
 		for (ChildControl*& control : controls)
 		{
 			if (control->GetWindowHandle() == (HWND)lParam)
@@ -75,6 +73,122 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 		return 1;
 		break;
+
+	case WM_VSCROLL:
+	{
+		SCROLLINFO si;
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_POS | SIF_PAGE | SIF_TRACKPOS;
+		GetScrollInfo(m_hWindow, SB_VERT, &si);
+
+		int pos = si.nPos;
+
+		switch (LOWORD(wParam))
+		{
+			case SB_TOP:
+				pos = 0;
+				break;
+			case SB_BOTTOM:
+				pos = m_canvasRect.size.height;
+				break;
+			case SB_LINEUP:
+				if (pos > 0) pos--;
+				break;
+			case SB_LINEDOWN:
+				if (pos < m_canvasRect.size.height - clientRect.size.height) pos++;
+				break;
+			case SB_PAGEUP:
+				pos -= si.nPage;
+				if (pos < 0) pos = 0;
+				break;
+			case SB_PAGEDOWN:
+				pos += si.nPage;
+				if (pos > m_canvasRect.size.height) pos = m_canvasRect.size.height;
+				break;
+			case SB_THUMBPOSITION:
+				pos = si.nTrackPos;
+				break;
+			case SB_THUMBTRACK:
+				pos = si.nTrackPos;
+				break;
+		}
+
+		int dy = -(pos - si.nPos);
+		m_canvasRect.position.y += dy;
+		ScrollWindowEx(m_hWindow, 0, dy, 
+			(CONST RECT*)NULL,
+			(CONST RECT*)NULL, 
+			(HRGN)NULL, (LPRECT)NULL, 
+			SW_SCROLLCHILDREN | SW_INVALIDATE | SW_ERASE);
+		UpdateWindow(m_hWindow);
+
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_POS;
+		si.nPos = pos;
+
+		SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
+	}
+	break;
+
+	case WM_HSCROLL:
+	{
+		SCROLLINFO si;
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_POS | SIF_PAGE | SIF_TRACKPOS;
+		GetScrollInfo(m_hWindow, SB_HORZ, &si);
+
+		int pos = si.nPos;
+
+		switch (LOWORD(wParam))
+		{
+			case SB_LEFT:
+				pos = m_canvasRect.position.x;
+				break;
+			case SB_RIGHT:
+				pos = m_canvasRect.size.width;
+				break;
+			case SB_LINELEFT:
+				if (pos > 0) pos--;
+				break;
+			case SB_LINERIGHT:
+				if (pos < m_canvasRect.size.width - clientRect.size.width) pos++;
+				break;
+			case SB_PAGELEFT:
+				pos -= si.nPage;
+				if (pos < 0) pos = 0;
+				break;
+			case SB_PAGERIGHT:
+				pos += si.nPage;
+				if (pos > m_canvasRect.size.width) pos = m_canvasRect.size.width;
+				break;
+			case SB_THUMBPOSITION:
+				pos = si.nTrackPos;
+				break;
+			case SB_THUMBTRACK:
+				pos = si.nTrackPos;
+				break;
+		}
+
+		int dx = -(pos - si.nPos);
+		m_canvasRect.position.x += dx;
+		ScrollWindowEx(m_hWindow, dx, 0,
+			(CONST RECT*)NULL,
+			(CONST RECT*)NULL,
+			(HRGN)NULL, (LPRECT)NULL,
+			SW_SCROLLCHILDREN | SW_INVALIDATE | SW_ERASE);
+		UpdateWindow(m_hWindow);
+
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_POS;
+		si.nPos = pos;
+
+		SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
+	}
+	break;
 
 		// base events //
 	case WM_CLOSE:
@@ -149,6 +263,7 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 			clientRect.size.width = r.right - r.left;
 			clientRect.size.height = r.bottom - r.top;
 		}
+
 		events.PushEvent(Window::Event(Window::Event::Type::Move));
 		return 0;
 	}
@@ -157,6 +272,7 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 	{
 		RECT r;
+		// set window rect
 		if (GetWindowRect(m_hWindow, &r))
 		{
 			windowRect.position.x = r.left;
@@ -164,6 +280,8 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 			windowRect.size.width = r.right - r.left;
 			windowRect.size.height = r.bottom - r.top;
 		}
+
+		// set client rect
 		if (GetClientRect(m_hWindow, &r))
 		{
 			POINT p{ 0, 0 };
@@ -173,6 +291,52 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 			clientRect.size.width = r.right - r.left;
 			clientRect.size.height = r.bottom - r.top;
 		}
+
+		
+		// [>] Adjust canvas position
+		Point deltaXY(0, 0);
+		if (m_canvasRect.size.width + m_canvasRect.position.x < clientRect.size.width)
+		{
+			deltaXY.x = std::min(clientRect.size.width - (m_canvasRect.size.width + m_canvasRect.position.x), -m_canvasRect.position.x);
+		}
+		if (m_canvasRect.size.height + m_canvasRect.position.y < clientRect.size.height)
+		{
+			deltaXY.y = std::min(clientRect.size.height - (m_canvasRect.size.height + m_canvasRect.position.y), -m_canvasRect.position.y);
+		}
+		if (deltaXY.y != 0 || deltaXY.x != 0)
+		{
+			m_canvasRect.position += deltaXY;
+			ScrollWindowEx(m_hWindow, deltaXY.x, deltaXY.y,
+				(CONST RECT*)NULL,
+				(CONST RECT*)NULL,
+				(HRGN)NULL, (LPRECT)NULL,
+				SW_SCROLLCHILDREN | SW_INVALIDATE | SW_ERASE);
+			UpdateWindow(m_hWindow);
+		}
+
+
+
+		// [>] Set scroing info
+		SCROLLINFO si;
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(SCROLLINFO);
+
+		// vertical scroll
+		si.nMin = 0;
+		si.nMax = m_canvasRect.size.height;
+		si.nPage = clientRect.size.height;
+		si.nPos = -m_canvasRect.position.y;
+		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+		SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
+
+		// horizontal scroll
+		si.nMin = 0;
+		si.nMax = m_canvasRect.size.width;
+		si.nPage = clientRect.size.width;
+		si.nPos = -m_canvasRect.position.x;
+		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+		SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
+
 		events.PushEvent(Window::Event(Window::Event::Type::Resize));
 		return 0;
 	}
@@ -260,6 +424,7 @@ bool Window::CreateWinApiWindow(ConStruct<Window> conStruct)
 	else if (conStruct.startStyle == Window::StartStyle::Minimized)
 		windowStyle |= WS_MINIMIZE;
 
+
 	// setup window rect
 	RECT r = { (LONG)windowRect.position.x, (LONG)windowRect.position.y, (LONG)(windowRect.position.x + windowRect.size.width), (LONG)(windowRect.position.y + windowRect.size.height) };
 	AdjustWindowRect(&r, windowStyle, FALSE);
@@ -268,7 +433,7 @@ bool Window::CreateWinApiWindow(ConStruct<Window> conStruct)
 	windowRect.size.width = r.right - r.left;
 	windowRect.size.height = r.bottom - r.top;
 
-	if (position == Position::Center)
+	if (conStruct.position == Position::Center)
 	{
 		int w = GetSystemMetrics(SM_CXSCREEN);
 		int h = GetSystemMetrics(SM_CYSCREEN);
@@ -276,11 +441,12 @@ bool Window::CreateWinApiWindow(ConStruct<Window> conStruct)
 		windowRect.position.x = (w - std::min(windowRect.size.width, w)) / 2;
 		windowRect.position.y = (h - std::min(windowRect.size.height, h)) / 2;
 	}
-	else if (position == Position::Default)
+	else if (conStruct.position == Position::Default)
 	{
 		windowRect.position.x = 100;
 		windowRect.position.y = 100;
 	}
+
 
 	// create window
 	m_hWindow = CreateWindow((LPCWSTR)window_class_name.c_str(), (LPCWSTR)caption.c_str(),
@@ -293,6 +459,32 @@ bool Window::CreateWinApiWindow(ConStruct<Window> conStruct)
 		MessageBox(nullptr, L"Window creation failed.", L"Window create error", MB_OK | MB_ICONERROR);
 		return false;
 	}
+
+	SetWindowLongPtr(m_hWindow, GWL_STYLE, windowStyle | WS_HSCROLL | WS_VSCROLL);
+	SetWindowPos(m_hWindow, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_DRAWFRAME);
+
+
+	// [>] Setup window scrolling
+	SCROLLINFO si;
+	ZeroMemory(&si, sizeof(si));
+	si.cbSize = sizeof(SCROLLINFO);
+
+	// vertical
+	si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+	si.nMin = 0;
+	si.nMax = m_canvasRect.size.height;
+	si.nPage = clientRect.size.height;
+	si.nPos = -m_canvasRect.position.y;
+	SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
+
+	// horizontal
+	si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+	si.nMin = 0;
+	si.nMax = m_canvasRect.size.width;
+	si.nPage = clientRect.size.width;
+	si.nPos = -m_canvasRect.position.x;
+	SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
+
 
 	SetCaption(GetCaption());
 
@@ -511,8 +703,16 @@ bool Window::RemoveControl(ChildControl* oldControl)
 	return false;
 }
 
-Point Window::GetMousePosition() const
+Point Window::GetWindowMousePosition() const
 {
-	return Point(Framework::Mouse.X - ClientRect.position.x, Framework::Mouse.Y - ClientRect.position.y);
+	return Point(Framework::Mouse.X - windowRect.position.x, Framework::Mouse.Y - windowRect.position.y);
+}
+Point Window::GetClientMousePosition() const
+{
+	return Point(Framework::Mouse.X - clientRect.position.x, Framework::Mouse.Y - clientRect.position.y);
+}
+Point Window::GetCanvasMousePosition() const
+{
+	return GetClientMousePosition() - GetCanvasRect().position;
 }
 // [CLASS] Window ------------------------------|

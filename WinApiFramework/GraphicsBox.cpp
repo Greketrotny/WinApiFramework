@@ -7,7 +7,7 @@ using namespace WinApiFramework;
 // ~~~~~~~~ [CLASS] GraphicsBox ~~~~~~~~
 // -- GraphicsBox::constructors -- //
 GraphicsBox::GraphicsBox(const GraphicsBox::ConStruct &conStruct)
-	:WindowControl(conStruct),
+	:ChildControl(conStruct),
 	graphics(this, conStruct.graphics),
 	Gfx(graphics),
 	Events(events)
@@ -59,7 +59,7 @@ bool GraphicsBox::CreateControlWindow()
 void GraphicsBox::Resize(unsigned int newWidth, unsigned int newHeight)
 {
 	graphics.Resize(newWidth - 2, newHeight - 2);
-	WindowControl::Resize(newWidth, newHeight);
+	ChildControl::Resize(newWidth, newHeight);
 }
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

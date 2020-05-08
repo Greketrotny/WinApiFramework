@@ -1,7 +1,7 @@
 #ifndef GRAPHICS_BOX_H
 #define GRAPHICS_BOX_H
 
-#include "WindowControl.h"
+
 #include "BaseControl.h"
 
 #include "atlbase.h"
@@ -14,7 +14,7 @@ namespace WinApiFramework
 	class GraphicsBox;
 	template <> struct ConStruct<GraphicsBox>;
 
-	class GraphicsBox : public WindowControl, public ChildControl
+	class GraphicsBox : public ChildControl
 	{
 		class GBGraphics;
 
@@ -364,7 +364,7 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		WindowControl::EventsManager<GraphicsBox::Event> events;
+		ChildControl::EventsManager<GraphicsBox::Event> events;
 		GBGraphics graphics;
 
 
@@ -387,7 +387,7 @@ namespace WinApiFramework
 		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
 		void DestroyControlWindow() override;
-		void PushBaseEvent(WindowControl::Event event) override
+		void PushBaseEvent(ChildControl::Event event) override
 		{
 			events.PushEvent(GraphicsBox::Event((GraphicsBox::Event::Type)event.type));
 		}
@@ -398,16 +398,16 @@ namespace WinApiFramework
 		// -- propetry fields -- //
 	public:
 		GBGraphics& Gfx;
-		WindowControl::EventsManager<GraphicsBox::Event>& Events;
+		ChildControl::EventsManager<GraphicsBox::Event>& Events;
 	};
 
-	template <> struct ConStruct<GraphicsBox> : ConStruct<WindowControl>
+	template <> struct ConStruct<GraphicsBox> : ConStruct<ChildControl>
 	{
 		GraphicsBox::GBGraphics::ConStruct graphics;
 
-		ConStruct(ConStruct<WindowControl> windowControlConStruct = ConStruct<WindowControl>(),
+		ConStruct(ConStruct<ChildControl> windowControlConStruct = ConStruct<ChildControl>(),
 				  GraphicsBox::GBGraphics::ConStruct graphicsConStruct = GraphicsBox::GBGraphics::ConStruct())
-			: ConStruct<WindowControl>::ConStruct(windowControlConStruct)
+			: ConStruct<ChildControl>::ConStruct(windowControlConStruct)
 			, graphics(graphicsConStruct)
 		{}
 	};
