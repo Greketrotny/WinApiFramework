@@ -22,7 +22,7 @@ namespace WinApiFramework
 		{
 			UpperCase,
 			LowerCase,
-			Either
+			All
 		};
 		struct Event
 		{
@@ -33,12 +33,15 @@ namespace WinApiFramework
 				Resize = 2,
 				Enable = 3,
 				Disable = 4,
-				Text,
-				TextAlignment,
-				LettersMode,
-				PasswordMode,
-				NumberMode,
-				TextLimitReach
+				TextChanged,
+				TextLimitReached,
+				TextAlignmentSet,
+				LettersModeSet,
+				PasswordModeSet,
+				NumberModeSet,
+				FocusSet,
+				FocusKilled,
+				HorizontalScroll
 			};
 			Type type;
 
@@ -48,21 +51,21 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		std::wstring text = L"";
-		TextAlignment textAlignment = TextAlignment::Left;
-		LettersMode lettersMode = LettersMode::Either;
-		bool passwordMode = false;
-		bool numberOnly = false;
-		unsigned int textLengthLimit = 0xFFFF;
+		std::wstring m_text = L"";
+		TextAlignment m_textAlignment = TextAlignment::Left;
+		LettersMode m_lettersMode = LettersMode::All;
+		bool m_passwordMode = false;
+		bool m_numberOnly = false;
+		unsigned int m_textLengthLimit = 0xFFFF;
 
-		ChildControl::EventsManager<Edit::Event> events;
+		ChildControl::EventsManager<Edit::Event> m_events;
 
 
 		// -- contstructors -- //
-	public:
+	private:
 		Edit(const Edit& edit) = delete;
 		Edit(const Edit&& edit) = delete;
-		Edit(const ConStruct<Edit>& config);
+		Edit(ParentControl* parentControl, const ConStruct<Edit>& config);
 		~Edit();
 
 
@@ -79,7 +82,7 @@ namespace WinApiFramework
 		void DestroyControlWindow() override;
 		void PushBaseEvent(ChildControl::Event event) override
 		{
-			events.PushEvent(Edit::Event((Edit::Event::Type)event.type));
+			m_events.PushEvent(Edit::Event((Edit::Event::Type)event.type));
 		}
 	public:
 		void SetText(std::wstring newText);
@@ -97,24 +100,28 @@ namespace WinApiFramework
 		const TextAlignment& Alignment;
 		const LettersMode& LetterMode;
 		ChildControl::EventsManager<Edit::Event>& Events;
+
+		// -- friends -- //
+	public:
+		friend class ParentControl;
 	};
 
 	template <> struct ConStruct<Edit> : ConStruct<ChildControl>
 	{
 		std::wstring text = L"";
 		Edit::TextAlignment textAlignment = Edit::TextAlignment::Left;
-		Edit::LettersMode lettersMode = Edit::LettersMode::Either;
+		Edit::LettersMode lettersMode = Edit::LettersMode::All;
 		bool passwordMode = false;
 		bool numberOnly = false;
-		unsigned int textLengthLimit = 0xFFFF;
+		unsigned int textLengthLimit = 0xFFFFFFFF;
 
 		ConStruct(ConStruct<ChildControl> windowControlConStruct = ConStruct<ChildControl>(),
 				  const std::wstring& text = L"",
 				  Edit::TextAlignment textAlignment = Edit::TextAlignment::Left,
-				  Edit::LettersMode lettersMode = Edit::LettersMode::Either,
+				  Edit::LettersMode lettersMode = Edit::LettersMode::All,
 				  bool passwordMode = false,
 				  bool numberOnly = false,
-				  unsigned int textLengthLimit = 0xFFFF)
+				  unsigned int textLengthLimit = 0xFFFFFFFF)
 			: ConStruct<ChildControl>::ConStruct(windowControlConStruct)
 			, text(text)
 			, textAlignment(textAlignment)

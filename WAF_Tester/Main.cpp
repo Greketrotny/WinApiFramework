@@ -17,6 +17,16 @@ public:
 	std::vector<WAF::Button*> buttons;
 	WAF::Button* lastClickedButton = nullptr;
 
+	WAF::Label* eventHistoryLabel = nullptr;
+
+	WAF::CheckBox* checkBox1 = nullptr;
+	WAF::Edit* edit1 = nullptr;
+	WAF::Label* label1 = nullptr;
+	WAF::ProgressBar* progressBar = nullptr;
+	WAF::TrackBar* trackBar = nullptr;
+
+	std::vector<std::wstring> eventsHistory;
+
 
 	// -- MainForm::constructors -- //
 public:
@@ -33,9 +43,14 @@ public:
 				WAF::Window::Position::Center,
 				WAF::Window::StartStyle::Normal,
 				WAF::SizeRect(200u, 100u, 2000u, 1000u),
-				WAF::Size(400, 400)));
+				WAF::Size(700, 500)));
 		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindow_EH);
 
+
+		// eventHistoryLabel
+		eventHistoryLabel = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(500, 10, 200, 600)),
+			L"events"));
 
 		// buttons
 		int size = 2;
@@ -45,26 +60,87 @@ public:
 		{
 			for (int y = 0; y < size; y++)
 			{
-				/*WAF::Button* button = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
-					WAF::ConStruct<WAF::ChildControl>(WAF::Rect(x * width, y * height, width, height)),
-					L"button " + std::to_wstring(y * size + x)));
-				button->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
-				buttons.push_back(button);*/
-
-				WAF::Button* button = WAF::Button::Create(MainWindow, WAF::ConStruct<WAF::Button>(
+				WAF::Button* button = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
 					WAF::ConStruct<WAF::ChildControl>(WAF::Rect(x * width, y * height, width, height)),
 					L"button " + std::to_wstring(y * size + x)));
 				button->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
 				buttons.push_back(button);
 
+				/*WAF::Button* button = WAF::Button::Create(MainWindow, WAF::ConStruct<WAF::Button>(
+					WAF::ConStruct<WAF::ChildControl>(WAF::Rect(x * width, y * height, width, height)),
+					L"button " + std::to_wstring(y * size + x)));
+				button->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
+				buttons.push_back(button);*/
+
 			}
 		}
+
+		// checkBox1
+		checkBox1 = MainWindow->CreateControl<WAF::CheckBox>(WAF::ConStruct<WAF::CheckBox>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 10, 100, 50)),
+			L"check1",
+			true,
+			WAF::CheckBox::BoxState::MiddleState));
+		checkBox1->Events.AddEventHandler<MainForm>(this, &MainForm::CheckBox1_EH);
+
+		// edit1
+		edit1 = MainWindow->CreateControl<WAF::Edit>(WAF::ConStruct<WAF::Edit>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 70, 100, 50)),
+			L"default text", WAF::Edit::TextAlignment::Right,
+			WAF::Edit::LettersMode::UpperCase,
+			false,
+			false,
+			100u));
+		edit1->Events.AddEventHandler<MainForm>(this, &MainForm::Edit1_EH);
+
+		// label1
+		label1 = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 140, 100, 50)),
+			L"A box with a frame drawn with the same color as the window background. This color is whilte in the background.",
+			WAF::Label::TextAlignment::Right));
+		label1->Events.AddEventHandler<MainForm>(this, &MainForm::Label1_EH);
+
+		// progressBar
+		progressBar = MainWindow->CreateControl<WAF::ProgressBar>(WAF::ConStruct<WAF::ProgressBar>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 200, 150, 20)),
+			WAF::Range(0, 100),
+			20,
+			WAF::ProgressBar::BarState::Normal,
+			WAF::ProgressBar::BarOrientation::Horizontal,
+			WAF::ProgressBar::BarDisplayStyle::Default, 1u));
+
+		// trackBar
+		trackBar = MainWindow->CreateControl<WAF::TrackBar>(WAF::ConStruct<WAF::TrackBar>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 250, 150, 50)),
+			WAF::Range(0, 20),
+			20,
+			1,
+			10,
+			WAF::TrackBar::Horizontal,
+			WAF::TrackBar::TickStyle::Bottom,
+			true,
+			WAF::Range(5, 12)));
+		trackBar->Events.AddEventHandler<MainForm>(this, &MainForm::TrackBar_EH);
 	}
 	~MainForm()
 	{
 		if (MainWindow) delete MainWindow;
 	}
 
+	void DisplayEventHistory()
+	{
+		while (eventsHistory.size() > 20)
+		{
+			eventsHistory.erase(eventsHistory.begin());
+		}
+
+		std::wstring events = L"";
+		for (size_t i = 0; i < eventsHistory.size(); i++)
+		{
+			events += eventsHistory[i] + L"\n";
+		}
+		eventHistoryLabel->SetCaption(events);
+	}
 
 	// -- MainForm::event_handlers -- //
 	// MainWindow events handler
@@ -85,7 +161,7 @@ public:
 			}
 		}
 	}
-
+	
 	void Button1_EH(WAF::Button::Event event)
 	{
 		switch (event.type)
@@ -98,14 +174,91 @@ public:
 			case WAF::Button::Event::Type::DoubleClick:
 				// event.button->SetCaption(L"button double clicked!");
 				// MainWindow->DestroyControl(event.button);
+				for (size_t i = 0; i < buttons.size(); i++)
+				{
+					if (buttons[i] == event.button)
+						buttons.erase(buttons.begin() + i);
+				}
 				event.button->Destroy();
-				break;
-			case WAF::Button::Event::Type::Push:
-				event.button->SetCaption(L"button pushed!");
 				break;
 		}
 	}
-	   
+	void CheckBox1_EH(WAF::CheckBox::Event event)
+	{
+		switch (event.type)
+		{
+			case WAF::CheckBox::Event::Type::Check:
+				if (checkBox1->State == WAF::CheckBox::BoxState::Check)
+					checkBox1->SetCaption(L"check box checked!");
+				break;
+			case WAF::CheckBox::Event::Type::MiddleState:
+				checkBox1->SetCaption(L"check box in middle state!");
+				break;
+			case WAF::CheckBox::Event::Type::UnCheck:
+				checkBox1->SetCaption(L"check box unchecked!");
+				break;
+		}
+	}
+	void Edit1_EH(WAF::Edit::Event event)
+	{
+		switch (event.type)
+		{
+			case WAF::Edit::Event::Type::TextChanged:
+				MainWindow->SetCaption(L"Texting!");
+				break;
+			case WAF::Edit::Event::Type::TextLimitReached:
+				MainWindow->SetCaption(L"Limit reached!");
+				break;
+
+		}
+	}
+	void Label1_EH(WAF::Label::Event event)
+	{
+		switch (event.type)
+		{
+			case WAF::Label::Event::Type::Clicked:
+				label1->SetCaption(L"Label Clicked!");
+				break;
+			case WAF::Label::Event::Type::DoubleClicked:
+				label1->SetCaption(L"Label double clicked!");
+				break;
+		}
+	}
+	void TrackBar_EH(WAF::TrackBar::Event ev)
+	{
+		switch (ev.type)
+		{
+			case WAF::TrackBar::Event::Type::LinedUp:
+				eventsHistory.push_back(L"LinedUp!");
+				break;
+			case WAF::TrackBar::Event::Type::LinedDown:
+				eventsHistory.push_back(L"LinedDown!");
+				break;
+			case WAF::TrackBar::Event::Type::PagedUp:
+				eventsHistory.push_back(L"PagedUp!");
+				break;
+			case WAF::TrackBar::Event::Type::PagedDown:
+				eventsHistory.push_back(L"PagedDown!");
+				break;
+			case WAF::TrackBar::Event::Type::MovedToTop:
+				eventsHistory.push_back(L"MovedToTop!");
+				break;
+			case WAF::TrackBar::Event::Type::MovedToBottom:
+				eventsHistory.push_back(L"MovedToBottom!");
+				break;
+			case WAF::TrackBar::Event::Type::DraggingFinnished:
+				eventsHistory.push_back(L"DraggingFinnished!");
+				break;
+			case WAF::TrackBar::Event::Type::ThumbDragged:
+				eventsHistory.push_back(L"ThumbDragged!");
+				break;
+			case WAF::TrackBar::Event::Type::ThumbPositionChanged:
+				eventsHistory.push_back(L"PositionChanged!");
+				break;
+		}
+		DisplayEventHistory();
+	}
+
 	// FrameworkKeyboard
 	void FrameworkKeyboardEventHandler(WAF::Keyboard::KeyEvent event)
 	{
@@ -115,6 +268,21 @@ public:
 				if (event.key == WAF::Keyboard::Key::B)
 				{
 					WAF::Framework::Exit(0);
+				}
+				if (event.key == WAF::Keyboard::Key::Digit9)
+				{
+					//trackBar->SetThumbPosition(trackBar->GetPosition() - 5);
+					trackBar->SetMinSelectValue(trackBar->GetMinSelectValue() - 5);
+				}
+				if (event.key == WAF::Keyboard::Key::Digit0)
+				{
+					//trackBar->SetThumbPosition(trackBar->GetPosition() + 5);
+					trackBar->SetMaxSelectValue(trackBar->GetMaxSelectValue() + 5);
+				}
+				if (event.key == WAF::Keyboard::Key::Q)
+				{
+					trackBar->Destroy();
+					trackBar = nullptr;
 				}
 				break;
 		}
@@ -130,26 +298,32 @@ public:
 				}
 				break;
 			case WAF::Mouse::Event::Type::Move:
+			{
 				for (size_t i = 0; i < buttons.size(); i++)
 				{
-					buttons[i]->SetCaption(L"Mouse: " + 
+					buttons[i]->SetCaption(L"Mouse: " +
 						std::to_wstring(buttons[i]->GetMousePosition().x) + L" : " +
-					std::to_wstring(buttons[i]->GetMousePosition().y));
+						std::to_wstring(buttons[i]->GetMousePosition().y));
 				}
 				MainWindow->SetCaption(
 					L"WindowM: " +
-					std::to_wstring(MainWindow->GetWindowMousePosition().x) + 
+					std::to_wstring(MainWindow->GetWindowMousePosition().x) +
 					L" : " +
 					std::to_wstring(MainWindow->GetWindowMousePosition().y) +
-					L" ClientM: " + 
-					std::to_wstring(MainWindow->GetClientMousePosition().x) + 
+					L" ClientM: " +
+					std::to_wstring(MainWindow->GetClientMousePosition().x) +
 					L" : " +
 					std::to_wstring(MainWindow->GetClientMousePosition().y) +
 					L" CanvasM: " +
 					std::to_wstring(MainWindow->GetCanvasMousePosition().x) +
 					L" : " +
 					std::to_wstring(MainWindow->GetCanvasMousePosition().y));
+
+				progressBar->SetPosition(MainWindow->GetClientMousePosition().x / float(MainWindow->ClientRect.size.width) * 100.0f);
+				//progressBar->StepIt();
+
 				break;
+			}
 		}
 	}
 
@@ -158,7 +332,7 @@ public:
 	{
 		MainWindow->SetCaption(
 			L"Position: [" +
-			std::to_wstring(MainWindow->WindowRect.position.x) + L":" + std::to_wstring(MainWindow->WindowRect.position.y) + 
+			std::to_wstring(MainWindow->WindowRect.position.x) + L":" + std::to_wstring(MainWindow->WindowRect.position.y) +
 			L"] Resolution: [" +
 			std::to_wstring(MainWindow->WindowRect.size.width) + L":" + std::to_wstring(MainWindow->WindowRect.size.height) +
 			L"]");

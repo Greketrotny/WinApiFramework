@@ -6,52 +6,72 @@ using namespace WinApiFramework;
 
 // [CLASS] Label -------------------------------|
 // -- constructors -- //
-Label::Label(const Label::ConStruct& conStruct)
-	:ChildControl(conStruct),
-	Caption(caption),
-	Alignment(textAlignment),
-	Events(events)
+Label::Label(ParentControl* parentControl, const ConStruct<Label>& conStruct)
+	: ChildControl(parentControl, conStruct)
+	, Caption(m_caption)
+	, Alignment(m_textAlignment)
+	, Events(m_events)
 {
-	rect = conStruct.rect;
-	caption = conStruct.caption;
-	textAlignment = conStruct.textAlignment;
+	m_rect = conStruct.rect;
+	m_caption = conStruct.caption;
+	m_textAlignment = conStruct.textAlignment;
+
+	CreateControlWindow();
 }
 Label::~Label()
 {
-
+	DestroyControlWindow();
 }
 
 // -- methods -- //
 // private:
-int Label::ControlProc(WPARAM wParam, LPARAM lParam)
+int Label::ControlProcedure(WPARAM wParam, LPARAM lParam)
 {
 	UINT event = HIWORD(wParam);
 	switch (event)
 	{
+		case STN_CLICKED:
+			m_events.PushEvent(Event(Event::Type::Clicked));
+			break;
 
-	default:
-		return 1;	// if did't handle
+		case STN_DBLCLK:
+			m_events.PushEvent(Event(Event::Type::DoubleClicked));
+			break;
+
+		case STN_ENABLE:
+			// Handled by base class ChildControl
+			break;
+
+		case STN_DISABLE:
+			// Handled by base class ChildControl
+			break;
+
+		default:
+			return 1;	// if did't handle
 	}
 	return 0;		// if did
 }
 bool Label::CreateControlWindow()
 {
 	// set text alignment
-	if (textAlignment == Label::Left)
-		controlStyle |= SS_LEFT;
-	if (textAlignment == Label::Center)
-		controlStyle |= SS_CENTER;
-	if (textAlignment == Label::Right)
-		controlStyle |= SS_RIGHT;
+	if (m_textAlignment == Label::Left)
+		m_controlStyle |= SS_LEFT;
+	if (m_textAlignment == Label::Center)
+		m_controlStyle |= SS_CENTER;
+	if (m_textAlignment == Label::Right)
+		m_controlStyle |= SS_RIGHT;
+
+	// for notifications from parent control
+	m_controlStyle |= SS_NOTIFY;
 
 	// create window
-	hControl = CreateWindow(L"STATIC", caption.c_str(),
-		controlStyle,
-		rect.position.x, rect.position.y, rect.size.width, rect.size.height,
-		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+	m_hWindow = CreateWindow(L"STATIC", m_caption.c_str(),
+		m_controlStyle,
+		m_rect.position.x, m_rect.position.y, m_rect.size.width, m_rect.size.height,
+		m_pParentControl->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 	// check control creation
-	if (!hControl)
+	if (!m_hWindow)
 	{
 		MessageBox(nullptr, L"Label window creation failed.", L"Label create error", MB_OK | MB_ICONERROR);
 		return false;
@@ -59,17 +79,22 @@ bool Label::CreateControlWindow()
 
 	// set visual font
 	HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
-	SendMessage(hControl, WM_SETFONT, (WPARAM)hNormalFont, 0);
+	SendMessage(m_hWindow, WM_SETFONT, (WPARAM)hNormalFont, 0);
 
 	return true;
 }
+void Label::DestroyControlWindow()
+{
+	DestroyWindow(m_hWindow);
+}
+
 // public:
 void Label::SetCaption(std::wstring newCaption)
 {
-	caption = newCaption;
-	SetWindowText(hControl, caption.c_str());
+	m_caption = newCaption;
+	SetWindowText(m_hWindow, m_caption.c_str());
 
-	events.PushEvent(Label::Event(Label::Event::Type::CaptionChange));
+	m_events.PushEvent(Label::Event(Label::Event::Type::CaptionChanged));
 }
 void Label::SetTextAligment(Label::TextAlignment textAlignment)
 {
@@ -81,10 +106,10 @@ void Label::SetTextAligment(Label::TextAlignment textAlignment)
 	if (textAlignment == Label::Right)
 		newStyle = SS_RIGHT;
 
-	controlStyle = (controlStyle & ~(SS_LEFT | SS_CENTER | SS_RIGHT | SS_LEFTNOWORDWRAP)) | newStyle;
-	SetWindowLong(hControl, GWL_STYLE, controlStyle);
-	InvalidateRect(hControl, NULL, TRUE);
+	m_controlStyle = (m_controlStyle & ~(SS_LEFT | SS_CENTER | SS_RIGHT | SS_LEFTNOWORDWRAP)) | newStyle;
+	SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+	InvalidateRect(m_hWindow, NULL, TRUE);
 
-	events.PushEvent(Label::Event(Label::Event::Type::TextAlignmentChange));
+	m_events.PushEvent(Label::Event(Label::Event::Type::TextAlignmentChanged));
 }
 // [CLASS] Label -------------------------------|

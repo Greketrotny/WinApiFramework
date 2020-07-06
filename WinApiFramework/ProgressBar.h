@@ -11,15 +11,24 @@ namespace WinApiFramework
 	class ProgressBar : public ChildControl
 	{
 		// -- fields -- //
-	private:
-		unsigned int minValue, maxValue, position, step;
-
 	public:
 		enum BarState
 		{
 			Normal,
 			Pause,
 			Error
+		};
+		enum BarOrientation
+		{
+			Horizontal,
+			Vertical
+		};
+		enum BarDisplayStyle
+		{
+			Default,
+			Marquee,
+			Smooth,
+			SmoothReversed
 		};
 		struct Event
 		{
@@ -30,11 +39,14 @@ namespace WinApiFramework
 				Resize = 2,
 				Enable = 3,
 				Disable = 4,
-				MinValueChange,
-				MaxValueChange,
-				PositionChange,
-				StepChange,
-				BarStateChange
+				MinValueChanged,
+				MaxValueChanged,
+				RangeChanged,
+				PositionChanged,
+				StepChanged,
+				BarStateChanged,
+				BarOrientationChanged,
+				BarDisplayStyleChanged
 			};
 			Type type;
 
@@ -44,15 +56,19 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		BarState barState;
-		ChildControl::EventsManager<ProgressBar::Event> events;
+		unsigned int m_minValue, m_maxValue, m_position, m_step;
+		BarState m_barState;
+		BarOrientation m_barOrientation;
+		BarDisplayStyle m_barDisplayStyle;
+		ChildControl::EventsManager<ProgressBar::Event> m_events;
+		Graphics::Color m_barColor;
 
 
 		// -- constrctor -- //
-	public:
+	private:
 		ProgressBar(const ProgressBar &progressBar) = delete;
 		ProgressBar(const ProgressBar &&progressBar) = delete;
-		ProgressBar(const ConStruct<ProgressBar>& conStruct);
+		ProgressBar(ParentControl* parentControl, const ConStruct<ProgressBar>& conStruct);
 		~ProgressBar();
 
 
@@ -69,7 +85,7 @@ namespace WinApiFramework
 		void DestroyControlWindow() override;
 		void PushBaseEvent(ChildControl::Event event) override
 		{
-			events.PushEvent(ProgressBar::Event((ProgressBar::Event::Type)event.type));
+			m_events.PushEvent(ProgressBar::Event((ProgressBar::Event::Type)event.type));
 		}
 	public:
 		void SetMinValue(unsigned int value);
@@ -78,7 +94,10 @@ namespace WinApiFramework
 		void SetStep(unsigned int step);
 		void SetPosition(unsigned int position);
 		void SetState(BarState state);
+		void SetOrientation(BarOrientation barOrientation);
+		void SetDisplayStyle(BarDisplayStyle barDisplayStyle);
 		void StepIt();
+		void StepIt(int step);
 
 
 		// -- property fields -- //
@@ -89,21 +108,35 @@ namespace WinApiFramework
 		const unsigned int& Step;
 		const BarState& State;
 		ChildControl::EventsManager<ProgressBar::Event>& Events;
+
+		// -- friends -- //
+	public:
+		friend class ParentControl;
 	};
 
 	template <> struct ConStruct<ProgressBar> : ConStruct<ChildControl>
 	{
 		Range range;
 		int position = 0;
+		ProgressBar::BarState barState;
+		ProgressBar::BarOrientation barOrientation;
+		ProgressBar::BarDisplayStyle barDisplayStyle;
 		unsigned int step = 1;
 
+
 		ConStruct(ConStruct<ChildControl> winCtrlConStrut = ConStruct<ChildControl>(),
-				  Range range = Range(0, 100),
-				  int position = 0,
-				  unsigned int step = 1u)
+			Range range = Range(0, 100),
+			int position = 0,
+			ProgressBar::BarState barState = ProgressBar::BarState::Normal,
+			ProgressBar::BarOrientation barOrientation = ProgressBar::BarOrientation::Horizontal,
+			ProgressBar::BarDisplayStyle barDisplayStyle = ProgressBar::BarDisplayStyle::Default,
+			unsigned int step = 1u)
 			: ConStruct<ChildControl>::ConStruct(winCtrlConStrut)
 			, range(range)
 			, position(position)
+			, barState(barState)
+			, barOrientation(barOrientation)
+			, barDisplayStyle(barDisplayStyle)
 			, step(step)
 		{}
 	};

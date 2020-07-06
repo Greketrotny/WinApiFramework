@@ -7,21 +7,24 @@
 namespace WinApiFramework
 {
 	class TrackBar;
-	template <> struct ConStruct<Button>;
+	template <> struct ConStruct<TrackBar>;
 
 	class TrackBar : public ChildControl
 	{
 		// -- fields -- //
 	public:
-		struct Labels
-		{
-			std::wstring label1 = L"";
-			std::wstring label2 = L"";
-		};
 		enum Orientation
 		{
 			Horizontal,
 			Vertical
+		};
+		enum TickStyle
+		{
+			Default,
+			Top,
+			Bottom,
+			Both,
+			NoTicks
 		};
 		struct Event
 		{
@@ -32,13 +35,27 @@ namespace WinApiFramework
 				Resize = 2,
 				Enable = 3,
 				Disable = 4,
-				MinTrackValueChange,
-				MaxTrackValueChange,
-				MinSelectValueChange,
-				MaxSelectValueChange,
-				PositionChange,
-				SmallStepChange,
-				LargeStepChange
+
+				MinTrackValueChanged,
+				MaxTrackValueChanged,
+				TrackRangeChanged,
+				MinSelectValueChanged,
+				MaxSelectValueChanged,
+				SelectRangeChanged,
+				SelectRangeEnabled,
+				SelectRangeDisabled,
+				SmallStepChanged,
+				LargeStepChanged,
+
+				LinedUp,
+				LinedDown,
+				PagedUp,
+				PagedDown,
+				MovedToTop,
+				MovedToBottom,
+				ThumbDragged,
+				DraggingFinnished,
+				ThumbPositionChanged
 			};
 			Type type;
 
@@ -48,23 +65,22 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		int position;
-		Range trackRange;
-		Range selectRange;
-		Orientation orientation;
-		unsigned int smallStep, largeStep;
-		bool selectRangeEnabled;
-		HWND hLabel1, hLabel2;
-		Labels labels;
+		int m_ThumbPosition;
+		Range m_trackRange;
+		Range m_selectRange;
+		Orientation m_orientation;
+		TickStyle m_tickStyle;
+		unsigned int m_smallStep, m_largeStep;
+		bool m_selectRangeEnabled;
 
-		ChildControl::EventsManager<TrackBar::Event> events;
+		ChildControl::EventsManager<TrackBar::Event> m_events;
 
 
 		// -- constructors -- //
-	public:
+	private:
 		TrackBar(const TrackBar &TrackBar) = delete;
 		TrackBar(const TrackBar &&TrackBar) = delete;
-		TrackBar(const ConStruct<TrackBar> &conStruct);
+		TrackBar(ParentControl* parentControl, const ConStruct<TrackBar> &conStruct);
 		~TrackBar();
 
 
@@ -81,62 +97,78 @@ namespace WinApiFramework
 		void DestroyControlWindow() override;
 		void PushBaseEvent(ChildControl::Event event) override
 		{
-			events.PushEvent(TrackBar::Event((TrackBar::Event::Type)event.type));
+			m_events.PushEvent(TrackBar::Event((TrackBar::Event::Type)event.type));
 		}
 	public:
-		void SetPosition(int x, int y);
-		void SetMinTrackValue(int value);
-		void SetMaxTrackValue(int value);
-		void SetMinSelectValue(int value);
-		void SetMaxSelectValue(int value);
-		void SetTrackRange(Range newRAnge);
-		void SetTrackRange(int minValue, int maxValue);
-		void SetSelectRange(Range newSelectRange);
-		void SetSelectRange(int minValue, int maxValue);
-		void SetThumbPosition(int newPosition);
-		void SetSmallStep(unsigned int smallStep);
-		void SetLargeStep(unsigned int largeStep);
+		//void SetPosition(int x, int y);
+		
 		void EnableSelectRange();
 		void DisableSelectRange();
-		void SetLabel1(const std::wstring& label1);
-		void SetLabel2(const std::wstring& label2);
-		void SetLabels(const std::wstring& label1, const std::wstring& label2);
-		void SetLabels(const Labels& newLabels);
+		bool IsThumbInSelectRange();
+
+
+		// ~~ TrackBar::setters ~~ //
+	public:
+		void SetThumbPosition(int newPosition);
+		void SetMinTrackValue(int value);
+		void SetMaxTrackValue(int value);
+		void SetTrackRange(Range newRAnge);
+		void SetTrackRange(int minValue, int maxValue);
+		void SetMinSelectValue(int value);
+		void SetMaxSelectValue(int value);
+		void SetSelectRange(Range newSelectRange);
+		void SetSelectRange(int minValue, int maxValue);
+		void SetSmallStep(unsigned int smallStep);
+		void SetLargeStep(unsigned int largeStep);
+
+		// ~~ TrackBar::getters ~~ //
+	public:
+		int GetPosition();
+		int GetMinTrackValue();
+		int GetMaxTrackValue();
+		Range GetTrackRange();
+		int GetMinSelectValue();
+		int GetMaxSelectValue();
+		Range GetSelectRange();
+		unsigned int GetSmallStep();
+		unsigned int GetLargeStep();
+
 
 		// -- property fields -- //
 	public:
-		const int& Position;
-		const int& TrackMin;
-		const int& TrackMax;
-		const Orientation& TrackOrientation;
-		const unsigned int& SmallStep;
-		const unsigned int& LargeStep;
 		ChildControl::EventsManager<TrackBar::Event>& Events;
+
+		// -- friends -- //
+	public:
+		friend class ParentControl;
 	};
 
 	template <> struct ConStruct<TrackBar> : ConStruct<ChildControl>
 	{
-		int startPosition;
 		Range trackRange;
-		Range selectRange;
-		TrackBar::Orientation orientation;
+		int startPosition;
 		unsigned int smallStep, largeStep;
-		bool EnableSelectRange;
+		TrackBar::Orientation orientation;
+		TrackBar::TickStyle tickStyle;
+		bool enableSelectRange;
+		Range selectRange;
 
 		ConStruct(ConStruct<ChildControl> winCtrlConStruct = ConStruct<ChildControl>(),
-				  int startPosition = 0,
-				  Range trackRange = Range(0, 100),
-				  Range selectRange = Range(0, 100),
-				  TrackBar::Orientation orientation = TrackBar::Orientation::Horizontal,
-				  unsigned int smallStep = 1u, unsigned int largeStep = 5u,
-				  bool enagleSelectRange = false)
-			: ConStruct<ChildControl>::ConStruct(winCtrlConStruct)
-			, startPosition(startPosition)
+			Range trackRange = Range(0, 100),
+			int startPosition = 0,
+			unsigned int smallStep = 1u, unsigned int largeStep = 5u,
+			TrackBar::Orientation orientation = TrackBar::Orientation::Horizontal,
+			TrackBar::TickStyle tickStyle = TrackBar::TickStyle::Default,
+			bool enableSelectRange = false,
+			Range selectRange = Range(0, 100))
+			: ConStruct<ChildControl>(winCtrlConStruct)
 			, trackRange(trackRange)
-			, selectRange(selectRange)
-			, orientation(orientation)
+			, startPosition(startPosition)
 			, smallStep(smallStep), largeStep(largeStep)
-			, EnableSelectRange(enagleSelectRange)
+			, orientation(orientation)
+			, tickStyle(tickStyle)
+			, enableSelectRange(enableSelectRange)
+			, selectRange(selectRange)
 		{}
 	};
 }

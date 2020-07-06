@@ -12,7 +12,7 @@ namespace WinApiFramework
 	{
 		// -- fields -- //
 	private:
-		std::wstring caption;
+		std::wstring m_caption;
 	public:
 		enum TextAlignment
 		{
@@ -29,8 +29,10 @@ namespace WinApiFramework
 				Resize = 2,
 				Enable = 3,
 				Disable = 4,
-				CaptionChange,
-				TextAlignmentChange
+				CaptionChanged,
+				TextAlignmentChanged,
+				Clicked,
+				DoubleClicked
 			};
 			Type type;
 
@@ -40,15 +42,15 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		ChildControl::EventsManager<Label::Event> events;
-		TextAlignment textAlignment;
+		ChildControl::EventsManager<Label::Event> m_events;
+		TextAlignment m_textAlignment;
 
 
 		// -- constructors -- //
-	public:
+	private:
 		Label(const Label& label) = delete;
 		Label(const Label&& label) = delete;
-		Label(const ConStruct<Label> &conStruct);
+		Label(ParentControl* parentControl, const ConStruct<Label> &conStruct);
 		~Label();
 
 
@@ -64,7 +66,7 @@ namespace WinApiFramework
 		void DestroyControlWindow() override;
 		void PushBaseEvent(ChildControl::Event event) override
 		{
-			events.PushEvent(Label::Event((Label::Event::Type)event.type));
+			m_events.PushEvent(Label::Event((Label::Event::Type)event.type));
 		}
 	public:
 		void SetCaption(std::wstring newCaption);
@@ -76,6 +78,10 @@ namespace WinApiFramework
 		const std::wstring& Caption;
 		const TextAlignment& Alignment;
 		ChildControl::EventsManager<Label::Event>& Events;
+
+		// -- friends -- //
+	public:
+		friend class ParentControl;
 	};
 
 	template <> struct ConStruct<Label> : ConStruct<ChildControl>

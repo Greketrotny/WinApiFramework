@@ -35,6 +35,10 @@ namespace WinApiFramework
 	}
 
 	// ~~ Childcontrol::methods ~~ //
+	void ChildControl::Destroy()
+	{
+		m_pParentControl->DestroyControl(this);
+	}
 	void ChildControl::Enable()
 	{
 		::EnableWindow(m_hWindow, TRUE);

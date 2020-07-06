@@ -6,83 +6,105 @@ using namespace WinApiFramework;
 
 // [CLASS] Edit --------------------------------|
 // -- constructors -- //
-Edit::Edit(const Edit::ConStruct& conStruct)
-	:ChildControl(conStruct),
-	PasswordMode(passwordMode),
-	NumberOnlyMode(numberOnly),
-	Alignment(textAlignment),
-	LetterMode(lettersMode),
-	Events(events)
+Edit::Edit(ParentControl* parentControl, const ConStruct<Edit>& conStruct)
+	: ChildControl(parentControl, conStruct)
+	, PasswordMode(m_passwordMode)
+	, NumberOnlyMode(m_numberOnly)
+	, Alignment(m_textAlignment)
+	, LetterMode(m_lettersMode)
+	, Events(m_events)
 {
-	text = conStruct.text;
-	passwordMode = conStruct.passwordMode;
-	numberOnly = conStruct.numberOnly;
-	textAlignment = conStruct.textAlignment;
-	lettersMode = conStruct.lettersMode;
-	textLengthLimit = conStruct.textLengthLimit;
+	m_text = conStruct.text;
+	m_passwordMode = conStruct.passwordMode;
+	m_numberOnly = conStruct.numberOnly;
+	m_textAlignment = conStruct.textAlignment;
+	m_lettersMode = conStruct.lettersMode;
+	m_textLengthLimit = conStruct.textLengthLimit;
 
-	controlStyle |= WS_BORDER;
+	m_controlStyle |= WS_BORDER;
+
+	CreateControlWindow();
 }
 Edit::~Edit()
 {
-
+	DestroyControlWindow();
 }
 
 // -- methods -- //
 // private:
-int Edit::ControlProc(WPARAM wParam, LPARAM lParam)
+int Edit::ControlProcedure(WPARAM wParam, LPARAM lParam)
 {
 	UINT event = HIWORD(wParam);
 	switch (event)
 	{
-	case EN_MAXTEXT:
-		events.PushEvent(Edit::Event(Edit::Event::Type::TextLimitReach));
-		break;
+		case EN_CHANGE:
+			m_events.PushEvent(Edit::Event(Edit::Event::Type::TextChanged));
+			break;
 
-	case EN_UPDATE:
-		events.PushEvent(Edit::Event(Edit::Event::Type::Text));
-		break;
+		case EN_MAXTEXT:
+			m_events.PushEvent(Edit::Event(Edit::Event::Type::TextLimitReached));
+			break;
 
+		case EN_ERRSPACE:
 
-	default:
-		return 1;	// if did't handle
+			break;
+
+		case EN_HSCROLL:
+			m_events.PushEvent(Edit::Event(Edit::Event::Type::HorizontalScroll));
+			break;
+
+		case EN_VSCROLL:
+
+			break;
+
+		case EN_SETFOCUS:
+			m_events.PushEvent(Edit::Event(Edit::Event::Type::FocusSet));
+			break;
+
+		case EN_KILLFOCUS:
+			m_events.PushEvent(Edit::Event(Edit::Event::Type::FocusKilled));
+			break;
+
+		default:
+			return 1;	// if did't handle
 	}
 	return 0;		// if did
 }
 bool Edit::CreateControlWindow()
 {
 	// set text alignment
-	if (textAlignment == Edit::TextAlignment::Left)
-		controlStyle |= ES_LEFT;
-	if (textAlignment == Edit::TextAlignment::Center)
-		controlStyle |= ES_CENTER;
-	if (textAlignment == Edit::TextAlignment::Right)
-		controlStyle |= ES_RIGHT;
+	if (m_textAlignment == Edit::TextAlignment::Left)
+		m_controlStyle |= ES_LEFT;
+	if (m_textAlignment == Edit::TextAlignment::Center)
+		m_controlStyle |= ES_CENTER;
+	if (m_textAlignment == Edit::TextAlignment::Right)
+		m_controlStyle |= ES_RIGHT;
 
 	// set letters mode
-	if (lettersMode == Edit::LettersMode::LowerCase)
-		controlStyle |= ES_LOWERCASE;
-	if (lettersMode == Edit::LettersMode::UpperCase)
-		controlStyle |= ES_UPPERCASE;
+	if (m_lettersMode == Edit::LettersMode::LowerCase)
+		m_controlStyle |= ES_LOWERCASE;
+	if (m_lettersMode == Edit::LettersMode::UpperCase)
+		m_controlStyle |= ES_UPPERCASE;
 
 	// set password mode
-	if (passwordMode)
-		controlStyle |= ES_PASSWORD;
+	if (m_passwordMode)
+		m_controlStyle |= ES_PASSWORD;
 
 	// set number only mode
-	if (numberOnly)
-		controlStyle |= ES_NUMBER;
+	if (m_numberOnly)
+		m_controlStyle |= ES_NUMBER;
 
-	controlStyle |= ES_MULTILINE;
+	m_controlStyle |= ES_MULTILINE;
+	m_controlStyle |= ES_AUTOVSCROLL;
 
 	// create window
-	hControl = CreateWindow(L"EDIT", text.c_str(),
-		controlStyle,
-		rect.position.x, rect.position.y, rect.size.width, rect.size.height,
-		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+	m_hWindow = CreateWindow(L"EDIT", m_text.c_str(),
+		m_controlStyle,
+		m_rect.position.x, m_rect.position.y, m_rect.size.width, m_rect.size.height,
+		m_pParentControl->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 	// check control creation
-	if (!hControl)
+	if (!m_hWindow)
 	{
 		MessageBox(nullptr, L"Label window creation failed.", L"Label create error", MB_OK | MB_ICONERROR);
 		return false;
@@ -90,18 +112,22 @@ bool Edit::CreateControlWindow()
 
 	// set visual font
 	HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
-	SendMessage(hControl, WM_SETFONT, (WPARAM)hNormalFont, 0);
+	SendMessage(m_hWindow, WM_SETFONT, (WPARAM)hNormalFont, 0);
 
-	SetTextLengthLimit(textLengthLimit);
+	SetTextLengthLimit(m_textLengthLimit);
 	return true;
+}
+void Edit::DestroyControlWindow()
+{
+	DestroyWindow(m_hWindow);
 }
 // public:
 void Edit::SetText(std::wstring newText)
 {
-	text = newText;
-	SetWindowText(hControl, text.c_str());
+	m_text = newText;
+	SetWindowText(m_hWindow, m_text.c_str());
 
-	events.PushEvent(Edit::Event(Edit::Event::Type::Text));
+	m_events.PushEvent(Edit::Event(Edit::Event::Type::TextChanged));
 }
 void Edit::SetTextAlignment(Edit::TextAlignment newTextAlignment)
 {
@@ -114,14 +140,14 @@ void Edit::SetTextAlignment(Edit::TextAlignment newTextAlignment)
 	if (newTextAlignment == Edit::TextAlignment::Right)
 		newAlignment |= ES_RIGHT;
 
-	controlStyle = (controlStyle & ~(ES_LEFT | ES_CENTER | ES_RIGHT) | newAlignment);
-	SetWindowLong(hControl, GWL_STYLE, controlStyle);
+	m_controlStyle = (m_controlStyle & ~(ES_LEFT | ES_CENTER | ES_RIGHT) | newAlignment);
+	SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
 
-	events.PushEvent(Edit::Event(Edit::Event::Type::TextAlignment));
+	m_events.PushEvent(Edit::Event(Edit::Event::Type::TextAlignmentSet));
 }
 void Edit::SetLettersMode(Edit::LettersMode newLettersMode)
 {
-	lettersMode = newLettersMode;
+	m_lettersMode = newLettersMode;
 
 	unsigned int newMode = 0u;
 	if (newLettersMode == Edit::LettersMode::LowerCase)
@@ -129,48 +155,48 @@ void Edit::SetLettersMode(Edit::LettersMode newLettersMode)
 	if (newLettersMode == Edit::LettersMode::UpperCase)
 		newMode |= ES_UPPERCASE;
 
-	controlStyle = (controlStyle & ~(ES_LOWERCASE | ES_UPPERCASE) | newMode);
-	SetWindowLong(hControl, GWL_STYLE, controlStyle);
+	m_controlStyle = (m_controlStyle & ~(ES_LOWERCASE | ES_UPPERCASE) | newMode);
+	SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
 
-	events.PushEvent(Edit::Event(Edit::Event::Type::LettersMode));
+	m_events.PushEvent(Edit::Event(Edit::Event::Type::LettersModeSet));
 }
 void Edit::SetPasswordMode(bool newPasswordMode)
 {
-	if (passwordMode != newPasswordMode)
+	if (m_passwordMode != newPasswordMode)
 	{
-		passwordMode = newPasswordMode;
+		m_passwordMode = newPasswordMode;
 
-		controlStyle ^= ES_PASSWORD;
-		SetWindowLong(hControl, GWL_STYLE, controlStyle);
+		m_controlStyle ^= ES_PASSWORD;
+		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
 
-		events.PushEvent(Edit::Event(Edit::Event::Type::PasswordMode));
+		m_events.PushEvent(Edit::Event(Edit::Event::Type::PasswordModeSet));
 	}
 }
 void Edit::SetNumberOnlyMode(bool numberOnlyMode)
 {
-	if (numberOnly != numberOnlyMode)
+	if (m_numberOnly != numberOnlyMode)
 	{
-		numberOnly = numberOnlyMode;
+		m_numberOnly = numberOnlyMode;
 
-		if (numberOnly)
-			controlStyle |= ES_NUMBER;
+		if (m_numberOnly)
+			m_controlStyle |= ES_NUMBER;
 		else
-			controlStyle = (controlStyle & (~ES_NUMBER));
-		SetWindowLong(hControl, GWL_STYLE, controlStyle);
+			m_controlStyle = (m_controlStyle & (~ES_NUMBER));
+		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
 
-		events.PushEvent(Edit::Event(Edit::Event::Type::NumberMode));
+		m_events.PushEvent(Edit::Event(Edit::Event::Type::NumberModeSet));
 	}
 }
 void Edit::SetTextLengthLimit(unsigned int lengthLimit)
 {
-	textLengthLimit = lengthLimit;
-	SendMessage(hControl, EM_LIMITTEXT, textLengthLimit, 0u);
+	m_textLengthLimit = lengthLimit;
+	SendMessage(m_hWindow, EM_LIMITTEXT, m_textLengthLimit, 0u);
 }
 std::wstring Edit::GetText()
 {
-	wchar_t* buffer = new wchar_t[textLengthLimit];
-	GetWindowText(hControl, buffer, textLengthLimit);
-	text = buffer;
-	return text;
+	wchar_t* buffer = new wchar_t[m_textLengthLimit];
+	GetWindowText(m_hWindow, buffer, m_textLengthLimit);
+	m_text = buffer;
+	return m_text;
 }
 // [CLASS] Edit --------------------------------|

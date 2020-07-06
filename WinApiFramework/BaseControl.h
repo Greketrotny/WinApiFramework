@@ -148,6 +148,8 @@ namespace WinApiFramework
 		virtual void DestroyControlWindow() = 0;
 		virtual void PushBaseEvent(ChildControl::Event event) = 0;
 	public:
+		void Destroy();
+	public:
 		void Enable();
 		void Disable();
 
@@ -257,7 +259,7 @@ namespace WinApiFramework
 		virtual Point GetClientMousePosition() const = 0;
 		virtual Point GetCanvasMousePosition() const = 0;
 
-		
+
 		// ~~ ParentControl::friends ~~ //
 	public:
 		friend class ChildControl;

@@ -29,10 +29,7 @@ namespace WinApiFramework
 				DoubleClick,
 				Focus,
 				Unfocus,
-				CaptionChanged,
-				Hilite,
-				Push,
-				Unpush
+				CaptionChanged
 			};
 			Type type;
 			Button* button;
@@ -61,11 +58,6 @@ namespace WinApiFramework
 		Button& operator=(const Button &&otherButton) = delete;
 
 
-		// -- static methods -- //
-	public:
-		static Button* Create(ParentControl* parentControl, const ConStruct<Button>& conStruct);
-		static void Destroy(Button* button);
-
 		// -- methods -- //
 	private:
 		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
@@ -76,7 +68,6 @@ namespace WinApiFramework
 			m_events.PushEvent(Button::Event((Button::Event::Type)event.type, this));
 		}
 	public:
-		void Destroy();
 		void SetCaption(std::wstring newCaption);
 
 

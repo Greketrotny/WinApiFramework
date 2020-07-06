@@ -63,19 +63,14 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 		// on window controls events //
 	case WM_COMMAND:
 	case WM_NOTIFY:
-		for (ChildControl*& control : controls)
-		{
-			if (control->GetWindowHandle() == (HWND)lParam)
-			{
-				if (!control->ControlProcedure(wParam, lParam))
-					return 0;
-			}
-		}
-		return 1;
-		break;
+		return ProcessChildMessage(wParam, lParam);
 
 	case WM_VSCROLL:
 	{
+		// try to find and process message on child controls
+		if (!ProcessChildMessage(wParam, lParam))	return 0;
+
+
 		SCROLLINFO si;
 		ZeroMemory(&si, sizeof(si));
 		si.cbSize = sizeof(SCROLLINFO);
@@ -134,6 +129,10 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 
 	case WM_HSCROLL:
 	{
+		// try to find and process message on child controls
+		if (!ProcessChildMessage(wParam, lParam))	return 0;
+
+
 		SCROLLINFO si;
 		ZeroMemory(&si, sizeof(si));
 		si.cbSize = sizeof(SCROLLINFO);
@@ -388,7 +387,28 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 	//}
 
 	}
-	return 1;	// if the window did't handle message
+	return 1;	// if the window did't handle the message
+}
+LRESULT Window::ProcessChildMessage(WPARAM wParam, LPARAM lParam)
+{
+	/*for (ChildControl*& control : controls)
+	{
+		if (control->GetWindowHandle() == (HWND)lParam)
+		{
+			if (!control->ControlProcedure(wParam, lParam))
+				return 0;
+		}
+	}
+	return 1;*/
+	for (ChildControl*& control : controls)
+	{
+		if (control->GetWindowHandle() == (HWND)lParam)
+		{
+			control->ControlProcedure(wParam, lParam);
+			return 0;
+		}
+	}
+	return 1;
 }
 bool Window::CreateAndRegisterWindowClass()
 {

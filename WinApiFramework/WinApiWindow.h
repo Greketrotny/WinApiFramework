@@ -188,6 +188,7 @@ namespace WinApiFramework
 		// -- methods -- // 
 	private:
 		LRESULT WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam);
+		LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
 		bool CreateAndRegisterWindowClass();
 		bool CreateWinApiWindow(ConStruct<Window> config);
 	public:

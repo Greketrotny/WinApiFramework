@@ -40,17 +40,17 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		std::wstring caption;
-		bool isTripleState;
-		BoxState boxState;
-		ChildControl::EventsManager<CheckBox::Event> events;
+		std::wstring m_caption;
+		bool m_isTripleState;
+		BoxState m_boxState;
+		ChildControl::EventsManager<CheckBox::Event> m_events;
 
 
 		// -- constructors -- //
-	public:
+	private:
 		CheckBox(const CheckBox& checkBox) = delete;
 		CheckBox(const CheckBox&& checkBox) = delete;
-		CheckBox(const ConStruct<CheckBox>& conStruct);
+		CheckBox(ParentControl* parentControl, const ConStruct<CheckBox>& conStruct);
 		~CheckBox();
 
 
@@ -67,7 +67,7 @@ namespace WinApiFramework
 		void DestroyControlWindow() override;
 		void PushBaseEvent(ChildControl::Event event) override
 		{
-			events.PushEvent(CheckBox::Event((CheckBox::Event::Type)event.type));
+			m_events.PushEvent(CheckBox::Event((CheckBox::Event::Type)event.type));
 		}
 	public:
 		void SetCaption(std::wstring newCaption);
@@ -82,6 +82,10 @@ namespace WinApiFramework
 		const std::wstring& Caption;
 		const bool& IsTripleState;
 		ChildControl::EventsManager<CheckBox::Event>& Events;
+
+		// -- friends -- //
+	public:
+		friend class ParentControl;
 	};
 
 	template <> struct ConStruct<CheckBox> : ConStruct<ChildControl>
