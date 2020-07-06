@@ -179,9 +179,7 @@
     </ClCompile>
     <ClCompile Include="DataTypes.cpp" />
     <ClCompile Include="Edit.cpp" />
-    <ClCompile Include="GraphicsBox.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="GraphicsBox.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Label.cpp" />
     <ClCompile Include="Mouse.cpp" />
@@ -206,9 +204,7 @@
     <ClInclude Include="DataTypes.h" />
     <ClInclude Include="Edit.h" />
     <ClInclude Include="ExternIncludes.h" />
-    <ClInclude Include="GraphicsBox.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="GraphicsBox.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Label.h" />
     <ClInclude Include="Mouse.h" />

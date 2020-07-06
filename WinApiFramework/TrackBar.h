@@ -26,6 +26,12 @@ namespace WinApiFramework
 			Both,
 			NoTicks
 		};
+		enum ToolTipsStyle
+		{
+			ToolTipsStyleTop,
+			ToolTipsStyleBottom,
+			ToolTipsStyleNone
+		};
 		struct Event
 		{
 			enum Type
@@ -44,8 +50,10 @@ namespace WinApiFramework
 				SelectRangeChanged,
 				SelectRangeEnabled,
 				SelectRangeDisabled,
+				ToolTipsStyleChanged,
 				SmallStepChanged,
 				LargeStepChanged,
+				TicksFrequencyChanged,
 
 				LinedUp,
 				LinedDown,
@@ -70,6 +78,8 @@ namespace WinApiFramework
 		Range m_selectRange;
 		Orientation m_orientation;
 		TickStyle m_tickStyle;
+		unsigned int m_ticksFrequency;
+		ToolTipsStyle m_toolTipsStyle;
 		unsigned int m_smallStep, m_largeStep;
 		bool m_selectRangeEnabled;
 
@@ -118,8 +128,10 @@ namespace WinApiFramework
 		void SetMaxSelectValue(int value);
 		void SetSelectRange(Range newSelectRange);
 		void SetSelectRange(int minValue, int maxValue);
+		void SetToolTipsStyle(ToolTipsStyle toolTipsStyle);
 		void SetSmallStep(unsigned int smallStep);
 		void SetLargeStep(unsigned int largeStep);
+		void SetTicksFrequency(unsigned int frequency);
 
 		// ~~ TrackBar::getters ~~ //
 	public:
@@ -152,6 +164,7 @@ namespace WinApiFramework
 		TrackBar::TickStyle tickStyle;
 		bool enableSelectRange;
 		Range selectRange;
+		TrackBar::ToolTipsStyle toolTipsStyle;
 
 		ConStruct(ConStruct<ChildControl> winCtrlConStruct = ConStruct<ChildControl>(),
 			Range trackRange = Range(0, 100),
@@ -160,7 +173,8 @@ namespace WinApiFramework
 			TrackBar::Orientation orientation = TrackBar::Orientation::Horizontal,
 			TrackBar::TickStyle tickStyle = TrackBar::TickStyle::Default,
 			bool enableSelectRange = false,
-			Range selectRange = Range(0, 100))
+			Range selectRange = Range(0, 100),
+			TrackBar::ToolTipsStyle toolTipsStyle = TrackBar::ToolTipsStyle::ToolTipsStyleNone)
 			: ConStruct<ChildControl>(winCtrlConStruct)
 			, trackRange(trackRange)
 			, startPosition(startPosition)
@@ -169,6 +183,7 @@ namespace WinApiFramework
 			, tickStyle(tickStyle)
 			, enableSelectRange(enableSelectRange)
 			, selectRange(selectRange)
+			, toolTipsStyle(toolTipsStyle)
 		{}
 	};
 }

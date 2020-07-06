@@ -364,15 +364,15 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		ChildControl::EventsManager<GraphicsBox::Event> events;
-		GBGraphics graphics;
+		ChildControl::EventsManager<GraphicsBox::Event> m_events;
+		GBGraphics m_graphics;
 
 
 		// -- constructors -- //
-	public:
+	private:
 		GraphicsBox(const GraphicsBox& graphicsBox) = delete;
 		GraphicsBox(const GraphicsBox&& graphicsBox) = delete;
-		GraphicsBox(const ConStruct<GraphicsBox> &conStruct);
+		GraphicsBox(ParentControl* parentControl, const ConStruct<GraphicsBox> &conStruct);
 		~GraphicsBox();
 
 
@@ -389,7 +389,7 @@ namespace WinApiFramework
 		void DestroyControlWindow() override;
 		void PushBaseEvent(ChildControl::Event event) override
 		{
-			events.PushEvent(GraphicsBox::Event((GraphicsBox::Event::Type)event.type));
+			m_events.PushEvent(GraphicsBox::Event((GraphicsBox::Event::Type)event.type));
 		}
 	public:
 		void Resize(unsigned int newWidth, unsigned int newHeight);
@@ -399,6 +399,10 @@ namespace WinApiFramework
 	public:
 		GBGraphics& Gfx;
 		ChildControl::EventsManager<GraphicsBox::Event>& Events;
+
+		// -- friends -- //
+	public:
+		friend class ParentControl;
 	};
 
 	template <> struct ConStruct<GraphicsBox> : ConStruct<ChildControl>

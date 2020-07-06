@@ -78,7 +78,7 @@ namespace WinApiFramework
 			std::queue<Mouse::Event> events;
 			std::vector<std::function<void(Mouse::Event)>> eventHandlers;
 		public:
-			const unsigned short buffLength = 32u;
+			const unsigned short buffLength = 16u;
 			bool eventHandlersEnabled = true;
 
 
@@ -92,7 +92,6 @@ namespace WinApiFramework
 		public:
 			void PushEvent(Mouse::Event newEvent)
 			{
-				// push event to buffer
 				events.push(newEvent);
 				if (events.size() > buffLength)
 					events.pop();

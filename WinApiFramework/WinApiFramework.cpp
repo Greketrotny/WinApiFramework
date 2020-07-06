@@ -188,7 +188,7 @@ UINT Framework::ProcessMessages()
 	{
 		// process all untouched messages
 		eventCounter = 0u;
-		while ((PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) && (eventCounter < 2048u))
+		while ((PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) && (eventCounter < 16u))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);

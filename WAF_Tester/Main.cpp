@@ -6,8 +6,33 @@
 
 #include <math.h>
 #include <time.h>
+#include <sstream>
 
 namespace WAF = WinApiFramework;
+
+Graphics::Bitmap *texture1 = nullptr, *texture2 = nullptr;
+void GenerateTexture(Graphics::Bitmap*& tex, Graphics::Color color)
+{
+	if (tex) delete tex;
+	tex = new Graphics::Bitmap(500, 400);
+	for (int x = 0; x < tex->Width; ++x)
+	{
+		for (int y = 0; y < tex->Height; ++y)
+		{
+			if ((x % 2 == 0) ^ (y % 2 == 0))
+			{
+				tex->SetPixel(x, y, color);
+			}
+			else
+			{
+				tex->SetPixel(x, y, Graphics::Color(color.GetR(), color.GetG(), color.GetB(), 0x00));
+			}
+			//unsigned char value = ((x % 2 == 0) ^ (y % 2 == 0)) ? 255 : 0;
+			////texture->SetPixel(x, y, Graphics::Color(value, value, value, 0xFF));
+			//tex->SetPixel(x, y, Graphics::Color(color.GetR(), color.GetG(), color.GetB(), value));
+		}
+	}
+}
 
 class MainForm
 {
@@ -24,6 +49,7 @@ public:
 	WAF::Label* label1 = nullptr;
 	WAF::ProgressBar* progressBar = nullptr;
 	WAF::TrackBar* trackBar = nullptr;
+	WAF::GraphicsBox* gfxBox = nullptr;
 
 	std::vector<std::wstring> eventsHistory;
 
@@ -39,7 +65,7 @@ public:
 		MainWindow = new WAF::Window(
 			WAF::ConStruct<WAF::Window>(
 				L"WinApiFramework test",
-				WAF::Rect(50, 50, 800, 600),
+				WAF::Rect(50, 50, 1400, 700),
 				WAF::Window::Position::Center,
 				WAF::Window::StartStyle::Normal,
 				WAF::SizeRect(200u, 100u, 2000u, 1000u),
@@ -49,7 +75,7 @@ public:
 
 		// eventHistoryLabel
 		eventHistoryLabel = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(500, 10, 200, 600)),
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 120, 150, 400)),
 			L"events"));
 
 		// buttons
@@ -111,16 +137,36 @@ public:
 
 		// trackBar
 		trackBar = MainWindow->CreateControl<WAF::TrackBar>(WAF::ConStruct<WAF::TrackBar>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 250, 150, 50)),
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 250, 150, 40)),
 			WAF::Range(0, 20),
 			20,
 			1,
 			10,
 			WAF::TrackBar::Horizontal,
-			WAF::TrackBar::TickStyle::Bottom,
+			WAF::TrackBar::TickStyle::Both,
 			true,
-			WAF::Range(5, 12)));
+			WAF::Range(5, 12),
+			WAF::TrackBar::ToolTipsStyle::ToolTipsStyleTop));
 		trackBar->Events.AddEventHandler<MainForm>(this, &MainForm::TrackBar_EH);
+		trackBar->SetTicksFrequency(2u);
+
+		/*
+		WAF::GraphicsBox::ConStruct gbc;
+//		gbc.rect = WAF::Rect(10, 10, MainWindow->ClientWidth - 20, MainWindow->ClientHeight - 20);
+//		gbc.graphics.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
+//		gbc.graphics.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
+//		gfxBox = new WAF::GraphicsBox(gbc);
+//		gfxBox->Events.AddEventHandler<MainForm>(this, &MainForm::gfxBoxEventsReceiver);
+//		MainWindow->AddControl(gfxBox);
+		*/
+
+		// graphicsBox
+		WAF::ConStruct<WAF::GraphicsBox> gbc;
+		//gbc.rect = WAF::Rect(10, 10, MainWindow->ClientRect.size.width - 20, MainWindow->ClientHeight - 20);
+		gbc.rect = WAF::Rect(500, 10, 800, 600);
+		gbc.graphics.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
+		gbc.graphics.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
+		gfxBox = MainWindow->CreateControl<WAF::GraphicsBox>(gbc);
 	}
 	~MainForm()
 	{
@@ -272,7 +318,7 @@ public:
 				if (event.key == WAF::Keyboard::Key::Digit9)
 				{
 					//trackBar->SetThumbPosition(trackBar->GetPosition() - 5);
-					trackBar->SetMinSelectValue(trackBar->GetMinSelectValue() - 5);
+					trackBar->SetMinTrackValue(trackBar->GetMinTrackValue() - 5);
 				}
 				if (event.key == WAF::Keyboard::Key::Digit0)
 				{
@@ -305,7 +351,7 @@ public:
 						std::to_wstring(buttons[i]->GetMousePosition().x) + L" : " +
 						std::to_wstring(buttons[i]->GetMousePosition().y));
 				}
-				MainWindow->SetCaption(
+				/*MainWindow->SetCaption(
 					L"WindowM: " +
 					std::to_wstring(MainWindow->GetWindowMousePosition().x) +
 					L" : " +
@@ -317,9 +363,9 @@ public:
 					L" CanvasM: " +
 					std::to_wstring(MainWindow->GetCanvasMousePosition().x) +
 					L" : " +
-					std::to_wstring(MainWindow->GetCanvasMousePosition().y));
+					std::to_wstring(MainWindow->GetCanvasMousePosition().y));*/
 
-				progressBar->SetPosition(MainWindow->GetClientMousePosition().x / float(MainWindow->ClientRect.size.width) * 100.0f);
+				//progressBar->SetPosition(MainWindow->GetClientMousePosition().x / float(MainWindow->ClientRect.size.width) * 100.0f);
 				//progressBar->StepIt();
 
 				break;
@@ -342,7 +388,41 @@ MainForm *MF;
 
 void CallBackFunction()
 {
-	Sleep(1);
+	float mouseX = MF->gfxBox->GetMousePosition().x;
+	float mouseY = MF->gfxBox->GetMousePosition().y;
+
+	// [>] Begin Drawing
+	MF->gfxBox->Gfx.BeginDraw();
+	/*MF->gfxBox->Gfx.Clear(Graphics::Color(0xA0, 0xA0, 0xA0, 0xFF));*/
+	MF->gfxBox->Gfx.Clear(Graphics::Color::White);
+	MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0xFF, 0x00, 0x00));
+
+	if (WAF::Framework::Mouse.LeftPressed) MF->gfxBox->Gfx.DrawLine(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(500.0f, 500.0f), 5.0f);
+
+	if (WAF::Framework::Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
+		*texture1,
+		Graphics::Rect<float>(mouseX, mouseY, mouseX + 600.0f, mouseY + 400.0f),
+		Graphics::Rect<float>(0.0f, 0.0f, texture1->Width, texture1->Height),
+		1.0f, WAF::GraphicsBox::InterpolationMode::InterpolationModeNearestNeighbor);
+
+	if (WAF::Framework::Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
+		*texture2,
+		Graphics::Rect<float>(100.0f, 100.0f, 700.0f, 500.0f),
+		Graphics::Rect<float>(0.0f, 0.0f, texture2->Width, texture2->Height),
+		1.0f, WAF::GraphicsBox::InterpolationMode::InterpolationModeNearestNeighbor);
+
+	//MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(100.0f, 50.0f));
+	MF->gfxBox->Gfx.DrawRoundedRectangle(Graphics::Point<float>(0.0f, 0.0f), Graphics::Point<float>(mouseX, mouseY), 50.0f, 50.0f, mouseX / 100.0f);
+
+	std::wostringstream os;
+	os << L"Lorem ipsum dolor sit\t amet, consectetur adipiscing elit. Ut facilisis risus in neque ullamcorper finibus. Proin eu lectus dignissim enim porttitor ultricies vitae vel mauris. Vestibulum eleifend porta enim at vulputate. Nunc imperdiet quam vel eros mollis pellentesque sit amet eu leo. Sed at nisl vitae arcu maximus lobortis. Suspendisse sodales urna urna, eu venenatis enim faucibus et. Praesent gravida metus vel ipsum ullamcorper gravida. Ut pretium ex vitae cursus posuere. Maecenas justo urna, iaculis ac pulvinar eleifend, vestibulum vel neque. Ut bibendum, sapien in pretium rhoncus, leo eros ullamcorper urna, quis vehicula leo neque sollicitudin nibh. Etiam convallis leo vitae nibh mattis, sit amet pretium nibh efficitur. Phasellus maximus, mauris eu finibus suscipit, ligula dui ultricies libero, at efficitur sem ligula sed sapien.";
+
+	MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0x00, 0x00, 0x00), 0.5f);
+	MF->gfxBox->Gfx.DrawString(os.str(), Graphics::Rect<float>(10.0f, 10.0f, mouseX - 10.0f, mouseY - 10.0f));
+
+	MF->gfxBox->Gfx.EndDraw();
+	//if (WAF::Framework::Mouse.LeftPressed) MF->gfxBox->Gfx.FillEllipse(Graphics::Point2d<float>(mouseX, mouseY), Graphics::Point2d<float>(20.0f, 20.0f));
+	//MF->gfxBox->Gfx.Render();
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, INT ncmd)
@@ -350,6 +430,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
 
+	GenerateTexture(texture1, Graphics::Color::Red);
+	GenerateTexture(texture2, Graphics::Color::Green);
 	MF = new MainForm();
 
 	WAF::Framework::SetCallBackFunction(CallBackFunction);

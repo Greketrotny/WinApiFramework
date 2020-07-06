@@ -8,7 +8,7 @@
 namespace WinApiFramework
 {
 	// ~~~~~~~~ [CLASS] TrackBar ~~~~~~~~
-	// -- constructor -- //
+	// ~~ constructor ~~ //
 	TrackBar::TrackBar(ParentControl* parentControl, const ConStruct< TrackBar>& conStruct)
 		: ChildControl(parentControl, conStruct)
 		, Events(m_events)
@@ -21,6 +21,7 @@ namespace WinApiFramework
 		m_tickStyle = conStruct.tickStyle;
 		m_selectRange = conStruct.selectRange;
 		m_selectRangeEnabled = conStruct.enableSelectRange;
+		m_toolTipsStyle = conStruct.toolTipsStyle;
 
 		CreateControlWindow();
 	}
@@ -29,7 +30,7 @@ namespace WinApiFramework
 		DestroyControlWindow();
 	}
 
-	// -- methods -- //
+	// ~~ methods ~~ //
 	// private:
 	int TrackBar::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
@@ -97,14 +98,15 @@ namespace WinApiFramework
 		{
 			
 			case WinApiFramework::TrackBar::Default:	break;
-			case WinApiFramework::TrackBar::Top: m_controlStyle |= TBS_TOP;			break;
+			case WinApiFramework::TrackBar::Top:	m_controlStyle |= TBS_TOP;		break;
 			case WinApiFramework::TrackBar::Bottom:	m_controlStyle |= TBS_BOTTOM;	break;
 			case WinApiFramework::TrackBar::Both:	m_controlStyle |= TBS_BOTH;		break;
-			case WinApiFramework::TrackBar::NoTicks:	m_controlStyle |= TBS_NOTICKS;	break;
+			case WinApiFramework::TrackBar::NoTicks:m_controlStyle |= TBS_NOTICKS;	break;
 		}
 		m_controlStyle |= TBS_AUTOTICKS;
 
-		m_controlStyle |= TBS_TOOLTIPS;
+		// set tool tips style
+		if (m_toolTipsStyle != ToolTipsStyle::ToolTipsStyleNone) m_controlStyle |= TBS_TOOLTIPS;
 
 
 		// [>] create window
@@ -121,6 +123,7 @@ namespace WinApiFramework
 
 		SetTrackRange(m_trackRange);
 		SetSelectRange(m_selectRange);
+		SetToolTipsStyle(m_toolTipsStyle);
 		SetThumbPosition(m_ThumbPosition);
 		SetSmallStep(m_smallStep);
 		SetLargeStep(m_largeStep);
@@ -194,7 +197,6 @@ namespace WinApiFramework
 		m_trackRange.min = std::min(value, m_trackRange.max);
 
 		SendMessage(m_hWindow, TBM_SETRANGEMIN, TRUE, value);
-		SendMessage(m_hWindow, TBM_SETTICFREQ, 1, 0);
 
 		m_events.PushEvent(Event(Event::Type::MinTrackValueChanged));
 	}
@@ -203,7 +205,6 @@ namespace WinApiFramework
 		m_trackRange.max = std::max(value, m_trackRange.min);
 
 		SendMessage(m_hWindow, TBM_SETRANGEMAX, TRUE, value);
-		SendMessage(m_hWindow, TBM_SETTICFREQ, 1, 0);
 
 		m_events.PushEvent(Event(Event::Type::MinTrackValueChanged));
 	}
@@ -259,6 +260,33 @@ namespace WinApiFramework
 			m_events.PushEvent(Event(Event::Type::SelectRangeChanged));
 		}
 	}
+	void TrackBar::SetToolTipsStyle(ToolTipsStyle toolTipsStyle)
+	{
+		m_toolTipsStyle = toolTipsStyle;
+
+		if (m_toolTipsStyle == ToolTipsStyle::ToolTipsStyleNone)
+		{
+			m_controlStyle = m_controlStyle & (~TBS_TOOLTIPS);
+			SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+		}
+		else
+		{
+			m_controlStyle |= TBS_TOOLTIPS;
+			SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+
+			switch (m_toolTipsStyle)
+			{
+				case WinApiFramework::TrackBar::ToolTipsStyleTop:	
+					SendMessage(m_hWindow, TBM_SETTIPSIDE, TBTS_TOP, 0);
+					break;
+				case WinApiFramework::TrackBar::ToolTipsStyleBottom:
+					SendMessage(m_hWindow, TBM_SETTIPSIDE, TBTS_BOTTOM, 0);
+					break;
+			}
+		}
+
+		m_events.PushEvent(Event(Event::Type::ToolTipsStyleChanged));
+	}
 	void TrackBar::SetSmallStep(unsigned int smallStep)
 	{
 		m_smallStep = smallStep;
@@ -270,6 +298,13 @@ namespace WinApiFramework
 		m_largeStep = largeStep;
 		SendMessage(m_hWindow, TBM_SETPAGESIZE, 0, largeStep);
 		m_events.PushEvent(Event(Event::Type::LargeStepChanged));
+	}
+	void TrackBar::SetTicksFrequency(unsigned int frequency)
+	{
+		m_ticksFrequency = std::max(frequency, 1u);
+		SendMessage(m_hWindow, TBM_SETTICFREQ, m_ticksFrequency, 0);
+
+		m_events.PushEvent(Event(Event::Type::TicksFrequencyChanged));
 	}
 
 	// ~~ TrackBar::getters ~~ //

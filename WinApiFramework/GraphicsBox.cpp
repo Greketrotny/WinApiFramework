@@ -6,21 +6,22 @@ using namespace WinApiFramework;
 
 // ~~~~~~~~ [CLASS] GraphicsBox ~~~~~~~~
 // -- GraphicsBox::constructors -- //
-GraphicsBox::GraphicsBox(const GraphicsBox::ConStruct &conStruct)
-	:ChildControl(conStruct),
-	graphics(this, conStruct.graphics),
-	Gfx(graphics),
-	Events(events)
+GraphicsBox::GraphicsBox(ParentControl* parentControl, const ConStruct<GraphicsBox>& conStruct)
+	: ChildControl(parentControl, conStruct)
+	, m_graphics(this, conStruct.graphics)
+	, Gfx(m_graphics)
+	, Events(m_events)
 {
+	CreateControlWindow();
 }
 GraphicsBox::~GraphicsBox()
 {
-
+	DestroyControlWindow();
 }
 
 // -- GraphicsBox::methods -- //
 // private:
-int GraphicsBox::ControlProc(WPARAM wParam, LPARAM lParam)
+int GraphicsBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
 {
 	UINT msg = HIWORD(wParam);
 	switch (msg)
@@ -32,22 +33,22 @@ int GraphicsBox::ControlProc(WPARAM wParam, LPARAM lParam)
 }
 bool GraphicsBox::CreateControlWindow()
 {
-	controlStyle |= WS_BORDER;
+	m_controlStyle |= WS_BORDER;
 
 	// create window
-	hControl = CreateWindowW(L"STATIC", NULL,
-		controlStyle,
-		rect.position.x, rect.position.y, rect.size.width, rect.size.height,
-		parentWindow->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+	m_hWindow = CreateWindowW(L"STATIC", NULL,
+		m_controlStyle,
+		m_rect.position.x, m_rect.position.y, m_rect.size.width, m_rect.size.height,
+		m_pParentControl->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 	// check control creation
-	if (!hControl)
+	if (!m_hWindow)
 	{
 		MessageBox(nullptr, L"GraphicsBox creation failed.", L"GraphicsBox create error", MB_OK | MB_ICONERROR);
 		return false;
 	}
 
-	if (!graphics.InitGraphics())
+	if (!m_graphics.InitGraphics())
 	{
 		MessageBox(nullptr, L"GraphicsBox::GBGraphics initialization failed.", L"GBGraphics error", MB_OK | MB_ICONERROR);
 		return false;
@@ -55,10 +56,15 @@ bool GraphicsBox::CreateControlWindow()
 
 	return true;
 }
+void GraphicsBox::DestroyControlWindow()
+{
+	::DestroyWindow(m_hWindow);
+}
+
 // public:
 void GraphicsBox::Resize(unsigned int newWidth, unsigned int newHeight)
 {
-	graphics.Resize(newWidth - 2, newHeight - 2);
+	m_graphics.Resize(newWidth - 2, newHeight - 2);
 	ChildControl::Resize(newWidth, newHeight);
 }
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -84,8 +90,8 @@ GraphicsBox::GBGraphics::~GBGraphics()
 // private:
 bool GraphicsBox::GBGraphics::InitGraphics()
 {
-	m_width = m_pControl->rect.size.width - 2;
-	m_height = m_pControl->rect.size.height - 2;
+	m_width = m_pControl->m_rect.size.width - 2;
+	m_height = m_pControl->m_rect.size.height - 2;
 
 
 	// [>] Create D2D1Factory
@@ -133,7 +139,7 @@ bool GraphicsBox::GBGraphics::InitGraphics()
 			D2D1_RENDER_TARGET_USAGE::D2D1_RENDER_TARGET_USAGE_NONE,
 			D2D1_FEATURE_LEVEL::D2D1_FEATURE_LEVEL_DEFAULT),
 		D2D1::HwndRenderTargetProperties(
-			m_pControl->hControl,
+			m_pControl->m_hWindow,
 			D2D1::SizeU(m_width, m_height),
 			presentOptions),
 		&m_pHwndRenderTarget);
