@@ -169,10 +169,9 @@ namespace WinApiFramework
 		// -- constructors -- //
 	private:
 		Window();
-	public:
 		Window(const Window &wnd) = delete;
 		Window(const Window &&wnd) = delete;
-		Window(const ConStruct<Window> &config);
+		Window(unsigned int id, const ConStruct<Window> &conStruct);
 		~Window();
 
 
@@ -186,8 +185,11 @@ namespace WinApiFramework
 	private:
 		LRESULT WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam);
 		LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
+		public:
 		bool CreateAndRegisterWindowClass();
-		bool CreateWinApiWindow(ConStruct<Window> config);
+		bool CreateWinApiWindow(ConStruct<Window> conStruct);
+	public:
+		void Destroy();
 	public:
 		void PushEvent(Window::Event newEvent);
 		Window::Event GetEvent();
@@ -225,7 +227,6 @@ namespace WinApiFramework
 			std::wstring caption = L"Default caption",
 			UINT message_box_style = 0);
 
-		const HWND& GetWindowHandle() const;
 		const std::wstring& GetCaption() const;
 	private:
 		Point GetMousePosition() const override;

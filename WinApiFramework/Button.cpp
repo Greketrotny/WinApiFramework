@@ -72,7 +72,7 @@ bool Button::CreateControlWindow()
 }
 void Button::DestroyControlWindow()
 {
-	DestroyWindow(m_hWindow);
+	::DestroyWindow(m_hWindow);
 }
 
 // public:

@@ -271,7 +271,7 @@ namespace WinApiFramework
 	public:
 		virtual Point GetMousePosition() const = 0;
 	protected:
-		ChildControl*& const GetChildControl(size_t index);
+		ChildControl* const GetChildControl(size_t index);
 		size_t GetControlCount();
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

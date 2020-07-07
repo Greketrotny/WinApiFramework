@@ -61,7 +61,7 @@ public:
 		WAF::Framework::Mouse.Events.AddEventHandler<MainForm>(this, &MainForm::FrameworkMouse_EH);
 
 		// MainWindow
-		MainWindow = new WAF::Window(
+		MainWindow = WAF::Framework::CreateNewWindow(
 			WAF::ConStruct<WAF::Window>(
 				L"WinApiFramework test",
 				WAF::Rect(50, 50, 1200, 700),
@@ -72,12 +72,12 @@ public:
 		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindow_EH);
 
 
-		// eventHistoryLabel
-		eventHistoryLabel = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 10, 150, 400)),
-			L"events"));
-
-
+//		// eventHistoryLabel
+//		eventHistoryLabel = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
+//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 10, 150, 400)),
+//			L"events"));
+//
+//
 		// checkBox1
 		checkBox1 = MainWindow->CreateControl<WAF::CheckBox>(WAF::ConStruct<WAF::CheckBox>(
 			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 10, 100, 50)),
@@ -85,73 +85,73 @@ public:
 			true,
 			WAF::CheckBox::BoxState::MiddleState));
 		checkBox1->Events.AddEventHandler<MainForm>(this, &MainForm::CheckBox1_EH);
-
-		// edit1
-		edit1 = MainWindow->CreateControl<WAF::Edit>(WAF::ConStruct<WAF::Edit>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 70, 100, 50)),
-			L"default text", WAF::Edit::TextAlignment::Right,
-			WAF::Edit::LettersMode::UpperCase,
-			false,
-			false,
-			100u));
-		edit1->Events.AddEventHandler<MainForm>(this, &MainForm::Edit1_EH);
-
-		// label1
-		label1 = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 140, 100, 50)),
-			L"A box with a frame drawn with the same color as the window background. This color is whilte in the background.",
-			WAF::Label::TextAlignment::Right));
-		label1->Events.AddEventHandler<MainForm>(this, &MainForm::Label1_EH);
-
-		// progressBar
-		progressBar = MainWindow->CreateControl<WAF::ProgressBar>(WAF::ConStruct<WAF::ProgressBar>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 200, 150, 20)),
-			WAF::Range(0, 100),
-			20,
-			WAF::ProgressBar::BarState::Normal,
-			WAF::ProgressBar::BarOrientation::Horizontal,
-			WAF::ProgressBar::BarDisplayStyle::Default, 1u));
-
-		// trackBar
-		trackBar = MainWindow->CreateControl<WAF::TrackBar>(WAF::ConStruct<WAF::TrackBar>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 250, 150, 40)),
-			WAF::Range(0, 20),
-			20,
-			1,
-			10,
-			WAF::TrackBar::Horizontal,
-			WAF::TrackBar::TickStyle::Both,
-			true,
-			WAF::Range(5, 12),
-			WAF::TrackBar::ToolTipsStyle::ToolTipsStyleTop));
-		trackBar->Events.AddEventHandler<MainForm>(this, &MainForm::TrackBar_EH);
-		trackBar->SetTicksFrequency(2u);
-
-		/*
-		WAF::GraphicsBox::ConStruct gbc;
-//		gbc.rect = WAF::Rect(10, 10, MainWindow->ClientWidth - 20, MainWindow->ClientHeight - 20);
+//
+//		// edit1
+//		edit1 = MainWindow->CreateControl<WAF::Edit>(WAF::ConStruct<WAF::Edit>(
+//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 70, 100, 50)),
+//			L"default text", WAF::Edit::TextAlignment::Right,
+//			WAF::Edit::LettersMode::UpperCase,
+//			false,
+//			false,
+//			100u));
+//		edit1->Events.AddEventHandler<MainForm>(this, &MainForm::Edit1_EH);
+//
+//		// label1
+//		label1 = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
+//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 140, 100, 50)),
+//			L"A box with a frame drawn with the same color as the window background. This color is whilte in the background.",
+//			WAF::Label::TextAlignment::Right));
+//		label1->Events.AddEventHandler<MainForm>(this, &MainForm::Label1_EH);
+//
+//		// progressBar
+//		progressBar = MainWindow->CreateControl<WAF::ProgressBar>(WAF::ConStruct<WAF::ProgressBar>(
+//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 200, 150, 20)),
+//			WAF::Range(0, 100),
+//			20,
+//			WAF::ProgressBar::BarState::Normal,
+//			WAF::ProgressBar::BarOrientation::Horizontal,
+//			WAF::ProgressBar::BarDisplayStyle::Default, 1u));
+//
+//		// trackBar
+//		trackBar = MainWindow->CreateControl<WAF::TrackBar>(WAF::ConStruct<WAF::TrackBar>(
+//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 250, 150, 40)),
+//			WAF::Range(0, 20),
+//			20,
+//			1,
+//			10,
+//			WAF::TrackBar::Horizontal,
+//			WAF::TrackBar::TickStyle::Both,
+//			true,
+//			WAF::Range(5, 12),
+//			WAF::TrackBar::ToolTipsStyle::ToolTipsStyleTop));
+//		trackBar->Events.AddEventHandler<MainForm>(this, &MainForm::TrackBar_EH);
+//		trackBar->SetTicksFrequency(2u);
+//
+//		/*
+//		WAF::GraphicsBox::ConStruct gbc;
+////		gbc.rect = WAF::Rect(10, 10, MainWindow->ClientWidth - 20, MainWindow->ClientHeight - 20);
+////		gbc.graphics.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
+////		gbc.graphics.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
+////		gfxBox = new WAF::GraphicsBox(gbc);
+////		gfxBox->Events.AddEventHandler<MainForm>(this, &MainForm::gfxBoxEventsReceiver);
+////		MainWindow->AddControl(gfxBox);
+//		*/
+//
+//		// graphicsBox
+//		WAF::ConStruct<WAF::GraphicsBox> gbc;
+//		//gbc.rect = WAF::Rect(10, 10, MainWindow->ClientRect.size.width - 20, MainWindow->ClientHeight - 20);
+//		gbc.rect = WAF::Rect(500, 10, 600, 400);
 //		gbc.graphics.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
 //		gbc.graphics.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
-//		gfxBox = new WAF::GraphicsBox(gbc);
-//		gfxBox->Events.AddEventHandler<MainForm>(this, &MainForm::gfxBoxEventsReceiver);
-//		MainWindow->AddControl(gfxBox);
-		*/
-
-		// graphicsBox
-		WAF::ConStruct<WAF::GraphicsBox> gbc;
-		//gbc.rect = WAF::Rect(10, 10, MainWindow->ClientRect.size.width - 20, MainWindow->ClientHeight - 20);
-		gbc.rect = WAF::Rect(500, 10, 600, 400);
-		gbc.graphics.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
-		gbc.graphics.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
-		gfxBox = MainWindow->CreateControl<WAF::GraphicsBox>(gbc);
-
-		// groupBox
-		groupBox = MainWindow->CreateControl<WAF::GroupBox>(WAF::ConStruct<WAF::GroupBox>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 450, 350, 150))));
+//		gfxBox = MainWindow->CreateControl<WAF::GraphicsBox>(gbc);
+//
+//		// groupBox
+//		groupBox = MainWindow->CreateControl<WAF::GroupBox>(WAF::ConStruct<WAF::GroupBox>(
+//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 450, 350, 150))));
 	}
 	~MainForm()
 	{
-		if (MainWindow) delete MainWindow;
+		if (MainWindow) MainWindow->Destroy();
 	}
 
 	void DisplayEventHistory()
@@ -351,6 +351,9 @@ MainForm *MF;
 
 void CallBackFunction()
 {
+	Sleep(1);
+	return;
+
 	float mouseX = MF->gfxBox->GetMousePosition().x;
 	float mouseY = MF->gfxBox->GetMousePosition().y;
 

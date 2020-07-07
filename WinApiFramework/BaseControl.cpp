@@ -146,7 +146,7 @@ namespace WinApiFramework
 		}
 		m_controls.clear();
 	}
-	ChildControl*& const ParentControl::GetChildControl(size_t index)
+	ChildControl* const ParentControl::GetChildControl(size_t index)
 	{
 		return m_controls[index];
 	}
