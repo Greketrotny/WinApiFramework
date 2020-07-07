@@ -39,8 +39,6 @@ class MainForm
 	// -- MainForm::fields -- //
 public:
 	WAF::Window *MainWindow = nullptr;
-	std::vector<WAF::Button*> buttons;
-	WAF::Button* lastClickedButton = nullptr;
 
 	WAF::Label* eventHistoryLabel = nullptr;
 
@@ -50,6 +48,7 @@ public:
 	WAF::ProgressBar* progressBar = nullptr;
 	WAF::TrackBar* trackBar = nullptr;
 	WAF::GraphicsBox* gfxBox = nullptr;
+	WAF::GroupBox* groupBox = nullptr;
 
 	std::vector<std::wstring> eventsHistory;
 
@@ -65,7 +64,7 @@ public:
 		MainWindow = new WAF::Window(
 			WAF::ConStruct<WAF::Window>(
 				L"WinApiFramework test",
-				WAF::Rect(50, 50, 1400, 700),
+				WAF::Rect(50, 50, 1200, 700),
 				WAF::Window::Position::Center,
 				WAF::Window::StartStyle::Normal,
 				WAF::SizeRect(200u, 100u, 2000u, 1000u),
@@ -75,31 +74,9 @@ public:
 
 		// eventHistoryLabel
 		eventHistoryLabel = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 120, 150, 400)),
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 10, 150, 400)),
 			L"events"));
 
-		// buttons
-		int size = 2;
-		int width = 100;
-		int height = 50;
-		for (int x = 0; x < size; x++)
-		{
-			for (int y = 0; y < size; y++)
-			{
-				WAF::Button* button = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
-					WAF::ConStruct<WAF::ChildControl>(WAF::Rect(x * width, y * height, width, height)),
-					L"button " + std::to_wstring(y * size + x)));
-				button->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
-				buttons.push_back(button);
-
-				/*WAF::Button* button = WAF::Button::Create(MainWindow, WAF::ConStruct<WAF::Button>(
-					WAF::ConStruct<WAF::ChildControl>(WAF::Rect(x * width, y * height, width, height)),
-					L"button " + std::to_wstring(y * size + x)));
-				button->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
-				buttons.push_back(button);*/
-
-			}
-		}
 
 		// checkBox1
 		checkBox1 = MainWindow->CreateControl<WAF::CheckBox>(WAF::ConStruct<WAF::CheckBox>(
@@ -163,10 +140,14 @@ public:
 		// graphicsBox
 		WAF::ConStruct<WAF::GraphicsBox> gbc;
 		//gbc.rect = WAF::Rect(10, 10, MainWindow->ClientRect.size.width - 20, MainWindow->ClientHeight - 20);
-		gbc.rect = WAF::Rect(500, 10, 800, 600);
+		gbc.rect = WAF::Rect(500, 10, 600, 400);
 		gbc.graphics.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
 		gbc.graphics.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
 		gfxBox = MainWindow->CreateControl<WAF::GraphicsBox>(gbc);
+
+		// groupBox
+		groupBox = MainWindow->CreateControl<WAF::GroupBox>(WAF::ConStruct<WAF::GroupBox>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 450, 350, 150))));
 	}
 	~MainForm()
 	{
@@ -213,19 +194,8 @@ public:
 		switch (event.type)
 		{
 			case WAF::Button::Event::Type::Click:
-				event.button->SetCaption(L"button clicked!");
-				lastClickedButton = event.button;
-				event.button->Move(event.button->Rectangle.position.x + 10, event.button->Rectangle.position.y);
 				break;
 			case WAF::Button::Event::Type::DoubleClick:
-				// event.button->SetCaption(L"button double clicked!");
-				// MainWindow->DestroyControl(event.button);
-				for (size_t i = 0; i < buttons.size(); i++)
-				{
-					if (buttons[i] == event.button)
-						buttons.erase(buttons.begin() + i);
-				}
-				event.button->Destroy();
 				break;
 		}
 	}
@@ -338,19 +308,9 @@ public:
 		switch (event.type)
 		{
 			case WAF::Mouse::Event::Type::RightPress:
-				if (lastClickedButton)
-				{
-					lastClickedButton->Move(MainWindow->GetCanvasMousePosition());
-				}
 				break;
 			case WAF::Mouse::Event::Type::Move:
 			{
-				for (size_t i = 0; i < buttons.size(); i++)
-				{
-					buttons[i]->SetCaption(L"Mouse: " +
-						std::to_wstring(buttons[i]->GetMousePosition().x) + L" : " +
-						std::to_wstring(buttons[i]->GetMousePosition().y));
-				}
 				/*MainWindow->SetCaption(
 					L"WindowM: " +
 					std::to_wstring(MainWindow->GetWindowMousePosition().x) +
@@ -420,8 +380,8 @@ void CallBackFunction()
 	MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0x00, 0x00, 0x00), 0.5f);
 	MF->gfxBox->Gfx.DrawString(os.str(), Graphics::Rect<float>(10.0f, 10.0f, mouseX - 10.0f, mouseY - 10.0f));
 
+	if (WAF::Framework::Mouse.LeftPressed) MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(20.0f, 20.0f));
 	MF->gfxBox->Gfx.EndDraw();
-	//if (WAF::Framework::Mouse.LeftPressed) MF->gfxBox->Gfx.FillEllipse(Graphics::Point2d<float>(mouseX, mouseY), Graphics::Point2d<float>(20.0f, 20.0f));
 	//MF->gfxBox->Gfx.Render();
 }
 

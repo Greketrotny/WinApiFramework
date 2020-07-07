@@ -81,6 +81,9 @@
     <ClCompile Include="BaseControl.cpp">
       <Filter>Source Files\WinApiFramework\BaseClasses</Filter>
     </ClCompile>
+    <ClCompile Include="GroupBox.cpp">
+      <Filter>Source Files\WinApiFramework\Controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WinApiWindow.h">
@@ -132,6 +135,9 @@
       <Filter>Header Files\WinApiFramework\Controls</Filter>
     </ClInclude>
     <ClInclude Include="TrackBar.h">
+      <Filter>Header Files\WinApiFramework\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="GroupBox.h">
       <Filter>Header Files\WinApiFramework\Controls</Filter>
     </ClInclude>
   </ItemGroup>

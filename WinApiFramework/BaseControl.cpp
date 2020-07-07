@@ -103,9 +103,9 @@ namespace WinApiFramework
 		PushBaseEvent(ChildControl::Event(ChildControl::Event::Type::Resize));
 	}
 
-	Point ChildControl::GetMousePosition()
+	Point ChildControl::GetMousePosition() const
 	{
-		return m_pParentControl->GetCanvasMousePosition() - this->m_rect.position;
+		return m_pParentControl->GetMousePosition() - this->m_rect.position;
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

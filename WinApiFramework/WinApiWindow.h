@@ -234,10 +234,12 @@ namespace WinApiFramework
 	private:
 		bool AddControl(ChildControl* newControl) override;
 		bool RemoveControl(ChildControl* oldControl) override;
+	private:
+		Point GetMousePosition() const override;
 	public:
-		Point GetWindowMousePosition() const override;
-		Point GetClientMousePosition() const override;
-		Point GetCanvasMousePosition() const override;
+		Point GetWindowMousePosition() const;
+		Point GetClientMousePosition() const;
+		Point GetCanvasMousePosition() const;
 
 
 		// -- property fields -- //

@@ -723,9 +723,13 @@ bool Window::RemoveControl(ChildControl* oldControl)
 	return false;
 }
 
-Point Window::GetWindowMousePosition() const
+Point Window::GetMousePosition() const
 {
 	return Point(Framework::Mouse.X - windowRect.position.x, Framework::Mouse.Y - windowRect.position.y);
+}
+Point Window::GetWindowMousePosition() const
+{
+	return GetMousePosition();
 }
 Point Window::GetClientMousePosition() const
 {

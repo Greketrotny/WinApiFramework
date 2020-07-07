@@ -159,7 +159,7 @@ namespace WinApiFramework
 		void Resize(const Size& size);
 		void SetRect(const Rect& rect);
 
-		Point GetMousePosition();
+		Point GetMousePosition() const;
 
 
 		// ~~ property fields ~~ //
@@ -255,9 +255,7 @@ namespace WinApiFramework
 		virtual bool AddControl(ChildControl* childControl) = 0;
 		virtual bool RemoveControl(ChildControl* childControl) = 0;
 	public:
-		virtual Point GetWindowMousePosition() const = 0;
-		virtual Point GetClientMousePosition() const = 0;
-		virtual Point GetCanvasMousePosition() const = 0;
+		virtual Point GetMousePosition() const = 0;
 
 
 		// ~~ ParentControl::friends ~~ //

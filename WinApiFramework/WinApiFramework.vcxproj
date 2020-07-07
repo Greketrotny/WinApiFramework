@@ -180,6 +180,7 @@
     <ClCompile Include="DataTypes.cpp" />
     <ClCompile Include="Edit.cpp" />
     <ClCompile Include="GraphicsBox.cpp" />
+    <ClCompile Include="GroupBox.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Label.cpp" />
     <ClCompile Include="Mouse.cpp" />
@@ -205,6 +206,7 @@
     <ClInclude Include="Edit.h" />
     <ClInclude Include="ExternIncludes.h" />
     <ClInclude Include="GraphicsBox.h" />
+    <ClInclude Include="GroupBox.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Label.h" />
     <ClInclude Include="Mouse.h" />

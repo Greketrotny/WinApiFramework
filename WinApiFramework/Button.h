@@ -9,10 +9,10 @@ namespace WinApiFramework
 	class Button;
 	template <> struct ConStruct<Button>;
 
-	// ~~~~~~~~ [CLASS] Button ~~~~~~~~
+	// ~~~~~~~~ [CLASS] Button ~~~~~~~~ //
 	class Button : public ChildControl
 	{
-		// ~~ Button::fields ~~
+		// ~~ Button::fields ~~ //
 	private:
 		std::wstring m_caption;
 	public:
@@ -47,7 +47,7 @@ namespace WinApiFramework
 		// -- constructors -- //
 	private:
 		Button(const Button &otherButton) = delete;
-		Button(const Button &&otherButton) = delete;
+		Button(Button &&otherButton) = delete;
 		Button(ParentControl* parentcontrol, const ConStruct<Button>& conStruct);
 		~Button();
 
@@ -55,7 +55,7 @@ namespace WinApiFramework
 		// -- operators -- //
 	private:
 		Button& operator=(const Button &otherButton) = delete;
-		Button& operator=(const Button &&otherButton) = delete;
+		Button& operator=(Button &&otherButton) = delete;
 
 
 		// -- methods -- //
