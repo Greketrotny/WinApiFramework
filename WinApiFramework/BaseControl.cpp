@@ -111,15 +111,50 @@ namespace WinApiFramework
 
 
 
-	// ~~~~~~~~ [CLASS] ParentControl ~~~~~~~~
-	// ~~ ParentControl::constructor ~~
+	// ~~~~~~~~ [CLASS] ParentControl ~~~~~~~~ //
+	// ~~ ParentControl::constructor ~~ //
 	ParentControl::ParentControl()
 	{
 	}
 	ParentControl::~ParentControl()
 	{
+		DestroyAllChildControls();
 	}
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	// ~~ ParentControl::methods ~~ //
+	bool ParentControl::DestroyControl(ChildControl* control)
+	{
+		if (control == nullptr) return false;
+
+		for (size_t i = 0; i < m_controls.size(); ++i)
+		{
+			if (m_controls[i] == control)
+			{
+				ControlCreator::DestroyControl(control);
+				m_controls.erase(m_controls.begin() + i);
+				return true;
+			}
+		}
+
+		return false;
+	}
+	void ParentControl::DestroyAllChildControls()
+	{
+		for (size_t i = 0; i < m_controls.size(); ++i)
+		{
+			ControlCreator::DestroyControl(m_controls[i]);
+		}
+		m_controls.clear();
+	}
+	ChildControl*& const ParentControl::GetChildControl(size_t index)
+	{
+		return m_controls[index];
+	}
+	size_t ParentControl::GetControlCount()
+	{
+		return m_controls.size();
+	}
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
 
 

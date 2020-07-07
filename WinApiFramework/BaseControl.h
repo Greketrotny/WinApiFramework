@@ -215,11 +215,40 @@ namespace WinApiFramework
 
 
 
-	// ~~~~~~~~ [CLASS] ParentControl ~~~~~~~~
-	class ParentControl : virtual public BaseControl, public Scrollable
+	// ~~~~~~~~ [CLASS] ControlCreator ~~~~~~~~
+	class ControlCreator
 	{
+	protected:
+		template <class T> static T* CreateControl(ParentControl* const parentControl, const ConStruct<T>& conStruct)
+		{
+			return new T(parentControl, conStruct);
+		}
+		static bool DestroyControl(ChildControl*& childControl)
+		{
+			if (childControl == nullptr) return false;
+
+			delete childControl;
+			childControl = nullptr;
+			return true;
+		}
+	};
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+	// ~~~~~~~~ [CLASS] ParentControl ~~~~~~~~
+	class ParentControl 
+		: virtual public BaseControl
+		, public Scrollable
+		, public ControlCreator
+	{
+		// ~~ ParentControl::fields ~~ //
+	private:
+		std::vector<ChildControl*> m_controls;
+
+
 		// ~~ ParentControl::constructor ~~ //
-	public:
+	protected:
 		ParentControl();
 		virtual ~ParentControl();
 
@@ -228,39 +257,22 @@ namespace WinApiFramework
 	public:
 		template <class T> T* CreateControl(const ConStruct<T>& conStruct)
 		{
-			T* newControl = new T(this, conStruct);
-			AddControl(newControl);
+			// create control
+			T* newControl = ControlCreator::CreateControl<T>(this, conStruct);
+
+			// add control to m_controls
+			m_controls.push_back(newControl);
+
+			// return 
 			return newControl;
 		}
-		void DestroyControl(ChildControl* control)
-		{
-			if (control == nullptr) return;
-
-			if (RemoveControl(control))
-				delete control;
-		}
-	protected:
-		template <class T> T* CreateControlAsParent(const ConStruct<T>& conStruct)
-		{
-			return new T(this, conStruct);
-		}
-		void DestroyControlAsParent(ChildControl*& control)
-		{
-			if (control == nullptr) return;
-
-			delete control;
-			control = nullptr;
-		}
-	protected:
-		virtual bool AddControl(ChildControl* childControl) = 0;
-		virtual bool RemoveControl(ChildControl* childControl) = 0;
+		bool DestroyControl(ChildControl* control);
+		void DestroyAllChildControls();
 	public:
 		virtual Point GetMousePosition() const = 0;
-
-
-		// ~~ ParentControl::friends ~~ //
-	public:
-		friend class ChildControl;
+	protected:
+		ChildControl*& const GetChildControl(size_t index);
+		size_t GetControlCount();
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }

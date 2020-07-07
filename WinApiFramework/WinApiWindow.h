@@ -61,8 +61,6 @@ namespace WinApiFramework
 				DisableMaximizeBox,
 				EnableMinimizeBox,
 				DisableMinimizeBox,
-				ControlAdded,
-				ControlRemoved,
 				CaptionChange,
 				Close,
 				Invalid
@@ -160,13 +158,12 @@ namespace WinApiFramework
 				eventHandlersEnabled = false;
 			}
 		};
-		
+
 	private:
 		Rect windowRect;
 		Rect clientRect;
 		SizeRect sizeRect;
 		EventsManager events;
-		std::vector<ChildControl*> controls;
 
 
 		// -- constructors -- //
@@ -230,10 +227,6 @@ namespace WinApiFramework
 
 		const HWND& GetWindowHandle() const;
 		const std::wstring& GetCaption() const;
-
-	private:
-		bool AddControl(ChildControl* newControl) override;
-		bool RemoveControl(ChildControl* oldControl) override;
 	private:
 		Point GetMousePosition() const override;
 	public:
@@ -242,7 +235,7 @@ namespace WinApiFramework
 		Point GetCanvasMousePosition() const;
 
 
-		// -- property fields -- //
+	// -- property fields -- //
 	public:
 		const HWND& WndHandle;
 		const bool& IsMainWindow;

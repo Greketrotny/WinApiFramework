@@ -66,7 +66,7 @@ namespace WinApiFramework
 
 		// ~~ GroupBox::friends ~~ //
 	public:
-		friend class ParentControl;
+		friend class ControlCreator;
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

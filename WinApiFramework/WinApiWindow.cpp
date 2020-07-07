@@ -40,12 +40,7 @@ Window::Window(const ConStruct<Window> &conStruct)
 }
 Window::~Window()
 {
-	// destroy all controls
-	for (size_t i = 0; i < controls.size(); i++)
-	{
-		DestroyControlAsParent(controls[i]);
-	}
-	controls.clear();
+	DestroyAllChildControls();
 
 	// destroy window
 	SendMessage(m_hWindow, WM_CLOSE, 0, 0);
@@ -400,8 +395,19 @@ LRESULT Window::ProcessChildMessage(WPARAM wParam, LPARAM lParam)
 		}
 	}
 	return 1;*/
-	for (ChildControl*& control : controls)
+	/*for (ChildControl*& control : controls)
 	{
+		if (control->GetWindowHandle() == (HWND)lParam)
+		{
+			control->ControlProcedure(wParam, lParam);
+			return 0;
+		}
+	}
+	return 1;*/
+
+	for (size_t i = 0; i < GetControlCount(); ++i)
+	{
+		ChildControl* control = GetChildControl(i);
 		if (control->GetWindowHandle() == (HWND)lParam)
 		{
 			control->ControlProcedure(wParam, lParam);
@@ -696,40 +702,14 @@ const std::wstring& Window::GetCaption() const
 	return caption;
 }
 
-bool Window::AddControl(ChildControl* newControl)
-{
-	if (newControl == nullptr) return false;
-
-	controls.push_back(newControl);
-	events.PushEvent(Window::Event(Event::Type::ControlAdded));
-
-	return true;
-}
-bool Window::RemoveControl(ChildControl* oldControl)
-{
-	if (oldControl == nullptr) return false;
-
-
-	for (unsigned int i = 0; i < controls.size(); i++)
-	{
-		if (controls[i] == oldControl)
-		{
-			controls.erase(controls.begin() + i);
-			events.PushEvent(Window::Event(Event::Type::ControlRemoved));
-			return true;
-		}
-	}
-
-	return false;
-}
 
 Point Window::GetMousePosition() const
 {
-	return Point(Framework::Mouse.X - windowRect.position.x, Framework::Mouse.Y - windowRect.position.y);
+	return GetCanvasMousePosition();
 }
 Point Window::GetWindowMousePosition() const
 {
-	return GetMousePosition();
+	return Point(Framework::Mouse.X - windowRect.position.x, Framework::Mouse.Y - windowRect.position.y);
 }
 Point Window::GetClientMousePosition() const
 {

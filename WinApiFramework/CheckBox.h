@@ -85,7 +85,7 @@ namespace WinApiFramework
 
 		// -- friends -- //
 	public:
-		friend class ParentControl;
+		friend class ControlCreator;
 	};
 
 	template <> struct ConStruct<CheckBox> : ConStruct<ChildControl>

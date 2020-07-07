@@ -68,7 +68,7 @@ public:
 				WAF::Window::Position::Center,
 				WAF::Window::StartStyle::Normal,
 				WAF::SizeRect(200u, 100u, 2000u, 1000u),
-				WAF::Size(700, 500)));
+				WAF::Size(1100, 600)));
 		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindow_EH);
 
 
@@ -177,13 +177,13 @@ public:
 		{
 			case WAF::Window::Event::Type::Move:
 			{
-				//DisplayMainWindowProps();
+				DisplayMainWindowProps();
 				break;
 			}
 			case WAF::Window::Event::Type::Resize:
 			{
 				// display new MainWindow properties
-				//DisplayMainWindowProps();
+				DisplayMainWindowProps();
 				break;
 			}
 		}
@@ -297,8 +297,11 @@ public:
 				}
 				if (event.key == WAF::Keyboard::Key::Q)
 				{
-					trackBar->Destroy();
-					trackBar = nullptr;
+					if (trackBar)
+					{
+						trackBar->Destroy();
+						trackBar = nullptr;
+					}
 				}
 				break;
 		}
@@ -311,7 +314,7 @@ public:
 				break;
 			case WAF::Mouse::Event::Type::Move:
 			{
-				/*MainWindow->SetCaption(
+				MainWindow->SetCaption(
 					L"WindowM: " +
 					std::to_wstring(MainWindow->GetWindowMousePosition().x) +
 					L" : " +
@@ -323,7 +326,7 @@ public:
 					L" CanvasM: " +
 					std::to_wstring(MainWindow->GetCanvasMousePosition().x) +
 					L" : " +
-					std::to_wstring(MainWindow->GetCanvasMousePosition().y));*/
+					std::to_wstring(MainWindow->GetCanvasMousePosition().y));
 
 				//progressBar->SetPosition(MainWindow->GetClientMousePosition().x / float(MainWindow->ClientRect.size.width) * 100.0f);
 				//progressBar->StepIt();
@@ -390,8 +393,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
 
-	GenerateTexture(texture1, Graphics::Color::Red);
-	GenerateTexture(texture2, Graphics::Color::Green);
+	GenerateTexture(texture1, Graphics::Color(0xFF, 0x00, 0x00, 0xFF));
+	GenerateTexture(texture2, Graphics::Color(0x00, 0xFF, 0x00, 0xFF));
 	MF = new MainForm();
 
 	WAF::Framework::SetCallBackFunction(CallBackFunction);
