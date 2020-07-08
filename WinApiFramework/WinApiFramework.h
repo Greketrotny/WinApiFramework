@@ -18,8 +18,8 @@ namespace WinApiFramework
 	private:
 		static HINSTANCE hProgramInstance;
 
-		static std::vector<Window*> windows;
-		static Window* mainWindow;
+		static std::vector<Window*> m_windows;
+		static Window* m_pRootWindow;
 
 		static HHOOK InputHook;
 		static Mouse mouse;
@@ -75,9 +75,10 @@ namespace WinApiFramework
 	private:
 		static LRESULT WINAPI WinApiProcedure(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 		static LRESULT WINAPI InputProcedure(int code, WPARAM wParam, LPARAM lParam);
-
-		static void AddWindow(Window *addWindow);
-		static void RemoveWindow(Window *oldWindow);
+	public:
+		static Window* CreateNewWindow(const ConStruct<Window>& conStruct);
+		static bool DestroyWindow(Window* window);
+		static void DestroyAllWindows();
 		static void SetAsMainWindow(Window *window);
 	public:
 		static UINT ProcessMessages();

@@ -8,8 +8,8 @@ using namespace WinApiFramework;
 // ~~ Framework::fields ~~
 HINSTANCE Framework::hProgramInstance = GetModuleHandle(NULL);
 const HINSTANCE& Framework::ProgramInstance(hProgramInstance);
-std::vector<Window*> Framework::windows;
-Window* Framework::mainWindow = nullptr;
+std::vector<Window*> Framework::m_windows;
+Window* Framework::m_pRootWindow = nullptr;
 std::function<void()> Framework::callBack = nullptr;
 HHOOK Framework::InputHook = SetWindowsHookEx(WH_GETMESSAGE, Framework::InputProcedure, NULL, GetThreadId(GetCurrentThread()));
 Mouse Framework::mouse;
@@ -22,7 +22,7 @@ Keyboard& Framework::Keyboard(Framework::keyboard);
 LRESULT WINAPI Framework::WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	// find destination window for the event
-	for (Window *w : windows)
+	for (Window *w : m_windows)
 	{
 		if (w->GetWindowHandle() == hWnd)
 		{
@@ -110,45 +110,59 @@ LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
 	return CallNextHookEx(InputHook, code, wParam, lParam);
 }
 
-void Framework::AddWindow(Window *newWindow)
+Window* Framework::CreateNewWindow(const ConStruct<Window>& conStruct)
 {
-	if (newWindow == nullptr) return;
-
 	// find next unused window id
 	unsigned int next_id = 0;
-	for (Window *w : windows)
+	for (Window *w : m_windows)
 	{
-		if (w->window_id == next_id)
+		if (w->window_id = next_id)
 			next_id++;
 	}
 
+	// create window
+	Window* window = new Window(next_id, conStruct);
+	m_windows.push_back(window);
+	window->CreateWinApiWindow(conStruct);
+
 	// first window is main automaticly
-	if (mainWindow == nullptr)
+	if (m_pRootWindow == nullptr)
 	{
-		mainWindow = newWindow;
-		newWindow->isMainWindow = true;
+		m_pRootWindow = window;
+		window->isMainWindow = true;
 	}
 
-	// set id and class name for new window
-	newWindow->window_id = next_id;
-	newWindow->window_class_name = L"WindowClass" + std::to_wstring((next_id));
-
-	// add new window to framework window vector
-	windows.push_back(newWindow);
+	// return new window
+	return window;
 }
-void Framework::RemoveWindow(Window *oldWindow)
+bool Framework::DestroyWindow(Window* window)
 {
-	for (unsigned int i = 0; i < windows.size(); i++)
+	for (size_t i = 0; i < m_windows.size(); ++i)
 	{
-		if (windows[i] == oldWindow)
-			windows.erase(windows.begin() + i);
+		Window* w = m_windows[i];
+		if (w == window)
+		{
+			delete w;
+			m_windows.erase(m_windows.begin() + i);
+			return true;
+		}
 	}
+
+	return false;
+}
+void Framework::DestroyAllWindows()
+{
+	for (Window* w : m_windows)
+	{
+		delete w;
+	}
+	m_windows.clear();
 }
 void Framework::SetAsMainWindow(Window *window)
 {
-	if (window == mainWindow) return;
+	if (window == m_pRootWindow) return;
 
-	for (Window *w : windows)
+	for (Window *w : m_windows)
 	{
 		if (w->isMainWindow)
 		{
@@ -157,13 +171,14 @@ void Framework::SetAsMainWindow(Window *window)
 		}
 	}
 
-	mainWindow = window;
+	m_pRootWindow = window;
 	window->isMainWindow = true;
 	window->SetCaption(window->GetCaption());
 }
 
 void Framework::Exit(int return_value)
 {
+	DestroyAllWindows();
 	PostQuitMessage(return_value);
 }
 
@@ -195,7 +210,7 @@ UINT Framework::ProcessMessages()
 
 			if (msg.message == WM_QUIT)
 				return WM_QUIT;
-
+			
 			eventCounter++;
 		}
 		/*while (GetMessage(&msg, NULL, 0, 0))

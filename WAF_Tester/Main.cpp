@@ -33,6 +33,11 @@ void GenerateTexture(Graphics::Bitmap*& tex, Graphics::Color color)
 		}
 	}
 }
+void DestroyTextures()
+{
+	if (texture1) delete texture1;
+	if (texture2) delete texture2;
+}
 
 class MainForm
 {
@@ -61,7 +66,7 @@ public:
 		WAF::Framework::Mouse.Events.AddEventHandler<MainForm>(this, &MainForm::FrameworkMouse_EH);
 
 		// MainWindow
-		MainWindow = new WAF::Window(
+		MainWindow = WAF::Framework::CreateNewWindow(
 			WAF::ConStruct<WAF::Window>(
 				L"WinApiFramework test",
 				WAF::Rect(50, 50, 1200, 700),
@@ -151,7 +156,7 @@ public:
 	}
 	~MainForm()
 	{
-		if (MainWindow) delete MainWindow;
+		if (MainWindow) MainWindow->Destroy();
 	}
 
 	void DisplayEventHistory()
@@ -401,6 +406,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 	WAF::Framework::ProcessMessages();
 
 	delete MF;
+	DestroyTextures();
 
 	return 0;
 }
