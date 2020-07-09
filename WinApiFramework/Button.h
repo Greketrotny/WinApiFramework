@@ -13,9 +13,20 @@ namespace WinApiFramework
 	class Button : public ChildControl
 	{
 		// ~~ Button::fields ~~ //
-	private:
-		std::wstring m_caption;
 	public:
+		enum CaptionPosition
+		{
+			Center,
+			TopLeft,
+			TopCenter,
+			TopRight,
+			MiddleLeft,
+			MiddleCenter,
+			MiddleRight,
+			BottomLeft,
+			BottomCenter,
+			BottomRight
+		};
 		struct Event
 		{
 			enum Type
@@ -29,7 +40,8 @@ namespace WinApiFramework
 				DoubleClick,
 				Focus,
 				Unfocus,
-				CaptionChanged
+				CaptionChanged,
+				CaptionPositionChanged
 			};
 			Type type;
 			Button* button;
@@ -41,6 +53,8 @@ namespace WinApiFramework
 			}
 		};
 	private:
+		std::wstring m_caption;
+		CaptionPosition m_caption_position;
 		ChildControl::EventsManager<Button::Event> m_events;
 
 
@@ -59,8 +73,8 @@ namespace WinApiFramework
 
 
 		// -- methods -- //
-	private:
-		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
+	public:	// private:
+		ProcedureResult ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
 		void DestroyControlWindow() override;
 		void PushBaseEvent(ChildControl::Event event) override
@@ -69,6 +83,8 @@ namespace WinApiFramework
 		}
 	public:
 		void SetCaption(std::wstring newCaption);
+		void SetCaptionPosition(CaptionPosition captionPosition);
+		CaptionPosition GetCaptionPosition();
 
 
 		// -- property fields -- //
@@ -85,11 +101,14 @@ namespace WinApiFramework
 	template <> struct ConStruct<Button> : ConStruct<ChildControl>
 	{
 		std::wstring caption;
+		Button::CaptionPosition caption_position;
 
 		ConStruct(ConStruct<ChildControl> conStruct = ConStruct<ChildControl>(),
-				  std::wstring caption = L"text")
+				  std::wstring caption = L"text",
+			Button::CaptionPosition caption_position = Button::CaptionPosition::Center)
 			: ConStruct<ChildControl>::ConStruct(conStruct)
 			, caption(caption)
+			, caption_position(caption_position)
 		{}
 	};
 }

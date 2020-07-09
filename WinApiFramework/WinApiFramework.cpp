@@ -19,25 +19,28 @@ namespace WinApiFramework
 	Keyboard& Framework::Keyboard(Framework::keyboard);
 
 
-// ~~ Framework::methods ~~
-LRESULT WINAPI Framework::WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	// find destination window for the event
-	for (Window *w : m_windows)
+	// ~~ Framework::methods ~~
+	LRESULT WINAPI Framework::WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		if (w->GetWindowHandle() == hWnd)
+		// find destination window for the event
+		for (Window *w : m_windows)
 		{
-			if (!w->WndProcedure(msg, wParam, lParam)) return 0;
-			else return DefWindowProc(hWnd, msg, wParam, lParam);
+			if (w->GetWindowHandle() == hWnd)
+			{
+				switch (w->WndProcedure(msg, wParam, lParam))
+				{
+					case ProcedureResult::Handled: return 0;
+					case ProcedureResult::Unhandled: return DefWindowProc(hWnd, msg, wParam, lParam);
+				}
+			}
 		}
+		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
-	return DefWindowProc(hWnd, msg, wParam, lParam);
-}
-LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
-{
-	if (code >= 0 && code == HC_ACTION)
+	LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
 	{
-		MSG *msg = (MSG*)lParam;
+		if (code >= 0 && code == HC_ACTION)
+		{
+			MSG *msg = (MSG*)lParam;
 
 			switch (msg->message)
 			{
@@ -110,7 +113,7 @@ LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
 		}
 		return CallNextHookEx(InputHook, code, wParam, lParam);
 	}
-
+	
 	Window* Framework::CreateNewWindow(const ConStruct<Window>& conStruct)
 	{
 		// find next unused window id
@@ -122,18 +125,18 @@ LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
 		}
 
 	// create window
-	Window* window = new Window(next_id, conStruct);
-	m_windows.push_back(window);
-	window->CreateWinApiWindow(conStruct);
+		Window* window = new Window(next_id, conStruct);
+		m_windows.push_back(window);
+		window->CreateWinApiWindow(conStruct);
 
-	// first window is main automaticly
-	if (m_pRootWindow == nullptr)
-	{
-		m_pRootWindow = window;
-		window->isMainWindow = true;
-	}
+		// first window is main automaticly
+		if (m_pRootWindow == nullptr)
+		{
+			m_pRootWindow = window;
+			window->isMainWindow = true;
+		}
 
-		// return new window
+			// return new window
 		return window;
 	}
 	bool Framework::DestroyWindow(Window* const window)

@@ -14,7 +14,7 @@ namespace WinApiFramework
 	}
 
 	// ~~ BaseControl::methods ~~
-	HWND BaseControl::GetWindowHandle() const
+	const HWND& BaseControl::GetWindowHandle() const
 	{
 		return m_hWindow;
 	}
@@ -146,14 +146,23 @@ namespace WinApiFramework
 		}
 		m_controls.clear();
 	}
-	ChildControl* const ParentControl::GetChildControl(size_t index)
+	ProcedureResult ParentControl::ProcessChildMessage(WPARAM wParam, LPARAM lParam)
+	{
+		for (ChildControl* control : m_controls)
+		{
+			ProcedureResult pr = control->ControlProcedure(wParam, lParam);
+			if (pr != ProcedureResult::TargetNotFound) return pr;
+		}
+		return ProcedureResult::TargetNotFound;
+	}
+	/*ChildControl* const ParentControl::GetChildControl(size_t index)
 	{
 		return m_controls[index];
-	}
-	size_t ParentControl::GetControlCount()
+	}*/
+	/*size_t ParentControl::GetControlCount()
 	{
 		return m_controls.size();
-	}
+	}*/
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
 

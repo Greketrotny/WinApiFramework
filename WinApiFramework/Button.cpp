@@ -13,6 +13,7 @@ Button::Button(ParentControl* parentControl, const ConStruct<Button>& conStruct)
 	, Events(m_events)
 {
 	m_caption = conStruct.caption;
+	m_caption_position = conStruct.caption_position;
 
 	CreateControlWindow();
 }
@@ -24,37 +25,58 @@ Button::~Button()
 
 // -- methods -- //
 // private:
-int Button::ControlProcedure(WPARAM wParam, LPARAM lParam)
+ProcedureResult Button::ControlProcedure(WPARAM wParam, LPARAM lParam)
 {
+	HWND hw = (HWND)lParam;
+
+	if ((HWND)lParam != m_hWindow) return ProcedureResult::TargetNotFound;
+
 	UINT event = HIWORD(wParam);
 	switch (event)
 	{
-	case BN_CLICKED:
-		m_events.PushEvent(Button::Event(Button::Event::Type::Click, this));
-		break;
+		case BN_CLICKED:
+			m_events.PushEvent(Button::Event(Button::Event::Type::Click, this));
+			break;
 
-	case BN_DBLCLK:
-		m_events.PushEvent(Button::Event(Button::Event::Type::DoubleClick, this));
-		break;
+		case BN_DBLCLK:
+			m_events.PushEvent(Button::Event(Button::Event::Type::DoubleClick, this));
+			break;
 
-	case BN_SETFOCUS:
-		m_events.PushEvent(Button::Event(Button::Event::Type::Focus, this));
-		break;
+		case BN_SETFOCUS:
+			m_events.PushEvent(Button::Event(Button::Event::Type::Focus, this));
+			break;
 
-	case BN_KILLFOCUS:
-		m_events.PushEvent(Button::Event(Button::Event::Type::Unfocus, this));
-		break;
+		case BN_KILLFOCUS:
+			m_events.PushEvent(Button::Event(Button::Event::Type::Unfocus, this));
+			break;
 
-	default:
-		return 1;	// if did't handle
+		default:
+			return ProcedureResult::Unhandled;
 	}
-	return 0;		// if did
+	return ProcedureResult::Handled;
 }
 bool Button::CreateControlWindow()
 {
-	m_controlStyle |= BS_NOTIFY | BS_PUSHBUTTON | BS_MULTILINE | BS_CENTER;
+	// [>] Set button styles
+	// set button appearance
+	m_controlStyle |= BS_NOTIFY | BS_PUSHBUTTON | BS_MULTILINE;
 
-	// create window
+	// set caption position
+	switch (m_caption_position)
+	{
+		case WinApiFramework::Button::Center:		m_controlStyle |= BS_CENTER;		break;
+		case WinApiFramework::Button::TopLeft:		m_controlStyle |= BS_TOP | BS_LEFT;	break;
+		case WinApiFramework::Button::TopCenter:	m_controlStyle |= BS_TOP | BS_CENTER;	break;
+		case WinApiFramework::Button::TopRight:		m_controlStyle |= BS_TOP | BS_RIGHT;	break;
+		case WinApiFramework::Button::MiddleLeft:	m_controlStyle |= BS_LEFT;	break;
+		case WinApiFramework::Button::MiddleCenter:	m_controlStyle |= BS_CENTER;	break;
+		case WinApiFramework::Button::MiddleRight:	m_controlStyle |= BS_RIGHT;	break;
+		case WinApiFramework::Button::BottomLeft:	m_controlStyle |= BS_BOTTOM | BS_LEFT;	break;
+		case WinApiFramework::Button::BottomCenter:	m_controlStyle |= BS_BOTTOM;	break;
+		case WinApiFramework::Button::BottomRight:	m_controlStyle |= BS_BOTTOM | BS_RIGHT;	break;
+	}
+
+	// [>] Create window
 	m_hWindow = CreateWindow(L"BUTTON", m_caption.c_str(),
 		m_controlStyle,
 		m_rect.position.x, m_rect.position.y, m_rect.size.width, m_rect.size.height,
@@ -81,5 +103,34 @@ void Button::SetCaption(std::wstring newCaption)
 	m_caption = newCaption;
 	SetWindowText(m_hWindow, m_caption.c_str());
 	m_events.PushEvent(Button::Event(Button::Event::Type::CaptionChanged, this));
+}
+void Button::SetCaptionPosition(Button::CaptionPosition captionPosition)
+{
+	m_caption_position = captionPosition;
+
+	m_controlStyle = GetWindowStyle(m_hWindow);
+	m_controlStyle = m_controlStyle & (~(BS_TOP | BS_BOTTOM | BS_LEFT | BS_CENTER | BS_RIGHT));
+	switch (m_caption_position)
+	{
+		case WinApiFramework::Button::Center:
+		case WinApiFramework::Button::MiddleCenter:	m_controlStyle |= BS_CENTER;			break;
+		case WinApiFramework::Button::TopLeft:		m_controlStyle |= BS_TOP | BS_LEFT;		break;
+		case WinApiFramework::Button::TopCenter:	m_controlStyle |= BS_TOP | BS_CENTER;	break;
+		case WinApiFramework::Button::TopRight:		m_controlStyle |= BS_TOP | BS_RIGHT;	break;
+		case WinApiFramework::Button::MiddleLeft:	m_controlStyle |= BS_LEFT;				break;
+		case WinApiFramework::Button::MiddleRight:	m_controlStyle |= BS_RIGHT;				break;
+		case WinApiFramework::Button::BottomLeft:	m_controlStyle |= BS_BOTTOM | BS_LEFT;	break;
+		case WinApiFramework::Button::BottomCenter:	m_controlStyle |= BS_BOTTOM;			break;
+		case WinApiFramework::Button::BottomRight:	m_controlStyle |= BS_BOTTOM | BS_RIGHT;	break;
+	}
+
+	SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+	RedrawWindow(m_hWindow, NULL, NULL, RDW_INVALIDATE);
+
+	m_events.PushEvent(Event(Event::Type::CaptionPositionChanged, this));
+}
+Button::CaptionPosition Button::GetCaptionPosition()
+{
+	return m_caption_position;
 }
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -33,15 +33,17 @@ ProgressBar::~ProgressBar()
 
 // -- methods -- //
 // private:
-int ProgressBar::ControlProcedure(WPARAM wParam, LPARAM lParam)
+ProcedureResult ProgressBar::ControlProcedure(WPARAM wParam, LPARAM lParam)
 {
+	if ((HWND)lParam != m_hWindow) return ProcedureResult::TargetNotFound;
+
 	UINT event = HIWORD(wParam);
 	switch (event)
 	{
 	default:
-		return 1;	// if did't handle
+		return ProcedureResult::Unhandled;
 	}
-	return 0;		// if did
+	return ProcedureResult::Handled;
 }
 bool ProgressBar::CreateControlWindow()
 {

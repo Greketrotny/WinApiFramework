@@ -183,8 +183,8 @@ namespace WinApiFramework
 
 		// -- methods -- // 
 	private:
-		LRESULT WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam);
-		LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
+		ProcedureResult WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam);
+		//LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
 		bool CreateWinApiWindow(const ConStruct<Window>& config);
 	public:
 		void Destroy();

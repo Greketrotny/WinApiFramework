@@ -102,7 +102,7 @@ namespace WinApiFramework
 
 		// -- methods -- //
 	private:
-		int ControlProcedure(WPARAM wParam, LPARAM lParam) override;
+		ProcedureResult ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
 		void DestroyControlWindow() override;
 		void PushBaseEvent(ChildControl::Event event) override

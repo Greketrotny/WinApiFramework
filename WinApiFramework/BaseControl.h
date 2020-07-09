@@ -9,6 +9,13 @@ namespace WinApiFramework
 {
 	class ParentControl;
 
+	enum ProcedureResult
+	{
+		Handled,
+		Unhandled,
+		TargetNotFound
+	};
+
 	// ~~~~~~~~ [CLASS] BaseControl ~~~~~~~~
 	class BaseControl
 	{
@@ -25,7 +32,7 @@ namespace WinApiFramework
 
 		// ~~ BaseControl::methods -- //
 	public:
-		HWND GetWindowHandle() const;
+		const HWND& GetWindowHandle() const;
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -142,8 +149,8 @@ namespace WinApiFramework
 
 
 		// ~~ ChildControl::methods ~~ //
-	protected:
-		virtual int ControlProcedure(WPARAM wParam, LPARAM lParam) = 0;
+	public:
+		virtual ProcedureResult ControlProcedure(WPARAM wParam, LPARAM lParam) = 0;
 		virtual bool CreateControlWindow() = 0;
 		virtual void DestroyControlWindow() = 0;
 		virtual void PushBaseEvent(ChildControl::Event event) = 0;
@@ -263,7 +270,6 @@ namespace WinApiFramework
 			// add control to m_controls
 			m_controls.push_back(newControl);
 
-			// return 
 			return newControl;
 		}
 		bool DestroyControl(ChildControl* control);
@@ -271,8 +277,9 @@ namespace WinApiFramework
 	public:
 		virtual Point GetMousePosition() const = 0;
 	protected:
-		ChildControl* const GetChildControl(size_t index);
-		size_t GetControlCount();
+		ProcedureResult ProcessChildMessage(WPARAM wParam, LPARAM lParam);
+		//ChildControl* const GetChildControl(size_t index);
+		//size_t GetControlCount();
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }

@@ -55,6 +55,9 @@ public:
 	WAF::GraphicsBox* gfxBox = nullptr;
 	WAF::GroupBox* groupBox = nullptr;
 
+	WAF::Button* button1 = nullptr;
+	WAF::Button* button2 = nullptr;
+
 	std::vector<std::wstring> eventsHistory;
 
 
@@ -83,13 +86,13 @@ public:
 //			L"events"));
 //
 //
-		// checkBox1
-		checkBox1 = MainWindow->CreateControl<WAF::CheckBox>(WAF::ConStruct<WAF::CheckBox>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 10, 100, 50)),
-			L"check1",
-			true,
-			WAF::CheckBox::BoxState::MiddleState));
-		checkBox1->Events.AddEventHandler<MainForm>(this, &MainForm::CheckBox1_EH);
+//		// checkBox1
+//		checkBox1 = MainWindow->CreateControl<WAF::CheckBox>(WAF::ConStruct<WAF::CheckBox>(
+//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 10, 100, 50)),
+//			L"check1",
+//			true,
+//			WAF::CheckBox::BoxState::MiddleState));
+//		checkBox1->Events.AddEventHandler<MainForm>(this, &MainForm::CheckBox1_EH);
 //
 //		// edit1
 //		edit1 = MainWindow->CreateControl<WAF::Edit>(WAF::ConStruct<WAF::Edit>(
@@ -149,10 +152,23 @@ public:
 //		gbc.graphics.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
 //		gbc.graphics.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
 //		gfxBox = MainWindow->CreateControl<WAF::GraphicsBox>(gbc);
-//
-//		// groupBox
-//		groupBox = MainWindow->CreateControl<WAF::GroupBox>(WAF::ConStruct<WAF::GroupBox>(
-//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 450, 350, 150))));
+
+		// groupBox
+		groupBox = MainWindow->CreateControl<WAF::GroupBox>(WAF::ConStruct<WAF::GroupBox>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 450, 350, 150))));
+
+		// button1
+		button1 = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(groupBox->Rectangle.position + WAF::Point(20, 20), { 100, 40 })),
+			L"button1",
+			WAF::Button::CaptionPosition::Center));
+		button1->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
+
+		// button2
+		button2 = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(groupBox->Rectangle.position + WAF::Point(20, 80), { 100, 40 })),
+			L"button2"));
+		button2->Events.AddEventHandler<MainForm>(this, &MainForm::Button2_EH);
 	}
 	~MainForm()
 	{
@@ -199,11 +215,27 @@ public:
 		switch (event.type)
 		{
 			case WAF::Button::Event::Type::Click:
+				event.button->SetCaption(L"button1 clicked!");
+				//event.button->SetCaptionPosition((WAF::Button::CaptionPosition)(event.button->GetCaptionPosition() + 1));
 				break;
 			case WAF::Button::Event::Type::DoubleClick:
+				event.button->SetCaption(L"button1 double clicked!");
 				break;
 		}
 	}
+	void Button2_EH(WAF::Button::Event event)
+	{
+		switch (event.type)
+		{
+			case WAF::Button::Event::Type::Click:
+				event.button->SetCaption(L"button2 clicked!");
+				break;
+			case WAF::Button::Event::Type::DoubleClick:
+				event.button->SetCaption(L"button2 double clicked!");
+				break;
+		}
+	}
+
 	void CheckBox1_EH(WAF::CheckBox::Event event)
 	{
 		switch (event.type)
@@ -302,6 +334,15 @@ public:
 				}
 				if (event.key == WAF::Keyboard::Key::Q)
 				{
+					if (button1)
+					{
+						button1->SetCaptionPosition((WAF::Button::CaptionPosition)((button1->GetCaptionPosition() + 1) % 10));
+					}
+					if (groupBox)
+					{
+						groupBox->SetCaption(L"different caption");
+						groupBox->SetCaptionPosition((WAF::GroupBox::CaptionPosition)((groupBox->GetCaptionPosition() + 1) % 3));
+					}
 					if (trackBar)
 					{
 						trackBar->Destroy();
@@ -316,6 +357,7 @@ public:
 		switch (event.type)
 		{
 			case WAF::Mouse::Event::Type::RightPress:
+				groupBox->Move(MainWindow->GetCanvasMousePosition());
 				break;
 			case WAF::Mouse::Event::Type::Move:
 			{

@@ -59,7 +59,7 @@ Window::~Window()
 
 // -- methods -- //
 // private:
-LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
+ProcedureResult Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	switch (msg)
 	{
@@ -71,7 +71,8 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_VSCROLL:
 		{
 			// try to find and process message on child controls
-			if (!ProcessChildMessage(wParam, lParam))	return 0;
+			ProcedureResult pr = ProcessChildMessage(wParam, lParam);
+			if (pr != ProcedureResult::TargetNotFound)	return pr;
 
 
 			SCROLLINFO si;
@@ -128,13 +129,14 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 
 			SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
 
-			return 0;
+			return ProcedureResult::Handled;
 		}
 
 		case WM_HSCROLL:
 		{
 			// try to find and process message on child controls
-			if (!ProcessChildMessage(wParam, lParam))	return 0;
+			ProcedureResult pr = ProcessChildMessage(wParam, lParam);
+			if (pr != ProcedureResult::TargetNotFound)	return pr;
 
 
 			SCROLLINFO si;
@@ -191,7 +193,7 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 
 			SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
 
-			return 0;
+			return ProcedureResult::Handled;
 		}
 
 			// base events //
@@ -199,12 +201,12 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 			events.PushEvent(Window::Event(Event::Type::Close));
 			if (m_hWindow) ::DestroyWindow(m_hWindow);
 			m_hWindow = NULL;
-			return 0;
+			return ProcedureResult::Handled;
 
 		case WM_DESTROY:
 			if (this == Framework::m_pRootWindow)
 				PostQuitMessage(0);
-			return 0;	
+			return ProcedureResult::Handled;
 
 
 
@@ -233,7 +235,7 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				PushEvent(Window::Event::Type::Hide);
 			}
-			return 0;
+			return ProcedureResult::Handled;
 		}
 
 		case WM_SYSCOMMAND:
@@ -272,7 +274,7 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 
 			events.PushEvent(Window::Event(Window::Event::Type::Move));
 
-			return 0;
+			return ProcedureResult::Handled;
 		}
 
 		case WM_SIZE:
@@ -345,7 +347,7 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 
 			events.PushEvent(Window::Event(Window::Event::Type::Resize));
 
-			return 0;
+			return ProcedureResult::Handled;
 		}
 
 		case WM_GETMINMAXINFO:
@@ -356,7 +358,7 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 			mmi->ptMaxTrackSize.x = sizeRect.maxSize.width;
 			mmi->ptMaxTrackSize.y = sizeRect.maxSize.height;
 
-			return 0;
+			return ProcedureResult::Handled;
 		}
 
 
@@ -392,44 +394,41 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 		//	}
 		//	break;
 		//}
-
-		default:
-			return 1;
 	}
-	return 0;
+	return ProcedureResult::Unhandled;
 }
-LRESULT Window::ProcessChildMessage(WPARAM wParam, LPARAM lParam)
-{
-	/*for (ChildControl*& control : controls)
-	{
-		if (control->GetWindowHandle() == (HWND)lParam)
-		{
-			if (!control->ControlProcedure(wParam, lParam))
-				return 0;
-		}
-	}
-	return 1;*/
-	/*for (ChildControl*& control : controls)
-	{
-		if (control->GetWindowHandle() == (HWND)lParam)
-		{
-			control->ControlProcedure(wParam, lParam);
-			return 0;
-		}
-	}
-	return 1;*/
-
-	for (size_t i = 0; i < GetControlCount(); ++i)
-	{
-		ChildControl* control = GetChildControl(i);
-		if (control->GetWindowHandle() == (HWND)lParam)
-		{
-			control->ControlProcedure(wParam, lParam);
-			return 0;
-		}
-	}
-	return 1;
-}
+//LRESULT Window::ProcessChildMessage(WPARAM wParam, LPARAM lParam)
+//{
+//	/*for (ChildControl*& control : controls)
+//	{
+//		if (control->GetWindowHandle() == (HWND)lParam)
+//		{
+//			if (!control->ControlProcedure(wParam, lParam))
+//				return 0;
+//		}
+//	}
+//	return 1;*/
+//	/*for (ChildControl*& control : controls)
+//	{
+//		if (control->GetWindowHandle() == (HWND)lParam)
+//		{
+//			control->ControlProcedure(wParam, lParam);
+//			return 0;
+//		}
+//	}
+//	return 1;*/
+//
+//	/*for (size_t i = 0; i < GetControlCount(); ++i)
+//	{
+//		switch (GetChildControl(i)->ControlProcedure(wParam, lParam))
+//		{
+//			case ProcedureResult::Handled: return 0;
+//			case ProcedureResult::Unhandled: return 1;
+//			case ProcedureResult::TargetNotFound: continue;
+//		}
+//	}
+//	return 1;*/
+//}
 bool Window::CreateWinApiWindow(const ConStruct<Window>& conStruct)
 {
 	// [>] Create WindowClassEx
