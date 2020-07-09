@@ -33,6 +33,10 @@ Window::Window(unsigned int id, const ConStruct<Window> &conStruct)
 	SetSizeRect(conStruct.sizeRect);
 	m_canvasRect.size = conStruct.canvasSize;
 
+	// set id and class name for new window
+	window_id = id;
+	window_class_name = L"WindowClass" + std::to_wstring((window_id));
+
 	// create window class
 	//CreateAndRegisterWindowClass();
 
@@ -46,8 +50,9 @@ Window::~Window()
 
 	// destroy window
 	::DestroyWindow(m_hWindow);
+	m_hWindow = NULL;
 
-	// unregister window class
+	// unregister the window class
 	UnregisterClass(window_class_name.c_str(), Framework::hProgramInstance);
 }
 
@@ -62,7 +67,6 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_COMMAND:
 		case WM_NOTIFY:
 			return ProcessChildMessage(wParam, lParam);
-			break;
 
 		case WM_VSCROLL:
 		{
@@ -123,8 +127,9 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 			si.nPos = pos;
 
 			SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
+
+			return 0;
 		}
-		break;
 
 		case WM_HSCROLL:
 		{
@@ -185,36 +190,51 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 			si.nPos = pos;
 
 			SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
+
+			return 0;
 		}
-		break;
 
 			// base events //
 		case WM_CLOSE:
-			events.PushEvent(Event(Event::Type::Close));
-			this->Destroy();
-			break;
+			events.PushEvent(Window::Event(Event::Type::Close));
+			if (m_hWindow) ::DestroyWindow(m_hWindow);
+			m_hWindow = NULL;
+			return 0;
 
 		case WM_DESTROY:
-			break;
+			if (this == Framework::m_pRootWindow)
+				PostQuitMessage(0);
+			return 0;	
+
+
 
 			// window properties events //
 		case WM_ACTIVATE:
+		{
 			if (wParam & WA_INACTIVE)
 			{
 				isActivated = false;
-				PushEvent(Event(Event::Type::Deactivate));
+				PushEvent(Window::Event::Type::Deactivate);
 			}
 			else
 			{
 				isActivated = true;
-				PushEvent(Event(Event::Type::Activate));
+				PushEvent(Window::Event::Type::Activate);
 			}
-			break;
+		}
 
 		case WM_SHOWWINDOW:
-			if (wParam == TRUE)	PushEvent(Event(Event::Type::Show));
-			else				PushEvent(Event(Event::Type::Hide));
-			break;
+		{
+			if (wParam == TRUE)
+			{
+				PushEvent(Window::Event::Type::Show);
+			}
+			else
+			{
+				PushEvent(Window::Event::Type::Hide);
+			}
+			return 0;
+		}
 
 		case WM_SYSCOMMAND:
 			switch (wParam)
@@ -250,9 +270,10 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 				clientRect.size.height = r.bottom - r.top;
 			}
 
-			events.PushEvent(Event(Event::Type::Move));
+			events.PushEvent(Window::Event(Window::Event::Type::Move));
+
+			return 0;
 		}
-		break;
 
 		case WM_SIZE:
 		{
@@ -322,9 +343,10 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 			si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 			SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
 
-			events.PushEvent(Event(Event::Type::Resize));
+			events.PushEvent(Window::Event(Window::Event::Type::Resize));
+
+			return 0;
 		}
-		break;
 
 		case WM_GETMINMAXINFO:
 		{
@@ -333,8 +355,9 @@ LRESULT Window::WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
 			mmi->ptMinTrackSize.y = sizeRect.minSize.height;
 			mmi->ptMaxTrackSize.x = sizeRect.maxSize.width;
 			mmi->ptMaxTrackSize.y = sizeRect.maxSize.height;
+
+			return 0;
 		}
-		break;
 
 
 		//	// Mouse events //
@@ -407,8 +430,9 @@ LRESULT Window::ProcessChildMessage(WPARAM wParam, LPARAM lParam)
 	}
 	return 1;
 }
-bool Window::CreateAndRegisterWindowClass()
+bool Window::CreateWinApiWindow(const ConStruct<Window>& conStruct)
 {
+	// [>] Create WindowClassEx
 	WNDCLASSEX wc;
 	ZeroMemory(&wc, sizeof(WNDCLASSEX));
 
@@ -429,18 +453,16 @@ bool Window::CreateAndRegisterWindowClass()
 	if (!RegisterClassEx(&wc))
 	{
 		MessageBox(NULL, L"Register window class failed.", L"Register error", MB_OK | MB_ICONERROR);
-		false;
+		return false;
 	}
-	return true;
-}
-bool Window::CreateWinApiWindow(ConStruct<Window> conStruct)
-{
+
+
+	// [>] Set window styles
 	// set start window style
 	if (conStruct.startStyle == Window::StartStyle::Maximized)
 		windowStyle |= WS_MAXIMIZE;
 	else if (conStruct.startStyle == Window::StartStyle::Minimized)
 		windowStyle |= WS_MINIMIZE;
-
 
 	// setup window rect
 	RECT r = { (LONG)windowRect.position.x, (LONG)windowRect.position.y, (LONG)(windowRect.position.x + windowRect.size.width), (LONG)(windowRect.position.y + windowRect.size.height) };
@@ -465,7 +487,7 @@ bool Window::CreateWinApiWindow(ConStruct<Window> conStruct)
 	}
 
 
-	// create window
+	// [>] Create window
 	m_hWindow = CreateWindow((LPCWSTR)window_class_name.c_str(), (LPCWSTR)caption.c_str(),
 		windowStyle,
 		windowRect.position.x, windowRect.position.y, windowRect.size.width, windowRect.size.height,

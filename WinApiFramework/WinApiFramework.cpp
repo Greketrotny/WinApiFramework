@@ -19,25 +19,25 @@ namespace WinApiFramework
 	Keyboard& Framework::Keyboard(Framework::keyboard);
 
 
-	// ~~ Framework::methods ~~
-	LRESULT WINAPI Framework::WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+// ~~ Framework::methods ~~
+LRESULT WINAPI Framework::WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	// find destination window for the event
+	for (Window *w : m_windows)
 	{
-		// find destination window for the event
-		for (Window *w : m_windows)
+		if (w->GetWindowHandle() == hWnd)
 		{
-			if (w->GetWindowHandle() == hWnd)
-			{
-				if (!w->WndProcedure(msg, wParam, lParam)) return 0;
-				else return DefWindowProc(hWnd, msg, wParam, lParam);
-			}
+			if (!w->WndProcedure(msg, wParam, lParam)) return 0;
+			else return DefWindowProc(hWnd, msg, wParam, lParam);
 		}
-		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
-	LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
+	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
+{
+	if (code >= 0 && code == HC_ACTION)
 	{
-		if (code >= 0 && code == HC_ACTION)
-		{
-			MSG *msg = (MSG*)lParam;
+		MSG *msg = (MSG*)lParam;
 
 			switch (msg->message)
 			{
@@ -121,21 +121,17 @@ namespace WinApiFramework
 				next_id++;
 		}
 
-		// create window
-		Window* window = new Window(next_id, conStruct);
-		// add new window to m_windows
-		m_windows.push_back(window);
+	// create window
+	Window* window = new Window(next_id, conStruct);
+	m_windows.push_back(window);
+	window->CreateWinApiWindow(conStruct);
 
-		window->CreateAndRegisterWindowClass();
-		window->CreateWinApiWindow(conStruct);
-
-
-		// first window is main automaticly
-		if (m_pRootWindow == nullptr)
-		{
-			m_pRootWindow = window;
-			window->isMainWindow = true;
-		}
+	// first window is main automaticly
+	if (m_pRootWindow == nullptr)
+	{
+		m_pRootWindow = window;
+		window->isMainWindow = true;
+	}
 
 		// return new window
 		return window;

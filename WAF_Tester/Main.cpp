@@ -33,6 +33,11 @@ void GenerateTexture(Graphics::Bitmap*& tex, Graphics::Color color)
 		}
 	}
 }
+void DestroyTextures()
+{
+	if (texture1) delete texture1;
+	if (texture2) delete texture2;
+}
 
 class MainForm
 {
@@ -404,6 +409,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 	WAF::Framework::ProcessMessages();
 
 	delete MF;
+	DestroyTextures();
 
 	return 0;
 }
