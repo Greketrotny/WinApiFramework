@@ -103,9 +103,21 @@ namespace WinApiFramework
 		PushBaseEvent(ChildControl::Event(ChildControl::Event::Type::Resize));
 	}
 
+	const Rect& ChildControl::GetRect()
+	{
+		return m_rect;
+	}
 	Point ChildControl::GetMousePosition() const
 	{
 		return m_pParentControl->GetMousePosition() - this->m_rect.position;
+	}
+	bool ChildControl::IsMouseInside() const
+	{
+		Point mouse = GetMousePosition();
+		return (mouse.x >= 0 
+			&& mouse.y >= 0 
+			&& mouse.x < m_rect.size.width 
+			&& mouse.y < m_rect.size.height);
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -150,8 +162,11 @@ namespace WinApiFramework
 	{
 		for (ChildControl* control : m_controls)
 		{
-			ProcedureResult pr = control->ControlProcedure(wParam, lParam);
-			if (pr != ProcedureResult::TargetNotFound) return pr;
+			if (control != nullptr)
+			{
+				ProcedureResult pr = control->ControlProcedure(wParam, lParam);
+				if (pr != ProcedureResult::TargetNotFound) return pr;
+			}
 		}
 		return ProcedureResult::TargetNotFound;
 	}

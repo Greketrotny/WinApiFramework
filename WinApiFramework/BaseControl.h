@@ -149,7 +149,7 @@ namespace WinApiFramework
 
 
 		// ~~ ChildControl::methods ~~ //
-	public:
+	protected:
 		virtual ProcedureResult ControlProcedure(WPARAM wParam, LPARAM lParam) = 0;
 		virtual bool CreateControlWindow() = 0;
 		virtual void DestroyControlWindow() = 0;
@@ -166,7 +166,9 @@ namespace WinApiFramework
 		void Resize(const Size& size);
 		void SetRect(const Rect& rect);
 
+		const Rect& GetRect();
 		Point GetMousePosition() const;
+		bool IsMouseInside() const;
 
 
 		// ~~ property fields ~~ //

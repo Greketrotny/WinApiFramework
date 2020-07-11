@@ -14,7 +14,7 @@ Graphics::Bitmap *texture1 = nullptr, *texture2 = nullptr;
 void GenerateTexture(Graphics::Bitmap*& tex, Graphics::Color color)
 {
 	if (tex) delete tex;
-	tex = new Graphics::Bitmap(500, 400);
+	tex = new Graphics::Bitmap(300, 200);
 	for (int x = 0; x < tex->Width; ++x)
 	{
 		for (int y = 0; y < tex->Height; ++y)
@@ -80,82 +80,90 @@ public:
 		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindow_EH);
 
 
-//		// eventHistoryLabel
-//		eventHistoryLabel = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
-//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 10, 150, 400)),
-//			L"events"));
-//
-//
-//		// checkBox1
-//		checkBox1 = MainWindow->CreateControl<WAF::CheckBox>(WAF::ConStruct<WAF::CheckBox>(
-//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 10, 100, 50)),
-//			L"check1",
-//			true,
-//			WAF::CheckBox::BoxState::MiddleState));
-//		checkBox1->Events.AddEventHandler<MainForm>(this, &MainForm::CheckBox1_EH);
-//
-//		// edit1
-//		edit1 = MainWindow->CreateControl<WAF::Edit>(WAF::ConStruct<WAF::Edit>(
-//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 70, 100, 50)),
-//			L"default text", WAF::Edit::TextAlignment::Right,
-//			WAF::Edit::LettersMode::UpperCase,
-//			false,
-//			false,
-//			100u));
-//		edit1->Events.AddEventHandler<MainForm>(this, &MainForm::Edit1_EH);
-//
-//		// label1
-//		label1 = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
-//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 140, 100, 50)),
-//			L"A box with a frame drawn with the same color as the window background. This color is whilte in the background.",
-//			WAF::Label::TextAlignment::Right));
-//		label1->Events.AddEventHandler<MainForm>(this, &MainForm::Label1_EH);
-//
-//		// progressBar
-//		progressBar = MainWindow->CreateControl<WAF::ProgressBar>(WAF::ConStruct<WAF::ProgressBar>(
-//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 200, 150, 20)),
-//			WAF::Range(0, 100),
-//			20,
-//			WAF::ProgressBar::BarState::Normal,
-//			WAF::ProgressBar::BarOrientation::Horizontal,
-//			WAF::ProgressBar::BarDisplayStyle::Default, 1u));
-//
-//		// trackBar
-//		trackBar = MainWindow->CreateControl<WAF::TrackBar>(WAF::ConStruct<WAF::TrackBar>(
-//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(300, 250, 150, 40)),
-//			WAF::Range(0, 20),
-//			20,
-//			1,
-//			10,
-//			WAF::TrackBar::Horizontal,
-//			WAF::TrackBar::TickStyle::Both,
-//			true,
-//			WAF::Range(5, 12),
-//			WAF::TrackBar::ToolTipsStyle::ToolTipsStyleTop));
-//		trackBar->Events.AddEventHandler<MainForm>(this, &MainForm::TrackBar_EH);
-//		trackBar->SetTicksFrequency(2u);
-//
-//		/*
-//		WAF::GraphicsBox::ConStruct gbc;
-////		gbc.rect = WAF::Rect(10, 10, MainWindow->ClientWidth - 20, MainWindow->ClientHeight - 20);
-////		gbc.graphics.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
-////		gbc.graphics.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
-////		gfxBox = new WAF::GraphicsBox(gbc);
-////		gfxBox->Events.AddEventHandler<MainForm>(this, &MainForm::gfxBoxEventsReceiver);
-////		MainWindow->AddControl(gfxBox);
-//		*/
-//
-//		// graphicsBox
-//		WAF::ConStruct<WAF::GraphicsBox> gbc;
-//		//gbc.rect = WAF::Rect(10, 10, MainWindow->ClientRect.size.width - 20, MainWindow->ClientHeight - 20);
-//		gbc.rect = WAF::Rect(500, 10, 600, 400);
+		// graphicsBox
+		WAF::ConStruct<WAF::GraphicsBox> gbc;
+		//gbc.rect = WAF::Rect(10, 10, MainWindow->ClientRect.size.width - 20, MainWindow->ClientHeight - 20);
+		gbc.rect = WAF::Rect(10, 10, 600, 400);
+		gbc.graphics.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
+		gbc.graphics.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
+		gbc.graphics.defaultTextFormatDesc = WAF::GraphicsBox::TextFormatDescription(
+			L"Arial",
+			15.0f,
+			WAF::GraphicsBox::FontWeight::FontWeightExtraBold,
+			WAF::GraphicsBox::FontStyle::FontStyleItalic,
+			WAF::GraphicsBox::FontStretch::FontStretchUltraExpanded);
+		gfxBox = MainWindow->CreateControl<WAF::GraphicsBox>(gbc);
+
+		// eventHistoryLabel
+		eventHistoryLabel = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(620, 10, 100, 400)),
+			L"events"));
+
+
+		// checkBox1
+		checkBox1 = MainWindow->CreateControl<WAF::CheckBox>(WAF::ConStruct<WAF::CheckBox>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(750, 10, 100, 50)),
+			L"check1",
+			true,
+			WAF::CheckBox::BoxState::MiddleState));
+		checkBox1->Events.AddEventHandler<MainForm>(this, &MainForm::CheckBox1_EH);
+
+		// label1
+		label1 = MainWindow->CreateControl<WAF::Label>(WAF::ConStruct<WAF::Label>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(850, 10, 100, 50)),
+			L"A box with a frame drawn with the same color as the window background. This color is whilte in the background.",
+			WAF::Label::TextAlignment::Right));
+		label1->Events.AddEventHandler<MainForm>(this, &MainForm::Label1_EH);
+
+		// progressBar
+		progressBar = MainWindow->CreateControl<WAF::ProgressBar>(WAF::ConStruct<WAF::ProgressBar>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(750, 100, 150, 20)),
+			WAF::Range(0, 100),
+			20,
+			WAF::ProgressBar::BarState::Normal,
+			WAF::ProgressBar::BarOrientation::Horizontal,
+			WAF::ProgressBar::BarDisplayStyle::Default, 1u));
+
+		// trackBar
+		trackBar = MainWindow->CreateControl<WAF::TrackBar>(WAF::ConStruct<WAF::TrackBar>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(750, 140, 150, 40)),
+			WAF::Range(0, 20),
+			20,
+			1,
+			10,
+			WAF::TrackBar::Horizontal,
+			WAF::TrackBar::TickStyle::Both,
+			true,
+			WAF::Range(5, 12),
+			WAF::TrackBar::ToolTipsStyle::ToolTipsStyleTop));
+		trackBar->Events.AddEventHandler<MainForm>(this, &MainForm::TrackBar_EH);
+		trackBar->SetTicksFrequency(2u);
+
+		// edit1
+		edit1 = MainWindow->CreateControl<WAF::Edit>(WAF::ConStruct<WAF::Edit>(
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(750, 200, 250, 150)),
+			L"",
+			L"some cue text",
+			WAF::Edit::TextAlignment::Left,
+			WAF::Edit::LettersMode::All,
+			false, false, false, true, true,
+			10000u, L'\x25CF', WAF::Edit::ScrollingStyle::HorizontalVertical));
+		edit1->Events.AddEventHandler<MainForm>(this, &MainForm::Edit1_EH);
+
+		/*
+		WAF::GraphicsBox::ConStruct gbc;
+//		gbc.rect = WAF::Rect(10, 10, MainWindow->ClientWidth - 20, MainWindow->ClientHeight - 20);
 //		gbc.graphics.renderType = WAF::GraphicsBox::RenderType::RenderTypeDefault;
 //		gbc.graphics.presentOption = WAF::GraphicsBox::PresentOption::PresentOptionWaitForDisplay;
-//		gfxBox = MainWindow->CreateControl<WAF::GraphicsBox>(gbc);
+//		gfxBox = new WAF::GraphicsBox(gbc);
+//		gfxBox->Events.AddEventHandler<MainForm>(this, &MainForm::gfxBoxEventsReceiver);
+//		MainWindow->AddControl(gfxBox);
+		*/
+
 
 		// groupBox
 		groupBox = MainWindow->CreateControl<WAF::GroupBox>(WAF::ConStruct<WAF::GroupBox>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 450, 350, 150))));
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(10, 420, 350, 150))));
 
 		// button1
 		button1 = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
@@ -216,6 +224,7 @@ public:
 		{
 			case WAF::Button::Event::Type::Click:
 				event.button->SetCaption(L"button1 clicked!");
+				edit1->SelectAll();
 				//event.button->SetCaptionPosition((WAF::Button::CaptionPosition)(event.button->GetCaptionPosition() + 1));
 				break;
 			case WAF::Button::Event::Type::DoubleClick:
@@ -257,12 +266,26 @@ public:
 		switch (event.type)
 		{
 			case WAF::Edit::Event::Type::TextChanged:
-				MainWindow->SetCaption(L"Texting!");
+			{
+				label1->SetCaption(L"Texting!");
+				//label1->SetCaption(std::to_wstring(edit1->GetLineCount()));
+			}
 				break;
 			case WAF::Edit::Event::Type::TextLimitReached:
-				MainWindow->SetCaption(L"Limit reached!");
+				label1->SetCaption(L"Limit reached!");
 				break;
-
+			case WAF::Edit::Event::Type::FocusSet:
+				label1->SetCaption(L"FocusSet");
+				break;
+			case WAF::Edit::Event::Type::FocusKilled:
+				label1->SetCaption(L"FocusKilled");
+				break;
+			case WAF::Edit::Event::Type::PasswordModeSet:
+				label1->SetCaption(L"PasswordModeSet");
+				break;
+			case WAF::Edit::Event::Type::NumberModeSet:
+				label1->SetCaption(L"NumberNodeSet");
+				break;
 		}
 	}
 	void Label1_EH(WAF::Label::Event event)
@@ -318,21 +341,21 @@ public:
 		switch (event.type)
 		{
 			case WAF::Keyboard::KeyEvent::Type::Press:
-				if (event.key == WAF::Keyboard::Key::B)
+				if (event.key == WAF::Keyboard::Key::Esc)
 				{
 					WAF::Framework::Exit(0);
 				}
 				if (event.key == WAF::Keyboard::Key::Digit9)
 				{
 					//trackBar->SetThumbPosition(trackBar->GetPosition() - 5);
-					trackBar->SetMinTrackValue(trackBar->GetMinTrackValue() - 5);
+					if (trackBar) trackBar->SetMinTrackValue(trackBar->GetMinTrackValue() - 5);
 				}
 				if (event.key == WAF::Keyboard::Key::Digit0)
 				{
 					//trackBar->SetThumbPosition(trackBar->GetPosition() + 5);
-					trackBar->SetMaxSelectValue(trackBar->GetMaxSelectValue() + 5);
+					if (trackBar) trackBar->SetMaxSelectValue(trackBar->GetMaxSelectValue() + 5);
 				}
-				if (event.key == WAF::Keyboard::Key::Q)
+				if (event.key == WAF::Keyboard::Key::F1)
 				{
 					if (button1)
 					{
@@ -349,6 +372,25 @@ public:
 						trackBar = nullptr;
 					}
 				}
+				switch (event.key)
+				{
+					case WAF::Keyboard::Digit1: edit1->SetPasswordMode(!edit1->GetPasswordMode());  break;
+					case WAF::Keyboard::Digit2: edit1->SetNumberOnlyMode(!edit1->GetNumberOnlyMode());	break;
+					case WAF::Keyboard::Digit3: edit1->SetReadOnlyMode(!edit1->GetReadOnlyMode());	break;
+					case WAF::Keyboard::Digit4: 
+						edit1->SetTextAlignment(WAF::Edit::TextAlignment((edit1->GetTextAlignment() + 1) % 3));	break;
+					case WAF::Keyboard::Digit5:
+						edit1->SetLettersMode(WAF::Edit::LettersMode((edit1->GetLettersMode() + 1) % 3));	break;
+					case WAF::Keyboard::Digit6:	edit1->SetPasswordChar(L'A');	break;
+					case WAF::Keyboard::Digit7:	edit1->SetPasswordChar(L'B');	break;
+				}
+
+				switch (event.key)
+				{
+					case WAF::Keyboard::Key::OpeningSquareBracket: edit1->SetSelection(10, 20);	break;
+					case WAF::Keyboard::Key::ClosingSquareBracket: edit1->SelectAll();	break;
+					case WAF::Keyboard::Key::BackSlash: edit1->RemoveSelection();	break;
+				}
 				break;
 		}
 	}
@@ -357,7 +399,9 @@ public:
 		switch (event.type)
 		{
 			case WAF::Mouse::Event::Type::RightPress:
-				groupBox->Move(MainWindow->GetCanvasMousePosition());
+				//groupBox->Move(MainWindow->GetCanvasMousePosition());
+				edit1->SetRect(WAF::Rect(750, 200, edit1->GetMousePosition().x, edit1->GetMousePosition().y));
+				edit1->SetSelection(10, 20);
 				break;
 			case WAF::Mouse::Event::Type::Move:
 			{
@@ -378,6 +422,22 @@ public:
 				//progressBar->SetPosition(MainWindow->GetClientMousePosition().x / float(MainWindow->ClientRect.size.width) * 100.0f);
 				//progressBar->StepIt();
 
+				std::wostringstream os;
+				//os << L"charIndex: " << edit1->GetCharIndexFromPosition(edit1->GetMousePosition())
+				//	<< L"\nLine Index: " << edit1->GetLineIndexFromPosition(edit1->GetMousePosition());
+				//label1->SetCaption(os.str());
+
+				if (edit1->IsMouseInEditableRect())
+				{
+					//os << L"Line length: " << edit1->GetLineLength(edit1->GetLineIndexFromPosition(edit1->GetMousePosition()));
+					os << edit1->GetCharIndexFromPosition(edit1->GetMousePosition());
+					label1->SetCaption(os.str());
+				}
+				else
+				{
+					os << L"Mouse outsize!";
+					label1->SetCaption(os.str());
+				}
 				break;
 			}
 		}
@@ -399,7 +459,6 @@ MainForm *MF;
 void CallBackFunction()
 {
 	Sleep(1);
-	return;
 
 	float mouseX = MF->gfxBox->GetMousePosition().x;
 	float mouseY = MF->gfxBox->GetMousePosition().y;
@@ -410,17 +469,17 @@ void CallBackFunction()
 	MF->gfxBox->Gfx.Clear(Graphics::Color::White);
 	MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0xFF, 0x00, 0x00));
 
-	if (WAF::Framework::Mouse.LeftPressed) MF->gfxBox->Gfx.DrawLine(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(500.0f, 500.0f), 5.0f);
+	if (WAF::Framework::Mouse.LeftPressed) MF->gfxBox->Gfx.DrawLine(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(200.0f, 200.0f), 5.0f);
 
 	if (WAF::Framework::Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
 		*texture1,
-		Graphics::Rect<float>(mouseX, mouseY, mouseX + 600.0f, mouseY + 400.0f),
+		Graphics::Rect<float>(mouseX, mouseY, mouseX + 300.0f, mouseY + 200.0f),
 		Graphics::Rect<float>(0.0f, 0.0f, texture1->Width, texture1->Height),
 		1.0f, WAF::GraphicsBox::InterpolationMode::InterpolationModeNearestNeighbor);
 
 	if (WAF::Framework::Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
 		*texture2,
-		Graphics::Rect<float>(100.0f, 100.0f, 700.0f, 500.0f),
+		Graphics::Rect<float>(100.0f, 100.0f, 400.0f, 300.0f),
 		Graphics::Rect<float>(0.0f, 0.0f, texture2->Width, texture2->Height),
 		1.0f, WAF::GraphicsBox::InterpolationMode::InterpolationModeNearestNeighbor);
 
@@ -428,9 +487,18 @@ void CallBackFunction()
 	MF->gfxBox->Gfx.DrawRoundedRectangle(Graphics::Point<float>(0.0f, 0.0f), Graphics::Point<float>(mouseX, mouseY), 50.0f, 50.0f, mouseX / 100.0f);
 
 	std::wostringstream os;
-	os << L"Lorem ipsum dolor sit\t amet, consectetur adipiscing elit. Ut facilisis risus in neque ullamcorper finibus. Proin eu lectus dignissim enim porttitor ultricies vitae vel mauris. Vestibulum eleifend porta enim at vulputate. Nunc imperdiet quam vel eros mollis pellentesque sit amet eu leo. Sed at nisl vitae arcu maximus lobortis. Suspendisse sodales urna urna, eu venenatis enim faucibus et. Praesent gravida metus vel ipsum ullamcorper gravida. Ut pretium ex vitae cursus posuere. Maecenas justo urna, iaculis ac pulvinar eleifend, vestibulum vel neque. Ut bibendum, sapien in pretium rhoncus, leo eros ullamcorper urna, quis vehicula leo neque sollicitudin nibh. Etiam convallis leo vitae nibh mattis, sit amet pretium nibh efficitur. Phasellus maximus, mauris eu finibus suscipit, ligula dui ultricies libero, at efficitur sem ligula sed sapien.";
+	os << L"Lorem ipsum dolor sit\t amet, consectetur adipiscing elit. Ut facilisis"
+		L"risus in neque ullamcorper finibus. Proin eu lectus dignissim enim porttitor"
+		L"ultricies vitae vel mauris. Vestibulum eleifend porta enim at vulputate. Nunc"
+		L"imperdiet quam vel eros mollis pellentesque sit amet eu leo. Sed at nisl vitae"
+		L"arcu maximus lobortis. Suspendisse sodales urna urna, eu venenatis enim faucibus et. "
+		L"Praesent gravida metus vel ipsum ullamcorper gravida. Ut pretium ex vitae cursus posuere."
+		L"Maecenas justo urna, iaculis ac pulvinar eleifend, vestibulum vel neque. Ut bibendum, "
+		L"sapien in pretium rhoncus, leo eros ullamcorper urna, quis vehicula leo neque sollicitudin "
+		L"nibh. Etiam convallis leo vitae nibh mattis, sit amet pretium nibh efficitur. Phasellus "
+		L"maximus, mauris eu finibus suscipit, ligula dui ultricies libero, at efficitur sem ligula sed sapien.";
 
-	MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0x00, 0x00, 0x00), 0.5f);
+	MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0x00, 0x00, 0x00), 1.0f);
 	MF->gfxBox->Gfx.DrawString(os.str(), Graphics::Rect<float>(10.0f, 10.0f, mouseX - 10.0f, mouseY - 10.0f));
 
 	if (WAF::Framework::Mouse.LeftPressed) MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(20.0f, 20.0f));

@@ -16,6 +16,7 @@ namespace WinApiFramework
 
 	class GraphicsBox : public ChildControl
 	{
+	public:
 		class GBGraphics;
 
 		// -- GraphicsBox::fields -- //
@@ -227,7 +228,6 @@ namespace WinApiFramework
 			std::unique_ptr<TextFormat> defaultTextFormat = nullptr;
 			std::vector<std::unique_ptr<TextFormat>> customTextFormats;
 
-
 			// directX 2D
 			CComPtr<ID2D1Factory> m_pD2DFactory = nullptr;
 			CComPtr<ID2D1HwndRenderTarget> m_pHwndRenderTarget = nullptr;
@@ -271,7 +271,7 @@ namespace WinApiFramework
 
 			// -- GBGraphics::methods -- //
 		private:
-			bool InitGraphics();
+			bool InitGraphics(const GBGraphics::ConStruct& conStruct);
 			template <class T> void SafeRelease(T **ppT)
 			{
 				if (*ppT)
@@ -410,7 +410,7 @@ namespace WinApiFramework
 		GraphicsBox::GBGraphics::ConStruct graphics;
 
 		ConStruct(ConStruct<ChildControl> windowControlConStruct = ConStruct<ChildControl>(),
-				  GraphicsBox::GBGraphics::ConStruct graphicsConStruct = GraphicsBox::GBGraphics::ConStruct())
+			GraphicsBox::GBGraphics::ConStruct graphicsConStruct = GraphicsBox::GBGraphics::ConStruct())
 			: ConStruct<ChildControl>::ConStruct(windowControlConStruct)
 			, graphics(graphicsConStruct)
 		{}

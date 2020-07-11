@@ -177,7 +177,11 @@
     <ClCompile Include="CheckBox.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="DataTypes.cpp" />
+    <ClCompile Include="DataTypes.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
     <ClCompile Include="Edit.cpp" />
     <ClCompile Include="GraphicsBox.cpp" />
     <ClCompile Include="GroupBox.cpp" />

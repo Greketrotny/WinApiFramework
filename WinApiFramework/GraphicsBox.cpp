@@ -13,6 +13,8 @@ GraphicsBox::GraphicsBox(ParentControl* parentControl, const ConStruct<GraphicsB
 	, Events(m_events)
 {
 	CreateControlWindow();
+
+	Gfx.InitGraphics(conStruct.graphics);
 }
 GraphicsBox::~GraphicsBox()
 {
@@ -50,11 +52,11 @@ bool GraphicsBox::CreateControlWindow()
 		return false;
 	}
 
-	if (!m_graphics.InitGraphics())
+	/*if (!m_graphics.InitGraphics())
 	{
 		MessageBox(nullptr, L"GraphicsBox::GBGraphics initialization failed.", L"GBGraphics error", MB_OK | MB_ICONERROR);
 		return false;
-	}
+	}*/
 
 	return true;
 }
@@ -90,7 +92,7 @@ GraphicsBox::GBGraphics::~GBGraphics()
 
 // -- GraphicsBox::GBGraphics::methods -- //
 // private:
-bool GraphicsBox::GBGraphics::InitGraphics()
+bool GraphicsBox::GBGraphics::InitGraphics(const GBGraphics::ConStruct& conStruct)
 {
 	m_width = m_pControl->m_rect.size.width - 2;
 	m_height = m_pControl->m_rect.size.height - 2;
@@ -101,7 +103,9 @@ bool GraphicsBox::GBGraphics::InitGraphics()
 		D2D1_FACTORY_TYPE::D2D1_FACTORY_TYPE_SINGLE_THREADED,
 		&m_pD2DFactory);
 
+
 	// [>] Create render target
+	// set render target type
 	D2D1_RENDER_TARGET_TYPE renderTargetType;
 	switch (m_renderType)
 	{
@@ -116,6 +120,7 @@ bool GraphicsBox::GBGraphics::InitGraphics()
 			break;
 	}
 
+	// set presentation options
 	D2D1_PRESENT_OPTIONS presentOptions;
 	switch (m_presentOption)
 	{
@@ -167,7 +172,7 @@ bool GraphicsBox::GBGraphics::InitGraphics()
 	m_pDWriteFactory->GetSystemFontCollection(&m_pFontCollection);
 
 	// create and setup defaultTextFormat
-	SetDefaultTextFormat(GraphicsBox::TextFormatDescription());
+	SetDefaultTextFormat(conStruct.defaultTextFormatDesc);
 
 	return true;
 }

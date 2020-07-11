@@ -227,8 +227,7 @@ namespace WinApiFramework
 	}
 	void TrackBar::SetMinSelectValue(int value)
 	{
-		std::clamp<int>(value, m_trackRange.min, m_selectRange.max);
-		m_selectRange.min = value;
+		m_selectRange.min = std::clamp<int>(value, m_trackRange.min, m_selectRange.max);
 
 		SendMessage(m_hWindow, TBM_SETSELSTART, TRUE, m_selectRange.min);
 
@@ -236,8 +235,7 @@ namespace WinApiFramework
 	}
 	void TrackBar::SetMaxSelectValue(int value)
 	{
-		std::clamp<int>(value, m_selectRange.min, m_trackRange.max);
-		m_selectRange.max = value;
+		m_selectRange.max = std::clamp<int>(value, m_selectRange.min, m_trackRange.max);
 
 		SendMessage(m_hWindow, TBM_SETSELEND, TRUE, m_selectRange.max);
 
@@ -249,8 +247,8 @@ namespace WinApiFramework
 	}
 	void TrackBar::SetSelectRange(int minValue, int maxValue)
 	{
-		std::clamp<int>(minValue, m_trackRange.min, m_trackRange.max);
-		std::clamp<int>(maxValue, m_trackRange.min, m_trackRange.max);
+		minValue = std::clamp<int>(minValue, m_trackRange.min, m_trackRange.max);
+		maxValue = std::clamp<int>(maxValue, m_trackRange.min, m_trackRange.max);
 		if (maxValue < minValue) maxValue = minValue;
 
 		m_selectRange.min = minValue;

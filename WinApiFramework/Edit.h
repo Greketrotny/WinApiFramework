@@ -24,6 +24,13 @@ namespace WinApiFramework
 			LowerCase,
 			All
 		};
+		enum ScrollingStyle
+		{
+			NoScrolling,
+			Horizontal,
+			Vertical,
+			HorizontalVertical
+		};
 		struct Event
 		{
 			enum Type
@@ -33,15 +40,26 @@ namespace WinApiFramework
 				Resize = 2,
 				Enable = 3,
 				Disable = 4,
+				FocusSet,
+				FocusKilled,
 				TextChanged,
+				CueTextChanged,
 				TextLimitReached,
+				PasswordCharSet,
 				TextAlignmentSet,
 				LettersModeSet,
 				PasswordModeSet,
 				NumberModeSet,
-				FocusSet,
-				FocusKilled,
-				HorizontalScroll
+				ReadOnlyModeSet,
+				//MultilineModeSet,
+				//WordWrapModeSet,
+				TextLengthLimitSet,
+				SelectionSet,
+				AllSelected,
+				SelectionRemoved,
+				SelectionReplaced,
+				HorizontalScroll,
+				VerticalScroll
 			};
 			Type type;
 
@@ -51,12 +69,18 @@ namespace WinApiFramework
 			}
 		};
 	private:
-		std::wstring m_text = L"";
-		TextAlignment m_textAlignment = TextAlignment::Left;
-		LettersMode m_lettersMode = LettersMode::All;
-		bool m_passwordMode = false;
-		bool m_numberOnly = false;
-		unsigned int m_textLengthLimit = 0xFFFF;
+		std::wstring m_text;
+		std::wstring m_cueText;
+		TextAlignment m_textAlignment;
+		LettersMode m_lettersMode;
+		bool m_passwordMode;
+		bool m_numberOnly;
+		bool m_readOnly;
+		bool m_multiline;
+		bool m_wordWrap;
+		unsigned int m_textLengthLimit;
+		wchar_t m_passwordChar;
+		ScrollingStyle m_scrollingStyle;
 
 		ChildControl::EventsManager<Edit::Event> m_events;
 
@@ -85,20 +109,53 @@ namespace WinApiFramework
 			m_events.PushEvent(Edit::Event((Edit::Event::Type)event.type));
 		}
 	public:
-		void SetText(std::wstring newText);
+		void SetText(const std::wstring& newText);
+		void SetCueText(const std::wstring& cueText);
 		void SetTextAlignment(Edit::TextAlignment newAlignment);
 		void SetLettersMode(Edit::LettersMode newLettersMode);
 		void SetPasswordMode(bool passwordMode);
 		void SetNumberOnlyMode(bool numberOnlyMode);
+		void SetReadOnlyMode(bool readOnlyMode);
+		// void SetMultilineMode(bool multilineMode);	
+		// void SetWordWrapMode(bool wordWrapMode);
 		void SetTextLengthLimit(unsigned int newLimit);
-		std::wstring GetText();
+		void SetPasswordChar(wchar_t passwordChar);
 
-		// -- property fields -- //
+		const std::wstring& GetText();
+		const std::wstring& GetCueText() const;
+		TextAlignment GetTextAlignment() const;
+		LettersMode GetLettersMode() const;
+		bool GetPasswordMode() const;
+		bool GetNumberOnlyMode() const;
+		bool GetReadOnlyMode() const;
+		bool GetMultilineMode() const;
+		bool GetWordWrapMode() const;
+		unsigned int GetTextLengthLimit() const;
+		wchar_t GetPasswordChar() const;
+
+		void SetSelection(int startIndex, int endIndex);
+		void SetSelection(Range selectionRange);
+		void SelectAll();
+		void RemoveSelection();
+		void ReplaceSelection(const std::wstring& text);
+
+		int GetLineCount() const;
+		int GetLineLength(int lineIndex) const;
+		int GetCharIndexFromPosition(int x, int y) const;
+		int GetCharIndexFromPosition(const Point& position) const;
+		int GetLineIndexFromPosition(int x, int y) const;
+		int GetLineIndexFromPosition(const Point& position) const;
+		Rect GetEditableRect() const;
+
+		bool IsMouseInEditableRect() const;
+	private:
+		int GetCharIndexFromLine(int lineIndex) const;
+		int GetLineIndexFromChar(int charIndex) const;
+
+
+
+	// -- property fields -- //
 	public:
-		const bool& PasswordMode;
-		const bool& NumberOnlyMode;
-		const TextAlignment& Alignment;
-		const LettersMode& LetterMode;
 		ChildControl::EventsManager<Edit::Event>& Events;
 
 		// -- friends -- //
@@ -109,26 +166,44 @@ namespace WinApiFramework
 	template <> struct ConStruct<Edit> : ConStruct<ChildControl>
 	{
 		std::wstring text = L"";
+		std::wstring cueText = L"";
 		Edit::TextAlignment textAlignment = Edit::TextAlignment::Left;
 		Edit::LettersMode lettersMode = Edit::LettersMode::All;
 		bool passwordMode = false;
 		bool numberOnly = false;
+		bool readOnly = false;
+		bool multiline = false;
+		bool wordWrap = false;
 		unsigned int textLengthLimit = 0xFFFFFFFF;
+		wchar_t passwordChar = L'\x25CF';
+		Edit::ScrollingStyle scrollingStyle;
 
 		ConStruct(ConStruct<ChildControl> windowControlConStruct = ConStruct<ChildControl>(),
-				  const std::wstring& text = L"",
-				  Edit::TextAlignment textAlignment = Edit::TextAlignment::Left,
-				  Edit::LettersMode lettersMode = Edit::LettersMode::All,
-				  bool passwordMode = false,
-				  bool numberOnly = false,
-				  unsigned int textLengthLimit = 0xFFFFFFFF)
+			const std::wstring& text = L"",
+			const std::wstring& cueText = L"",
+			Edit::TextAlignment textAlignment = Edit::TextAlignment::Left,
+			Edit::LettersMode lettersMode = Edit::LettersMode::All,
+			bool passwordMode = false,
+			bool numberOnly = false,
+			bool readOnly = false,
+			bool multiline = false,
+			bool wordWrap = false,
+			unsigned int textLengthLimit = 0x7FFFFFFE,
+			wchar_t passwordChar = L'\x25CF',
+			Edit::ScrollingStyle scrollingStyle = Edit::ScrollingStyle::NoScrolling)
 			: ConStruct<ChildControl>::ConStruct(windowControlConStruct)
 			, text(text)
+			, cueText(cueText)
 			, textAlignment(textAlignment)
 			, lettersMode(lettersMode)
 			, passwordMode(passwordMode)
 			, numberOnly(numberOnly)
+			, readOnly(readOnly)
+			, multiline(multiline)
+			, wordWrap(wordWrap)
 			, textLengthLimit(textLengthLimit)
+			, passwordChar(passwordChar)
+			, scrollingStyle(scrollingStyle)
 		{}
 	};
 }
