@@ -33,24 +33,24 @@ public:
 		MainWindow = WAF::Framework::CreateNewWindow(
 			WAF::ConStruct<WAF::Window>(
 				L"WinApiFramework test",
-				WAF::Rect(50, 50, 1200, 700),
+				WAF::Rect(50, 50, 1000, 600),
 				WAF::Window::Position::Center,
 				WAF::Window::StartStyle::Normal,
 				WAF::SizeRect(200u, 100u, 2000u, 1000u),
-				WAF::Size(1100, 600)));
+				WAF::Size(800, 400)));
 		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindow_EH);
 
 
 		// button1
 		button1 = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(WAF::Point(20, 20), { 100, 40 })),
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(WAF::Point(20, 20), { 100, 50 })),
 			L"Button1",
 			WAF::Button::CaptionPosition::Center));
 		button1->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
 
 		// button2
 		button2 = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(WAF::Point(20, 80), { 100, 40 })),
+			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(WAF::Point(700, 350), { 100, 50 })),
 			L"button2"));
 		button2->Events.AddEventHandler<MainForm>(this, &MainForm::Button2_EH);
 

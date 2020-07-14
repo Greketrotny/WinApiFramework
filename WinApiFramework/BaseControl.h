@@ -22,9 +22,8 @@ namespace WinApiFramework
 	protected:
 		HWND m_hWindow;
 		std::wstring m_WindowClassName;
-		std::function<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)> m_windowProcedure;
 
-	public:
+	protected:
 		explicit BaseWindow();
 		virtual ~BaseWindow();
 
@@ -213,6 +212,7 @@ namespace WinApiFramework
 		Rect m_canvasRect;
 
 
+
 		// ~~ Scrollable::constructor ~~ //
 	public:
 		Scrollable();
@@ -247,10 +247,25 @@ namespace WinApiFramework
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-	// ~~~~~~~~ [CLASS] HasWindowProcedure ~~~~~~~~
-	class HasWindowProcedure
-	{
 
+	// ~~~~~~~~ [CLASS] HasWindowProcedure ~~~~~~~~
+	template <class Derived> class HasWindowProcedure
+	{
+	protected:
+		std::function<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)> m_windowProcedure;
+
+	protected:
+		HasWindowProcedure(Derived* object, LRESULT(Derived::*WndProc)(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam))
+		{
+			m_windowProcedure = std::bind(WndProc, object, std::placeholders::_1,
+				std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
+		}
+		~HasWindowProcedure()
+		{
+		}
+
+	protected:
+		virtual LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -8,7 +8,8 @@ namespace WinApiFramework
 {
 	// ~~~~~~~~ [CLASS] Window ~~~~~~~~ //
 	Window::Window()
-		: WndHandle(m_hWindow)
+		: HasWindowProcedure(this, &Window::WindowProcedure)
+		, WndHandle(m_hWindow)
 		, IsMainWindow(isMainWindow)
 		, IsEnabled(isEnabled)
 		, IsActivated(isActivated)
@@ -20,11 +21,9 @@ namespace WinApiFramework
 		, Caption(caption)
 		, Events(events)
 	{
-		m_windowProcedure = std::bind(&Window::WindowProcedure, this, std::placeholders::_1,
-			std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
 	}
 	Window::Window(unsigned int id, const ConStruct<Window> &conStruct)
-		:Window()
+		: Window()
 	{
 		window_id = id;
 		m_WindowClassName = L"WindowClass" + std::to_wstring((window_id));

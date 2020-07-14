@@ -14,7 +14,9 @@ namespace WinApiFramework
 	template <> struct ConStruct<Window>;
 
 	// ~~~~~~~~ [CLASS] Window ~~~~~~~~
-	class Window : public ParentControl
+	class Window 
+		: public ParentControl
+		, public HasWindowProcedure<Window>
 	{
 		// -- fields -- //
 	private:
@@ -182,7 +184,7 @@ namespace WinApiFramework
 
 		// -- methods -- // 
 	private:
-		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 		//LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
 		bool CreateWinApiWindow(const ConStruct<Window>& config);
 	public:

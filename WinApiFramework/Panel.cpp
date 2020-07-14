@@ -7,11 +7,9 @@ namespace WinApiFramework
 	// ~~~~~~~~ [CLASS] Panel ~~~~~~~~ //
 	Panel::Panel(ParentControl* parentControl, const ConStruct<Panel>& conStruct)
 		: ChildControl(parentControl, conStruct)
+		, HasWindowProcedure(this, &Panel::WindowProcedure)
 		, Events(m_events)
 	{
-		m_windowProcedure = std::bind(&Panel::WindowProcedure, this, std::placeholders::_1,
-			std::placeholders::_2, std::placeholders::_3, std::placeholders::_4);
-
 		CreateControlWindow();
 	}
 	Panel::~Panel()

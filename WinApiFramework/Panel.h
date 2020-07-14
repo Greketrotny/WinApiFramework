@@ -11,6 +11,7 @@ namespace WinApiFramework
 	class Panel 
 		: public ChildControl
 		, public ParentControl
+		, public HasWindowProcedure<Panel>
 	{
 	public:
 		struct Event
@@ -58,7 +59,7 @@ namespace WinApiFramework
 			}
 			return DefWindowProc(hWnd, msg, wParam, lParam);
 		}*/
-		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 		LRESULT ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateControlWindow() override;
 		void DestroyControlWindow() override;
