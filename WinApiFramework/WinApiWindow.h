@@ -18,7 +18,6 @@ namespace WinApiFramework
 	{
 		// -- fields -- //
 	private:
-		std::wstring window_class_name;
 		std::wstring caption;
 		LONG windowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_BORDER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
 		unsigned int window_id;
@@ -183,7 +182,7 @@ namespace WinApiFramework
 
 		// -- methods -- // 
 	private:
-		ProcedureResult WndProcedure(UINT msg, WPARAM wParam, LPARAM lParam);
+		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 		//LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
 		bool CreateWinApiWindow(const ConStruct<Window>& config);
 	public:

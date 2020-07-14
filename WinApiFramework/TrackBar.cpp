@@ -32,10 +32,8 @@ namespace WinApiFramework
 
 	// ~~ methods ~~ //
 	// private:
-	ProcedureResult TrackBar::ControlProcedure(WPARAM wParam, LPARAM lParam)
+	LRESULT TrackBar::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
-		if ((HWND)lParam != m_hWindow) return ProcedureResult::TargetNotFound;
-
 		UINT event = LOWORD(wParam);
 		switch (event)
 		{
@@ -81,9 +79,9 @@ namespace WinApiFramework
 				break;
 
 			default:
-				return ProcedureResult::Unhandled;
+				return 1;
 		}
-		return ProcedureResult::Handled;
+		return 0;
 	}
 	bool TrackBar::CreateControlWindow()
 	{

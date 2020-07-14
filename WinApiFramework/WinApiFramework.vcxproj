@@ -188,6 +188,7 @@
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Label.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="Panel.cpp" />
     <ClCompile Include="Precompiled.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Precompiled.h</PrecompiledHeaderFile>
@@ -214,6 +215,7 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Label.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="Panel.h" />
     <ClInclude Include="Precompiled.h" />
     <ClInclude Include="ProgressBar.h" />
     <ClInclude Include="TrackBar.h" />

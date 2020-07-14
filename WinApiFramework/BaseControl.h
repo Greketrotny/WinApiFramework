@@ -16,23 +16,26 @@ namespace WinApiFramework
 		TargetNotFound
 	};
 
-	// ~~~~~~~~ [CLASS] BaseControl ~~~~~~~~
-	class BaseControl
+	// ~~~~~~~~ [CLASS] BaseWindow ~~~~~~~~
+	class BaseWindow
 	{
-		// ~~ Basecontrol::fields ~~ //
 	protected:
 		HWND m_hWindow;
+		std::wstring m_WindowClassName;
+		std::function<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)> m_windowProcedure;
 
-
-		// ~~ BaseControl::constructor ~~ //
 	public:
-		explicit BaseControl();
-		virtual ~BaseControl();
+		explicit BaseWindow();
+		virtual ~BaseWindow();
 
 
-		// ~~ BaseControl::methods -- //
 	public:
 		const HWND& GetWindowHandle() const;
+		const std::wstring& GetWindowClassName() const;
+
+
+	public:
+		friend class Framework;
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -42,7 +45,7 @@ namespace WinApiFramework
 	class ChildControl;
 	template <> struct ConStruct<ChildControl>;
 
-	class ChildControl : virtual public BaseControl
+	class ChildControl : virtual public BaseWindow
 	{
 		// ~~ ChildControl::fields ~~ //
 	protected:
@@ -150,7 +153,7 @@ namespace WinApiFramework
 
 		// ~~ ChildControl::methods ~~ //
 	protected:
-		virtual ProcedureResult ControlProcedure(WPARAM wParam, LPARAM lParam) = 0;
+		virtual LRESULT ControlProcedure(WPARAM wParam, LPARAM lParam) = 0;
 		virtual bool CreateControlWindow() = 0;
 		virtual void DestroyControlWindow() = 0;
 		virtual void PushBaseEvent(ChildControl::Event event) = 0;
@@ -244,25 +247,30 @@ namespace WinApiFramework
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+	// ~~~~~~~~ [CLASS] HasWindowProcedure ~~~~~~~~
+	class HasWindowProcedure
+	{
+
+	};
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 
 	// ~~~~~~~~ [CLASS] ParentControl ~~~~~~~~
 	class ParentControl 
-		: virtual public BaseControl
+		: virtual public BaseWindow
 		, public Scrollable
 		, public ControlCreator
 	{
-		// ~~ ParentControl::fields ~~ //
 	private:
 		std::vector<ChildControl*> m_controls;
 
 
-		// ~~ ParentControl::constructor ~~ //
 	protected:
 		ParentControl();
 		virtual ~ParentControl();
 
 
-		// ~~ ParentControl::methods ~~ //
 	public:
 		template <class T> T* CreateControl(const ConStruct<T>& conStruct)
 		{
@@ -279,9 +287,7 @@ namespace WinApiFramework
 	public:
 		virtual Point GetMousePosition() const = 0;
 	protected:
-		ProcedureResult ProcessChildMessage(WPARAM wParam, LPARAM lParam);
-		//ChildControl* const GetChildControl(size_t index);
-		//size_t GetControlCount();
+		LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }

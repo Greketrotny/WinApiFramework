@@ -9,6 +9,6 @@
 #include "ProgressBar.h"
 #include "TrackBar.h"
 #include "GroupBox.h"
-
+#include "Panel.h"
 
 #endif // !WIN_API_WINDOW_CONTROLS_H

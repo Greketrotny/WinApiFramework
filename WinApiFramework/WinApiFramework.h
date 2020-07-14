@@ -73,7 +73,16 @@ namespace WinApiFramework
 
 		// ~~ Framework::methods ~~ //
 	private:
-		static LRESULT WINAPI WinApiProcedure(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
+		static LRESULT WINAPI WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+		{
+			std::function<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)>* windProc = 
+				(std::function<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)>*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+			if (windProc)
+			{
+				if (!(*windProc)(hWnd, msg, wParam, lParam))	return 0;
+			}
+			return DefWindowProc(hWnd, msg, wParam, lParam);
+		}
 		static LRESULT WINAPI InputProcedure(int code, WPARAM wParam, LPARAM lParam);
 
 	public:
@@ -81,6 +90,7 @@ namespace WinApiFramework
 		static bool DestroyWindow(Window* const window);
 		static void DestroyAllWindows();
 		static size_t GetWindowCount();
+		static HINSTANCE GetProgramInstance();
 
 		static void SetAsMainWindow(Window *window);
 	public:
@@ -110,7 +120,8 @@ namespace WinApiFramework
 				Framework::callBack = f;
 			}
 		}
-		template <class ReceivingObject> static void SetCallBackFunction(ReceivingObject* receivingObject, void(ReceivingObject::*callBackFunction)())
+		template <class ReceivingObject> 
+		static void SetCallBackFunction(ReceivingObject* receivingObject, void(ReceivingObject::*callBackFunction)())
 		{
 			if (receivingObject == nullptr || callBackFunction == nullptr)
 			{
@@ -133,6 +144,7 @@ namespace WinApiFramework
 
 		// ~~ Framework::friends ~~ //
 		friend class Window;
+		friend class Panel;
 	};
 }
 

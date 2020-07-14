@@ -25,10 +25,8 @@ Label::~Label()
 
 // -- methods -- //
 // private:
-ProcedureResult Label::ControlProcedure(WPARAM wParam, LPARAM lParam)
+LRESULT Label::ControlProcedure(WPARAM wParam, LPARAM lParam)
 {
-	if ((HWND)lParam != m_hWindow) return ProcedureResult::TargetNotFound;
-
 	UINT event = HIWORD(wParam);
 	switch (event)
 	{
@@ -49,9 +47,9 @@ ProcedureResult Label::ControlProcedure(WPARAM wParam, LPARAM lParam)
 			break;
 
 		default:
-			return ProcedureResult::Unhandled;
+			return 1;
 	}
-	return ProcedureResult::Handled;
+	return 0;
 }
 bool Label::CreateControlWindow()
 {

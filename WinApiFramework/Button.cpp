@@ -25,12 +25,8 @@ Button::~Button()
 
 // -- methods -- //
 // private:
-ProcedureResult Button::ControlProcedure(WPARAM wParam, LPARAM lParam)
+LRESULT Button::ControlProcedure(WPARAM wParam, LPARAM lParam)
 {
-	HWND hw = (HWND)lParam;
-
-	if ((HWND)lParam != m_hWindow) return ProcedureResult::TargetNotFound;
-
 	UINT event = HIWORD(wParam);
 	switch (event)
 	{
@@ -51,9 +47,9 @@ ProcedureResult Button::ControlProcedure(WPARAM wParam, LPARAM lParam)
 			break;
 
 		default:
-			return ProcedureResult::Unhandled;
+			return 1;
 	}
-	return ProcedureResult::Handled;
+	return 0;
 }
 bool Button::CreateControlWindow()
 {
@@ -64,15 +60,15 @@ bool Button::CreateControlWindow()
 	// set caption position
 	switch (m_caption_position)
 	{
-		case WinApiFramework::Button::Center:		m_controlStyle |= BS_CENTER;		break;
-		case WinApiFramework::Button::TopLeft:		m_controlStyle |= BS_TOP | BS_LEFT;	break;
+		case WinApiFramework::Button::Center:		m_controlStyle |= BS_CENTER;			break;
+		case WinApiFramework::Button::TopLeft:		m_controlStyle |= BS_TOP | BS_LEFT;		break;
 		case WinApiFramework::Button::TopCenter:	m_controlStyle |= BS_TOP | BS_CENTER;	break;
 		case WinApiFramework::Button::TopRight:		m_controlStyle |= BS_TOP | BS_RIGHT;	break;
-		case WinApiFramework::Button::MiddleLeft:	m_controlStyle |= BS_LEFT;	break;
-		case WinApiFramework::Button::MiddleCenter:	m_controlStyle |= BS_CENTER;	break;
-		case WinApiFramework::Button::MiddleRight:	m_controlStyle |= BS_RIGHT;	break;
+		case WinApiFramework::Button::MiddleLeft:	m_controlStyle |= BS_LEFT;				break;
+		case WinApiFramework::Button::MiddleCenter:	m_controlStyle |= BS_CENTER;			break;
+		case WinApiFramework::Button::MiddleRight:	m_controlStyle |= BS_RIGHT;				break;
 		case WinApiFramework::Button::BottomLeft:	m_controlStyle |= BS_BOTTOM | BS_LEFT;	break;
-		case WinApiFramework::Button::BottomCenter:	m_controlStyle |= BS_BOTTOM;	break;
+		case WinApiFramework::Button::BottomCenter:	m_controlStyle |= BS_BOTTOM;			break;
 		case WinApiFramework::Button::BottomRight:	m_controlStyle |= BS_BOTTOM | BS_RIGHT;	break;
 	}
 
@@ -87,8 +83,9 @@ bool Button::CreateControlWindow()
 		MessageBox(nullptr, L"Button creation failed.", L"Button create error", MB_OK | MB_ICONERROR);
 		return false;
 	}
-	HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
-	SendMessage(m_hWindow, WM_SETFONT, (WPARAM)hNormalFont, 0);
+
+	HFONT hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+	SendMessage(m_hWindow, WM_SETFONT, (WPARAM)hFont, 0);
 
 	return true;
 }

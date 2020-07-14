@@ -23,17 +23,15 @@ GraphicsBox::~GraphicsBox()
 
 // -- GraphicsBox::methods -- //
 // private:
-ProcedureResult GraphicsBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
+LRESULT GraphicsBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
 {
-	if ((HWND)lParam != m_hWindow) return ProcedureResult::TargetNotFound;
-
 	UINT msg = HIWORD(wParam);
 	switch (msg)
 	{
 	default:
-		return ProcedureResult::Unhandled;
+		return 1;
 	}
-	return ProcedureResult::Handled;
+	return 0;
 }
 bool GraphicsBox::CreateControlWindow()
 {

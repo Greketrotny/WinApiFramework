@@ -4,26 +4,32 @@
 
 namespace WinApiFramework
 {
-	// ~~~~~~~~ [CLASS] BaseControl ~~~~~~~~
-	// ~~ BaseControl::constructor ~~
-	BaseControl::BaseControl()
+	// ~~~~~~~~ [CLASS] BaseWindow ~~~~~~~~
+	BaseWindow::BaseWindow()
 	{
 	}
-	BaseControl::~BaseControl()
+	BaseWindow::~BaseWindow()
 	{
 	}
-
-	// ~~ BaseControl::methods ~~
-	const HWND& BaseControl::GetWindowHandle() const
+	
+	/*LRESULT BaseWindow::WindowProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		return 1;
+	}*/
+	
+	const HWND& BaseWindow::GetWindowHandle() const
 	{
 		return m_hWindow;
+	}
+	const std::wstring& BaseWindow::GetWindowClassName() const
+	{
+		return m_WindowClassName;
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
 	// ~~~~~~~~ [CLASS] ChildControl ~~~~~~~~
-	// ~~ ChildControl::constructor ~~ //
 	ChildControl::ChildControl(ParentControl* const parentControl, const ConStruct<ChildControl>& conStruct)
 		: Rectangle(m_rect)
 		, m_pParentControl(parentControl)
@@ -33,8 +39,7 @@ namespace WinApiFramework
 	ChildControl::~ChildControl()
 	{
 	}
-
-	// ~~ Childcontrol::methods ~~ //
+	
 	void ChildControl::Destroy()
 	{
 		m_pParentControl->DestroyControl(this);
@@ -60,6 +65,9 @@ namespace WinApiFramework
 			m_rect.position.y + m_pParentControl->GetCanvasRect().position.y,
 			m_rect.size.width, m_rect.size.height,
 			SWP_NOSIZE);
+
+		InvalidateRect(m_hWindow, NULL, TRUE);
+		//SendMessage(m_hWindow, WM_PAINT, 0, 0);
 
 		PushBaseEvent(ChildControl::Event(ChildControl::Event::Type::Move));
 	}
@@ -124,7 +132,6 @@ namespace WinApiFramework
 
 
 	// ~~~~~~~~ [CLASS] ParentControl ~~~~~~~~ //
-	// ~~ ParentControl::constructor ~~ //
 	ParentControl::ParentControl()
 	{
 	}
@@ -132,8 +139,7 @@ namespace WinApiFramework
 	{
 		DestroyAllChildControls();
 	}
-
-	// ~~ ParentControl::methods ~~ //
+	
 	bool ParentControl::DestroyControl(ChildControl* control)
 	{
 		if (control == nullptr) return false;
@@ -158,32 +164,23 @@ namespace WinApiFramework
 		}
 		m_controls.clear();
 	}
-	ProcedureResult ParentControl::ProcessChildMessage(WPARAM wParam, LPARAM lParam)
+	LRESULT ParentControl::ProcessChildMessage(WPARAM wParam, LPARAM lParam)
 	{
-		for (ChildControl* control : m_controls)
+		for (ChildControl*& control : m_controls)
 		{
-			if (control != nullptr)
+			if (control->GetWindowHandle() == (HWND)lParam)
 			{
-				ProcedureResult pr = control->ControlProcedure(wParam, lParam);
-				if (pr != ProcedureResult::TargetNotFound) return pr;
+				control->ControlProcedure(wParam, lParam);
+				return 0;
 			}
 		}
-		return ProcedureResult::TargetNotFound;
+		return 1;
 	}
-	/*ChildControl* const ParentControl::GetChildControl(size_t index)
-	{
-		return m_controls[index];
-	}*/
-	/*size_t ParentControl::GetControlCount()
-	{
-		return m_controls.size();
-	}*/
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
 
 
 	// ~~~~~~~~ [CLASS] Scrollable ~~~~~~~~
-	// ~~ Scrollable::constructor ~~ //
 	Scrollable::Scrollable()
 		: m_canvasRect(0, 0, 800, 600)
 	{
@@ -192,7 +189,6 @@ namespace WinApiFramework
 	{
 	}
 
-	// ~~ Scrollable::methods ~~ //
 	Rect Scrollable::GetCanvasRect() const
 	{
 		return m_canvasRect;

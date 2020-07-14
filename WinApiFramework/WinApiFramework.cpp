@@ -20,22 +20,29 @@ namespace WinApiFramework
 
 
 	// ~~ Framework::methods ~~
-	LRESULT WINAPI Framework::WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-	{
-		// find destination window for the event
-		for (Window *w : m_windows)
-		{
-			if (w->GetWindowHandle() == hWnd)
-			{
-				switch (w->WndProcedure(msg, wParam, lParam))
-				{
-					case ProcedureResult::Handled: return 0;
-					case ProcedureResult::Unhandled: return DefWindowProc(hWnd, msg, wParam, lParam);
-				}
-			}
-		}
-		return DefWindowProc(hWnd, msg, wParam, lParam);
-	}
+	//LRESULT WINAPI Framework::WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	//{
+	//	//// find destination window for the event
+	//	//for (Window *w : m_windows)
+	//	//{
+	//	//	if (w->GetWindowHandle() == hWnd)
+	//	//	{
+	//	//		switch (w->WndProcedure(msg, wParam, lParam))
+	//	//		{
+	//	//			case ProcedureResult::Handled: return 0;
+	//	//			case ProcedureResult::Unhandled: return DefWindowProc(hWnd, msg, wParam, lParam);
+	//	//		}
+	//	//	}
+	//	//}
+	//	//return DefWindowProc(hWnd, msg, wParam, lParam);
+
+	//	BaseWindow* window = (BaseWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	//	if (window)
+	//	{
+	//		if (!window->WindowProcedure(msg, wParam, lParam))	return 0;
+	//	}
+	//	return DefWindowProc(hWnd, msg, wParam, lParam);
+	//}
 	LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
 	{
 		if (code >= 0 && code == HC_ACTION)
@@ -124,7 +131,7 @@ namespace WinApiFramework
 				next_id++;
 		}
 
-	// create window
+		// create window
 		Window* window = new Window(next_id, conStruct);
 		m_windows.push_back(window);
 		window->CreateWinApiWindow(conStruct);
@@ -136,7 +143,7 @@ namespace WinApiFramework
 			window->isMainWindow = true;
 		}
 
-			// return new window
+		// return new window
 		return window;
 	}
 	bool Framework::DestroyWindow(Window* const window)
@@ -168,6 +175,10 @@ namespace WinApiFramework
 	size_t Framework::GetWindowCount()
 	{
 		return m_windows.size();
+	}
+	HINSTANCE Framework::GetProgramInstance()
+	{
+		return hProgramInstance;
 	}
 
 	void Framework::SetAsMainWindow(Window *window)
@@ -219,6 +230,10 @@ namespace WinApiFramework
 			{
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
+
+				/*	see IsDialogMessage() function for 
+				*	implementing tabstoping between
+				*	controls on window	*/
 
 				if (msg.message == WM_QUIT)
 					return WM_QUIT;

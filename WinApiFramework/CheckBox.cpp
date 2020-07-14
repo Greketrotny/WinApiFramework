@@ -32,10 +32,8 @@ CheckBox::~CheckBox()
 
 // -- methods -- //
 // private:
-ProcedureResult CheckBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
+LRESULT CheckBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
 {
-	if ((HWND)lParam != m_hWindow) return ProcedureResult::TargetNotFound;
-
 	UINT event = HIWORD(wParam);
 	switch (event)
 	{
@@ -71,9 +69,9 @@ ProcedureResult CheckBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
 		break;
 
 	default:
-		return ProcedureResult::Unhandled;
+		return 1;
 	}
-	return ProcedureResult::Handled;
+	return 0;
 }
 bool CheckBox::CreateControlWindow()
 {

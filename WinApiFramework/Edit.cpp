@@ -32,10 +32,8 @@ namespace WinApiFramework
 
 	// -- methods -- //
 	// private:
-	ProcedureResult Edit::ControlProcedure(WPARAM wParam, LPARAM lParam)
+	LRESULT Edit::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
-		if ((HWND)lParam != m_hWindow) return ProcedureResult::TargetNotFound;
-
 		UINT event = HIWORD(wParam);
 		switch (event)
 		{
@@ -64,9 +62,9 @@ namespace WinApiFramework
 				break;
 
 			default:
-				return ProcedureResult::Unhandled;
+				return 1;
 		}
-		return ProcedureResult::Handled;
+		return 0;
 	}
 	bool Edit::CreateControlWindow()
 	{
@@ -131,8 +129,8 @@ namespace WinApiFramework
 		}
 
 		// set visual font
-		HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
-		SendMessage(m_hWindow, WM_SETFONT, (WPARAM)hNormalFont, 0);
+		HFONT hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+		SendMessage(m_hWindow, WM_SETFONT, (WPARAM)hFont, 0);
 
 		SetTextLengthLimit(m_textLengthLimit);
 		SetCueText(m_cueText);

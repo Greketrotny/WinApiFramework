@@ -20,17 +20,15 @@ namespace WinApiFramework
 	}
 
 	// ~~ GroupBox::methods ~~ //
-	ProcedureResult GroupBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
+	LRESULT GroupBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
-		if ((HWND)lParam != m_hWindow) return ProcedureResult::TargetNotFound;
-
 		UINT event = HIWORD(wParam);
 		switch (event)
 		{
 			default:
-				return ProcedureResult::Unhandled;
+				return 1;
 		}
-		ProcedureResult::Handled;
+		return 0;
 	}
 	bool GroupBox::CreateControlWindow()
 	{
