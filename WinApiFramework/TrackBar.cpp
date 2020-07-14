@@ -112,7 +112,9 @@ namespace WinApiFramework
 		// [>] create window
 		m_hWindow = CreateWindow(TRACKBAR_CLASS, L"TrackBar",
 			m_controlStyle,
-			m_rect.position.x, m_rect.position.y, m_rect.size.width, m_rect.size.height,
+			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
+			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
+			m_rect.size.width, m_rect.size.height,
 			m_pParentControl->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 		if (!m_hWindow)

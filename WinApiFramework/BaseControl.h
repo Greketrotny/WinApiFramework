@@ -207,21 +207,21 @@ namespace WinApiFramework
 	// ~~~~~~~~ [CLASS] Scrollable ~~~~~~~~
 	class Scrollable
 	{
-		// ~~ Scrollable::fields ~~ //
 	protected:
-		Rect m_canvasRect;
+		BoundRect m_canvasRect;
+		Point m_canvasDrift;
 
 
-
-		// ~~ Scrollable::constructor ~~ //
 	public:
 		Scrollable();
 		~Scrollable();
 
 
-		// ~~ Scrollable::methods ~~ //
 	public:
-		Rect GetCanvasRect() const;
+		BoundRect GetCanvasRect() const;
+		Point GetCanvasPosition() const;
+	protected:
+		void AdjustCanvasRect(const std::vector<ChildControl*> controls);
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -294,6 +294,10 @@ namespace WinApiFramework
 
 			// add control to m_controls
 			m_controls.push_back(newControl);
+
+			// adjust canvas rect
+			AdjustCanvasRect(m_controls);
+			//SendMessage(m_hWindow, WM_SIZE, 0, 0);
 
 			return newControl;
 		}

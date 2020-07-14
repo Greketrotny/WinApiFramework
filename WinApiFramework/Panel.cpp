@@ -70,7 +70,9 @@ namespace WinApiFramework
 		m_hWindow = CreateWindow((LPCWSTR)window_class_name.c_str(), L"caption",
 			//m_controlStyle, 
 			WS_VISIBLE | WS_BORDER | WS_CHILD | WS_CLIPCHILDREN,
-			m_rect.position.x, m_rect.position.y, m_rect.size.width, m_rect.size.height,
+			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
+			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
+			m_rect.size.width, m_rect.size.height,
 			m_pParentControl->GetWindowHandle(), nullptr, Framework::hProgramInstance, nullptr);
 
 		if (!m_hWindow)

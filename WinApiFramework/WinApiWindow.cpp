@@ -31,7 +31,8 @@ namespace WinApiFramework
 		caption = conStruct.caption;
 		windowRect = conStruct.rect;
 		SetSizeRect(conStruct.sizeRect);
-		m_canvasRect.size = conStruct.canvasSize;
+		m_canvasRect = BoundRect(0, 0, 100, 100);
+		m_canvasDrift = Point(0, 0);
 
 		// create window class
 		//CreateAndRegisterWindowClass();
@@ -80,24 +81,24 @@ namespace WinApiFramework
 				switch (LOWORD(wParam))
 				{
 					case SB_TOP:
-						pos = 0;
+						pos = m_canvasRect.top;
 						break;
 					case SB_BOTTOM:
-						pos = m_canvasRect.size.height;
+						pos = m_canvasRect.bottom;
 						break;
 					case SB_LINEUP:
-						if (pos > 0) pos--;
+						if (pos > m_canvasRect.top) pos--;
 						break;
 					case SB_LINEDOWN:
-						if (pos < m_canvasRect.size.height - clientRect.size.height) pos++;
+						if (pos < (m_canvasRect.bottom) - clientRect.size.height) pos++;
 						break;
 					case SB_PAGEUP:
 						pos -= si.nPage;
-						if (pos < 0) pos = 0;
+						if (pos < m_canvasRect.top) pos = m_canvasRect.top;
 						break;
 					case SB_PAGEDOWN:
 						pos += si.nPage;
-						if (pos > m_canvasRect.size.height) pos = m_canvasRect.size.height;
+						if (pos > m_canvasRect.bottom) pos = m_canvasRect.bottom;
 						break;
 					case SB_THUMBPOSITION:
 						pos = si.nTrackPos;
@@ -107,9 +108,9 @@ namespace WinApiFramework
 						break;
 				}
 
-				int dy = -(pos - si.nPos);
-				m_canvasRect.position.y += dy;
-				ScrollWindowEx(m_hWindow, 0, dy,
+				int dy = (pos - si.nPos);
+				m_canvasDrift.y += dy;
+				ScrollWindowEx(m_hWindow, 0, -dy,
 					(CONST RECT*)NULL,
 					(CONST RECT*)NULL,
 					(HRGN)NULL, (LPRECT)NULL,
@@ -143,24 +144,24 @@ namespace WinApiFramework
 				switch (LOWORD(wParam))
 				{
 					case SB_LEFT:
-						pos = m_canvasRect.position.x;
+						pos = m_canvasRect.left;
 						break;
 					case SB_RIGHT:
-						pos = m_canvasRect.size.width;
+						pos = m_canvasRect.right;
 						break;
 					case SB_LINELEFT:
-						if (pos > 0) pos--;
+						if (pos > m_canvasRect.left) pos--;
 						break;
 					case SB_LINERIGHT:
-						if (pos < m_canvasRect.size.width - clientRect.size.width) pos++;
+						if (pos < (m_canvasRect.right) - clientRect.size.width) pos++;
 						break;
 					case SB_PAGELEFT:
 						pos -= si.nPage;
-						if (pos < 0) pos = 0;
+						if (pos < m_canvasRect.left) pos = m_canvasRect.left;
 						break;
 					case SB_PAGERIGHT:
 						pos += si.nPage;
-						if (pos > m_canvasRect.size.width) pos = m_canvasRect.size.width;
+						if (pos > m_canvasRect.right) pos = m_canvasRect.right;
 						break;
 					case SB_THUMBPOSITION:
 						pos = si.nTrackPos;
@@ -170,9 +171,9 @@ namespace WinApiFramework
 						break;
 				}
 
-				int dx = -(pos - si.nPos);
-				m_canvasRect.position.x += dx;
-				ScrollWindowEx(m_hWindow, dx, 0,
+				int dx = (pos - si.nPos);
+				m_canvasDrift.x += dx;
+				ScrollWindowEx(m_hWindow, -dx, 0,
 					(CONST RECT*)NULL,
 					(CONST RECT*)NULL,
 					(HRGN)NULL, (LPRECT)NULL,
@@ -296,17 +297,18 @@ namespace WinApiFramework
 
 				// [>] Adjust canvas position
 				Point deltaXY(0, 0);
-				if (m_canvasRect.size.width + m_canvasRect.position.x < clientRect.size.width)
+				if (m_canvasRect.right - m_canvasDrift.x < clientRect.size.width)
 				{
-					deltaXY.x = std::min(clientRect.size.width - (m_canvasRect.size.width + m_canvasRect.position.x), -m_canvasRect.position.x);
+					deltaXY.x = std::min(m_canvasDrift.x - m_canvasRect.left, clientRect.size.width - (m_canvasRect.right - m_canvasDrift.x));
 				}
-				if (m_canvasRect.size.height + m_canvasRect.position.y < clientRect.size.height)
+				if (m_canvasRect.bottom - m_canvasDrift.y < clientRect.size.height)
 				{
-					deltaXY.y = std::min(clientRect.size.height - (m_canvasRect.size.height + m_canvasRect.position.y), -m_canvasRect.position.y);
+					deltaXY.y = std::min(m_canvasDrift.y - m_canvasRect.top, clientRect.size.height - (m_canvasRect.bottom - m_canvasDrift.y));
 				}
+
 				if (deltaXY.y != 0 || deltaXY.x != 0)
 				{
-					m_canvasRect.position += deltaXY;
+					m_canvasDrift -= deltaXY;
 					ScrollWindowEx(m_hWindow, deltaXY.x, deltaXY.y,
 						(CONST RECT*)NULL,
 						(CONST RECT*)NULL,
@@ -323,18 +325,18 @@ namespace WinApiFramework
 				si.cbSize = sizeof(SCROLLINFO);
 
 				// vertical scroll
-				si.nMin = 0;
-				si.nMax = m_canvasRect.size.height;
+				si.nMin = m_canvasRect.top;
+				si.nMax = m_canvasRect.bottom;
 				si.nPage = clientRect.size.height;
-				si.nPos = -m_canvasRect.position.y;
+				si.nPos = m_canvasDrift.y;
 				si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 				SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
 
 				// horizontal scroll
-				si.nMin = 0;
-				si.nMax = m_canvasRect.size.width;
+				si.nMin = m_canvasRect.left;
+				si.nMax = m_canvasRect.right;
 				si.nPage = clientRect.size.width;
-				si.nPos = -m_canvasRect.position.x;
+				si.nPos = m_canvasDrift.x;
 				si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 				SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
 
@@ -506,18 +508,18 @@ namespace WinApiFramework
 
 		// vertical
 		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
-		si.nMin = 0;
-		si.nMax = m_canvasRect.size.height;
+		si.nMin = m_canvasRect.top;
+		si.nMax = m_canvasRect.bottom;
 		si.nPage = clientRect.size.height;
-		si.nPos = -m_canvasRect.position.y;
+		si.nPos = m_canvasDrift.y;
 		SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
 
 		// horizontal
 		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
-		si.nMin = 0;
-		si.nMax = m_canvasRect.size.width;
+		si.nMin = m_canvasRect.left;
+		si.nMax = m_canvasRect.right;
 		si.nPage = clientRect.size.width;
-		si.nPos = -m_canvasRect.position.x;
+		si.nPos = m_canvasDrift.x;
 		SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
 
 
@@ -726,7 +728,7 @@ namespace WinApiFramework
 	}
 	Point Window::GetCanvasMousePosition() const
 	{
-		return GetClientMousePosition() - GetCanvasRect().position;
+		return GetClientMousePosition() + GetCanvasPosition();
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 }

@@ -17,8 +17,8 @@ public:
 
 	WAF::Button* button1 = nullptr;
 	WAF::Button* button2 = nullptr;
-	WAF::Button* button3 = nullptr;
 
+	std::vector<WAF::Button*> panelButtons;
 	WAF::Panel* panel = nullptr;
 
 
@@ -60,11 +60,19 @@ public:
 			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(150, 10, 400, 200))));
 		panel->Events.AddEventHandler<MainForm>(this, &MainForm::Panel_EH);
 
-		// button3
-		button3 = panel->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(WAF::Point(-20, 80), { 100, 40 })),
-			L"button3"));
-		button3->Events.AddEventHandler<MainForm>(this, &MainForm::Button3_EH);
+		// panel buttons
+		int buttonWidth = 100;
+		int buttonHeight = 50;
+		for (int x = 0; x < 4; x++)
+		{
+			for (int y = 0; y < 4; y++)
+			{
+				WAF::Button* button = panel->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
+					WAF::ConStruct<WAF::ChildControl>(WAF::Rect(x * buttonWidth, y * buttonHeight, buttonWidth, buttonHeight)),
+					L"button" + std::to_wstring(x * 2 + y)));
+				panelButtons.push_back(button);
+			}
+		}
 	}
 	~MainForm()
 	{
@@ -80,6 +88,7 @@ public:
 		{
 			case WAF::Window::Event::Type::Move:
 			{
+				button1->Move(button1->Rectangle.position);
 				DisplayMainWindowProps();
 				break;
 			}
@@ -136,7 +145,6 @@ public:
 		{
 			case WAF::Panel::Event::Type::Resize:
 				//button3->Resize(panel->Rectangle.size.width / 2, panel->Rectangle.size.height / 2);
-				button3->SetRect(WAF::Rect(panel->Rectangle.size.width / 2, 5, panel->Rectangle.size.width / 2, panel->Rectangle.size.height / 2));
 				break;
 		}
 	}
@@ -158,7 +166,7 @@ public:
 		switch (event.type)
 		{
 			case WAF::Mouse::Event::Type::RightPress:
-				panel->Move(MainWindow->GetCanvasMousePosition());
+				//panel->Move(MainWindow->GetCanvasMousePosition());
 				break;
 			case WAF::Mouse::Event::Type::Move:
 			{
@@ -175,6 +183,8 @@ public:
 					std::to_wstring(MainWindow->GetCanvasMousePosition().x) +
 					L" : " +
 					std::to_wstring(MainWindow->GetCanvasMousePosition().y));
+
+				//panel->Move(MainWindow->GetCanvasMousePosition() - WAF::Point(panel->GetRect().size.width / 2, panel->GetRect().size.height));
 				break;
 			}
 		}

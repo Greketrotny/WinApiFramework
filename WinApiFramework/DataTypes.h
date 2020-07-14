@@ -48,9 +48,9 @@ namespace WinApiFramework
 	};
 	struct BoundRect
 	{
-		int top, bottom, left, right;
+		int left, top, right, bottom;
 
-		BoundRect(int top, int bottom, int left, int right);
+		BoundRect(int left, int top, int right, int bottom);
 		BoundRect(const Rect& rect);
 
 		BoundRect& operator=(const BoundRect& boundRect);

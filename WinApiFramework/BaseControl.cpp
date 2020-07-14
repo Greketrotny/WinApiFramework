@@ -11,12 +11,7 @@ namespace WinApiFramework
 	BaseWindow::~BaseWindow()
 	{
 	}
-	
-	/*LRESULT BaseWindow::WindowProcedure(UINT msg, WPARAM wParam, LPARAM lParam)
-	{
-		return 1;
-	}*/
-	
+		
 	const HWND& BaseWindow::GetWindowHandle() const
 	{
 		return m_hWindow;
@@ -61,13 +56,10 @@ namespace WinApiFramework
 		m_rect.position.y = y;
 
 		SetWindowPos(this->m_hWindow, nullptr,
-			m_rect.position.x + m_pParentControl->GetCanvasRect().position.x, 
-			m_rect.position.y + m_pParentControl->GetCanvasRect().position.y,
+			m_rect.position.x - m_pParentControl->GetCanvasPosition().x, 
+			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
 			SWP_NOSIZE);
-
-		InvalidateRect(m_hWindow, NULL, TRUE);
-		//SendMessage(m_hWindow, WM_PAINT, 0, 0);
 
 		PushBaseEvent(ChildControl::Event(ChildControl::Event::Type::Move));
 	}
@@ -84,8 +76,8 @@ namespace WinApiFramework
 		if (m_rect.size.height < 0) m_rect.size.height = 0;
 
 		SetWindowPos(m_hWindow, nullptr,
-			m_rect.position.x + m_pParentControl->GetCanvasRect().position.x, 
-			m_rect.position.y + m_pParentControl->GetCanvasRect().position.y,
+			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
+			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
 			SWP_NOMOVE);
 
@@ -103,8 +95,8 @@ namespace WinApiFramework
 		if (m_rect.size.height < 0) m_rect.size.height = 0;
 
 		SetWindowPos(m_hWindow, nullptr,
-			m_rect.position.x + m_pParentControl->GetCanvasRect().position.x, 
-			m_rect.position.y + m_pParentControl->GetCanvasRect().position.y,
+			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
+			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height, 0);
 
 		PushBaseEvent(ChildControl::Event(ChildControl::Event::Type::Move));
@@ -189,9 +181,42 @@ namespace WinApiFramework
 	{
 	}
 
-	Rect Scrollable::GetCanvasRect() const
+	BoundRect Scrollable::GetCanvasRect() const
 	{
 		return m_canvasRect;
+	}
+	Point Scrollable::GetCanvasPosition() const
+	{
+		return m_canvasDrift;
+	}
+
+	void Scrollable::AdjustCanvasRect(const std::vector<ChildControl*> controls)
+	{
+		BoundRect boundRect(std::numeric_limits<int>::max(), std::numeric_limits<int>::max(),
+			std::numeric_limits<int>::min(), std::numeric_limits<int>::min());
+
+		for (ChildControl* control : controls)
+		{
+			if (control == nullptr) continue;
+
+			// left
+			if (control->Rectangle.position.x < boundRect.left)
+				boundRect.left = control->Rectangle.position.x;
+
+			// top
+			if (control->Rectangle.position.y < boundRect.top)
+				boundRect.top = control->Rectangle.position.y;
+
+			// right
+			if (control->Rectangle.position.x + control->Rectangle.size.width > boundRect.right)
+				boundRect.right = control->Rectangle.position.x + control->Rectangle.size.width;
+
+			// bottom
+			if (control->Rectangle.position.y + control->Rectangle.size.height > boundRect.bottom)
+				boundRect.bottom = control->Rectangle.position.y + control->Rectangle.size.height;
+		}
+
+		m_canvasRect = boundRect;
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
