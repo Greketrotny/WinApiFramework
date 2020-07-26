@@ -47,7 +47,7 @@ namespace WinApiFramework
 
 
 		wc.hInstance = Framework::GetProgramInstance();
-		wc.lpfnWndProc = (WNDPROC)Framework::WinApiProcedure;
+		wc.lpfnWndProc = GetWinApiProcedure();
 		wc.lpszClassName = window_class_name.c_str();
 		wc.lpszMenuName = nullptr;
 		wc.cbSize = (sizeof(WNDCLASSEX));
@@ -73,7 +73,7 @@ namespace WinApiFramework
 			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
 			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			m_pParentControl->GetWindowHandle(), nullptr, Framework::hProgramInstance, nullptr);
+			m_pParentControl->GetWindowHandle(), nullptr, Framework::GetProgramInstance(), nullptr);
 
 		if (!m_hWindow)
 		{

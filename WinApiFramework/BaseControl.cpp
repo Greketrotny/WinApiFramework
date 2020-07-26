@@ -1,6 +1,6 @@
 #include "Precompiled.h"
-
 #include "BaseControl.h"
+#include "WinApiFramework.h"
 
 namespace WinApiFramework
 {
@@ -19,6 +19,15 @@ namespace WinApiFramework
 	const std::wstring& BaseWindow::GetWindowClassName() const
 	{
 		return m_WindowClassName;
+	}
+
+	WNDPROC BaseWindow::GetWinApiProcedure() const
+	{
+		return (WNDPROC)Framework::WinApiProcedure;
+	}
+	void BaseWindow::PushEventToQueue(BaseEvent* event) const
+	{
+		Framework::PushEvent(event);
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

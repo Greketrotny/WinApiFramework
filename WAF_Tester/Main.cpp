@@ -10,6 +10,8 @@
 
 namespace WAF = WinApiFramework;
 
+void MainWindow_OnActivatedGlobal(WAF::Window::Event<WAF::Window::EventTypeActivated>& event);
+
 class MainForm
 {
 public:
@@ -38,8 +40,12 @@ public:
 				WAF::Window::StartStyle::Normal,
 				WAF::SizeRect(200u, 100u, 2000u, 1000u),
 				WAF::Size(800, 400)));
-		MainWindow->Events.AddEventHandler<MainForm>(this, &MainForm::MainWindow_EH);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(this, &MainForm::MainWindow_OnActivated);
+		//MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(MainWindow_OnActivatedGlobal);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(this, &MainForm::MainWindow_OnActivated2);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeDeactivated>(this, &MainForm::MainWindow_OnDeactivated);
 
+		MainWindow->RemoveEventHandler<WAF::Window::EventTypeActivated>(this, &MainForm::MainWindow_OnActivated2);
 
 		// button1
 		button1 = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
@@ -81,26 +87,19 @@ public:
 
 
 	// -- MainForm::event_handlers -- //
-	// MainWindow events handler
-	void MainWindow_EH(WAF::Window::Event event)
+	void MainWindow_OnActivated(WAF::Window::Event<WAF::Window::EventTypeActivated>& event)
 	{
-		switch (event.type)
-		{
-			case WAF::Window::Event::Type::Move:
-			{
-				button1->Move(button1->Rectangle.position);
-				DisplayMainWindowProps();
-				break;
-			}
-			case WAF::Window::Event::Type::Resize:
-			{
-				// display new MainWindow properties
-				DisplayMainWindowProps();
-				panel->Resize(MainWindow->WindowRect.size.width / 2, MainWindow->WindowRect.size.height / 2);
-				break;
-			}
-		}
+		event.GetWindow()->SetCaption(L"Window Activated!!!");
 	}
+	void MainWindow_OnActivated2(WAF::Window::Event<WAF::Window::EventTypeActivated>& event)
+	{
+		event.GetWindow()->SetCaption(event.GetWindow()->GetCaption() + L" + second function");
+	}
+	void MainWindow_OnDeactivated(WAF::Window::Event<WAF::Window::EventTypeDeactivated>& event)
+	{
+		event.GetWindow()->SetCaption(L"Window Deactivated!!!");
+	}
+
 
 	void Button1_EH(WAF::Button::Event event)
 	{
@@ -170,7 +169,7 @@ public:
 				break;
 			case WAF::Mouse::Event::Type::Move:
 			{
-				MainWindow->SetCaption(
+				/*MainWindow->SetCaption(
 					L"WindowM: " +
 					std::to_wstring(MainWindow->GetWindowMousePosition().x) +
 					L" : " +
@@ -182,7 +181,7 @@ public:
 					L" CanvasM: " +
 					std::to_wstring(MainWindow->GetCanvasMousePosition().x) +
 					L" : " +
-					std::to_wstring(MainWindow->GetCanvasMousePosition().y));
+					std::to_wstring(MainWindow->GetCanvasMousePosition().y));*/
 
 				//panel->Move(MainWindow->GetCanvasMousePosition() - WAF::Point(panel->GetRect().size.width / 2, panel->GetRect().size.height));
 				break;
@@ -202,6 +201,12 @@ public:
 	}
 };
 MainForm *MF;
+
+
+void MainWindow_OnActivatedGlobal(WAF::Window::Event<WAF::Window::EventTypeActivated>& event)
+{
+	event.GetWindow()->SetCaption(L"Winodw Activated from global function.");
+}
 
 void CallBackFunction()
 {

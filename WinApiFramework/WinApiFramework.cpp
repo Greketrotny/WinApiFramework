@@ -1,16 +1,50 @@
 #include "Precompiled.h"
 #include "WinApiFramework.h"
-#include "WinApiWindow.h"
 
 
 namespace WinApiFramework
 {
+	// ~~~~~~~~ [STRUCT] EventHandler ~~~~~~~~
+	Framework::EventManager::EventManager()
+		: m_invocation_state(false)
+	{
+	}
+	Framework::EventManager::~EventManager()
+	{
+		while (!m_events.empty())
+		{
+			delete m_events.front();
+			m_events.pop();
+		}
+	}
+
+	void Framework::EventManager::PushEvent(BaseEvent* event)
+	{
+		m_events.push(event);
+	}
+	void Framework::EventManager::InvokeEvents()
+	{
+		if (m_invocation_state == true) return;
+		else m_invocation_state = true;
+
+		for (int i = 0; i < m_invocations_limit && !m_events.empty(); ++i)
+		{
+			m_events.front()->InvokeHandlers();
+			delete m_events.front();
+			m_events.pop();
+		}
+		m_invocation_state = false;
+	}
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 	// ~~~~~~~~ [CLASS] Framework ~~~~~~~~
 	// ~~ Framework::fields ~~
 	HINSTANCE Framework::hProgramInstance = GetModuleHandle(NULL);
 	const HINSTANCE& Framework::ProgramInstance(hProgramInstance);
 	std::vector<Window*> Framework::m_windows;
 	Window* Framework::m_pRootWindow(nullptr);
+	Framework::EventManager Framework::m_eventManager;
 	std::function<void()> Framework::callBack = nullptr;
 	HHOOK Framework::InputHook = SetWindowsHookEx(WH_GETMESSAGE, Framework::InputProcedure, NULL, GetThreadId(GetCurrentThread()));
 	Mouse Framework::mouse;
@@ -18,31 +52,6 @@ namespace WinApiFramework
 	Mouse& Framework::Mouse(Framework::mouse);
 	Keyboard& Framework::Keyboard(Framework::keyboard);
 
-
-	// ~~ Framework::methods ~~
-	//LRESULT WINAPI Framework::WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-	//{
-	//	//// find destination window for the event
-	//	//for (Window *w : m_windows)
-	//	//{
-	//	//	if (w->GetWindowHandle() == hWnd)
-	//	//	{
-	//	//		switch (w->WndProcedure(msg, wParam, lParam))
-	//	//		{
-	//	//			case ProcedureResult::Handled: return 0;
-	//	//			case ProcedureResult::Unhandled: return DefWindowProc(hWnd, msg, wParam, lParam);
-	//	//		}
-	//	//	}
-	//	//}
-	//	//return DefWindowProc(hWnd, msg, wParam, lParam);
-
-	//	BaseWindow* window = (BaseWindow*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-	//	if (window)
-	//	{
-	//		if (!window->WindowProcedure(msg, wParam, lParam))	return 0;
-	//	}
-	//	return DefWindowProc(hWnd, msg, wParam, lParam);
-	//}
 	LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
 	{
 		if (code >= 0 && code == HC_ACTION)
@@ -121,6 +130,10 @@ namespace WinApiFramework
 		return CallNextHookEx(InputHook, code, wParam, lParam);
 	}
 	
+	HINSTANCE Framework::GetProgramInstance()
+	{
+		return hProgramInstance;
+	}
 	Window* Framework::CreateNewWindow(const ConStruct<Window>& conStruct)
 	{
 		// find next unused window id
@@ -176,11 +189,10 @@ namespace WinApiFramework
 	{
 		return m_windows.size();
 	}
-	HINSTANCE Framework::GetProgramInstance()
+	const Window* Framework::GetRootWindow()
 	{
-		return hProgramInstance;
+		return m_pRootWindow;
 	}
-
 	void Framework::SetAsMainWindow(Window *window)
 	{
 		if (window == m_pRootWindow) return;
@@ -199,21 +211,9 @@ namespace WinApiFramework
 		window->SetCaption(window->GetCaption());
 	}
 
-	void Framework::Exit(int return_value)
+	void Framework::PushEvent(BaseEvent* event)
 	{
-		DestroyAllWindows();
-		PostQuitMessage(return_value);
-	}
-
-	int Framework::ShowGlobalMessageBox(std::wstring text, std::wstring caption, UINT message_box_style)
-	{
-		return MessageBoxW(NULL, text.c_str(), caption.c_str(), message_box_style);
-	}
-	Framework::MessBoxButtonPressed Framework::ShowGlobalMessageBox(std::wstring text, std::wstring caption,
-		Framework::MessBoxButtonLayout buttons, Framework::MessBoxIcon icon)
-	{
-		return (Framework::MessBoxButtonPressed)MessageBox(NULL, text.c_str(), caption.c_str(),
-			buttons | icon);
+		m_eventManager.PushEvent(event);
 	}
 
 	UINT Framework::ProcessMessages()
@@ -221,17 +221,16 @@ namespace WinApiFramework
 		//InitCommonControls();
 
 		MSG msg;
-		unsigned int eventCounter = 0u;
 		while (true)
 		{
 			// process all untouched messages
-			eventCounter = 0u;
+			unsigned int eventCounter = 0u;
 			while ((PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) && (eventCounter < 16u))
 			{
 				TranslateMessage(&msg);
 				DispatchMessage(&msg);
 
-				/*	see IsDialogMessage() function for 
+				/*	see IsDialogMessage() function for
 				*	implementing tabstoping between
 				*	controls on window	*/
 
@@ -240,6 +239,11 @@ namespace WinApiFramework
 
 				eventCounter++;
 			}
+
+			// invoke handlers of occured events
+			m_eventManager.InvokeEvents();
+
+
 			/*while (GetMessage(&msg, NULL, 0, 0))
 			{
 					TranslateMessage(&msg);
@@ -255,6 +259,22 @@ namespace WinApiFramework
 			if (callBack != nullptr) callBack();
 		}
 		return 0;
+	}
+	void Framework::Exit(int return_value)
+	{
+		DestroyAllWindows();
+		PostQuitMessage(return_value);
+	}
+
+	int Framework::ShowGlobalMessageBox(std::wstring text, std::wstring caption, UINT message_box_style)
+	{
+		return MessageBoxW(NULL, text.c_str(), caption.c_str(), message_box_style);
+	}
+	Framework::MessBoxButtonPressed Framework::ShowGlobalMessageBox(std::wstring text, std::wstring caption,
+		Framework::MessBoxButtonLayout buttons, Framework::MessBoxIcon icon)
+	{
+		return (Framework::MessBoxButtonPressed)MessageBox(NULL, text.c_str(), caption.c_str(),
+			buttons | icon);
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }

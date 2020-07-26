@@ -19,7 +19,7 @@ namespace WinApiFramework
 		, ClientRect(clientRect)
 		, WindowSizeRect(sizeRect)
 		, Caption(caption)
-		, Events(events)
+		//, Events(events)
 	{
 	}
 	Window::Window(unsigned int id, const ConStruct<Window> &conStruct)
@@ -124,6 +124,7 @@ namespace WinApiFramework
 
 				SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
 
+				RaiseEvent<EventTypeVScrolled>();
 				return 0;
 			}
 
@@ -187,18 +188,19 @@ namespace WinApiFramework
 
 				SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
 
+				RaiseEvent<EventTypeHScrolled>();
 				return 0;
 			}
 
 				// base events //
 			case WM_CLOSE:
-				events.PushEvent(Window::Event(Event::Type::Close));
+				RaiseEvent<EventTypeClose>();
 				if (m_hWindow) ::DestroyWindow(m_hWindow);
 				m_hWindow = NULL;
 				return 0;
 
 			case WM_DESTROY:
-				if (this == Framework::m_pRootWindow)
+				if (this == Framework::GetRootWindow())
 					PostQuitMessage(0);
 				return 0;
 
@@ -207,27 +209,28 @@ namespace WinApiFramework
 				// window properties events //
 			case WM_ACTIVATE:
 			{
-				if (wParam & WA_INACTIVE)
+				if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE)
 				{
-					isActivated = false;
-					PushEvent(Window::Event::Type::Deactivate);
+					isActivated = true;
+					RaiseEvent<EventTypeActivated>();
 				}
 				else
 				{
-					isActivated = true;
-					PushEvent(Window::Event::Type::Activate);
+					isActivated = false;
+					RaiseEvent<EventTypeDeactivated>();
 				}
+				break;
 			}
 
 			case WM_SHOWWINDOW:
 			{
 				if (wParam == TRUE)
 				{
-					PushEvent(Window::Event::Type::Show);
+					RaiseEvent<EventTypeShowed>();
 				}
 				else
 				{
-					PushEvent(Window::Event::Type::Hide);
+					RaiseEvent<EventTypeHid>();
 				}
 				return 0;
 			}
@@ -236,12 +239,12 @@ namespace WinApiFramework
 				switch (wParam)
 				{
 					case SC_MAXIMIZE:
-						PushEvent(Event(Event::Type::Maximize));
 						isMinimized = false;
+						RaiseEvent<EventTypeMaximized>();
 						break;
 					case SC_MINIMIZE:
-						PushEvent(Event(Event::Type::Minimize));
 						isMinimized = true;
+						RaiseEvent<EventTypeMinimized>();
 						break;
 				}
 				break;
@@ -266,8 +269,7 @@ namespace WinApiFramework
 					clientRect.size.height = r.bottom - r.top;
 				}
 
-				events.PushEvent(Window::Event(Window::Event::Type::Move));
-
+				RaiseEvent<EventTypeMoved>();
 				return 0;
 			}
 
@@ -340,8 +342,7 @@ namespace WinApiFramework
 				si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 				SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
 
-				events.PushEvent(Window::Event(Window::Event::Type::Resize));
-
+				RaiseEvent<EventTypeResized>();
 				return 0;
 			}
 
@@ -430,8 +431,8 @@ namespace WinApiFramework
 		WNDCLASSEX wc;
 		ZeroMemory(&wc, sizeof(WNDCLASSEX));
 
-		wc.hInstance = Framework::hProgramInstance;
-		wc.lpfnWndProc = (WNDPROC)Framework::WinApiProcedure;
+		wc.hInstance = Framework::GetProgramInstance();
+		wc.lpfnWndProc = GetWinApiProcedure();
 		wc.lpszClassName = m_WindowClassName.c_str();
 		wc.lpszMenuName = nullptr;
 		wc.cbSize = (sizeof(WNDCLASSEX));
@@ -485,7 +486,7 @@ namespace WinApiFramework
 		m_hWindow = CreateWindow((LPCWSTR)m_WindowClassName.c_str(), (LPCWSTR)caption.c_str(),
 			windowStyle,
 			windowRect.position.x, windowRect.position.y, windowRect.size.width, windowRect.size.height,
-			nullptr, nullptr, Framework::hProgramInstance, nullptr);
+			nullptr, nullptr, Framework::GetProgramInstance(), nullptr);
 
 		if (!m_hWindow)
 		{
@@ -535,33 +536,11 @@ namespace WinApiFramework
 		Framework::DestroyWindow(this);
 	}
 
-	// public:
-	void Window::PushEvent(Window::Event newEvent)
-	{
-		events.PushEvent(newEvent);
-	}
-	Window::Event Window::GetEvent()
-	{
-		return events.GetEvent();
-	}
-	void Window::ClearEventBuffer()
-	{
-		events.ClearBuffer();
-	}
-	void Window::EnableEventHandlers()
-	{
-		events.EnableEventHandlers();
-	}
-	void Window::DisableEventHandlers()
-	{
-		events.DisableEventHandlers();
-	}
-
 	void Window::SetCaption(std::wstring new_caption)
 	{
 		caption = new_caption;
 		SetWindowText(m_hWindow, (LPCWSTR)(((isMainWindow) ? L"[Main Window] " : L"") + caption).c_str());
-		events.PushEvent(Event(Event::Type::CaptionChange));
+		RaiseEvent<EventTypeCaptionChanged>();
 	}
 	void Window::SetPosition(unsigned int x, unsigned int y)
 	{
@@ -573,9 +552,13 @@ namespace WinApiFramework
 			windowRect.size.width, windowRect.size.height,
 			0);
 
-		events.PushEvent(Event(Event::Type::Move));
+		RaiseEvent<EventTypeMoved>();
 	}
-	void Window::SetDimensions(unsigned int width, unsigned int height)
+	void Window::SetPosition(const Point& position)
+	{
+		SetPosition(position.x, position.y);
+	}
+	void Window::Resize(unsigned int width, unsigned int height)
 	{
 		windowRect.size.width = width;
 		windowRect.size.height = height;
@@ -585,7 +568,11 @@ namespace WinApiFramework
 			windowRect.size.width, windowRect.size.height,
 			0);
 
-		events.PushEvent(Event(Event::Type::Resize));
+		RaiseEvent<EventTypeResized>();
+	}
+	void Window::Resize(const Size& size)
+	{
+		Resize(size.width, size.height);
 	}
 	void Window::SetMinSize(unsigned int minWidth, unsigned int minHeight)
 	{
@@ -594,6 +581,12 @@ namespace WinApiFramework
 
 		if (sizeRect.minSize.width > sizeRect.maxSize.width) sizeRect.minSize.width = sizeRect.maxSize.width;
 		if (sizeRect.minSize.height > sizeRect.maxSize.height) sizeRect.minSize.height = sizeRect.maxSize.height;
+
+		RaiseEvent<EventTypeMinSizeChanged>();
+	}
+	void Window::SetMinSize(const Size& size)
+	{
+		SetMinSize(size.width, size.height);
 	}
 	void Window::SetMaxSize(unsigned int maxWidth, unsigned int maxHeight)
 	{
@@ -602,6 +595,12 @@ namespace WinApiFramework
 
 		if (sizeRect.maxSize.width < sizeRect.minSize.width)  sizeRect.maxSize.width = sizeRect.minSize.width;
 		if (sizeRect.maxSize.height < sizeRect.minSize.height)  sizeRect.maxSize.height = sizeRect.minSize.height;
+
+		RaiseEvent<EventTypeMaxSizeChanged>();
+	}
+	void Window::SetMaxSize(const Size& size)
+	{
+		SetMaxSize(size.width, size.height);
 	}
 	void Window::SetSizeRect(SizeRect newSizeRect)
 	{
@@ -609,6 +608,9 @@ namespace WinApiFramework
 
 		if (sizeRect.maxSize.width < sizeRect.minSize.width) sizeRect.maxSize.width = sizeRect.minSize.width;
 		if (sizeRect.maxSize.height < sizeRect.minSize.height) sizeRect.maxSize.height = sizeRect.minSize.height;
+
+		RaiseEvent<EventTypeMinSizeChanged>();
+		RaiseEvent<EventTypeMaxSizeChanged>();
 	}
 	void Window::SetAsMainWindow()
 	{
@@ -617,23 +619,19 @@ namespace WinApiFramework
 
 	void Window::Enable()
 	{
-		if (isMainWindow) return;
-		if (isEnabled) return;
-
-		::EnableWindow(m_hWindow, 1);
+		::EnableWindow(m_hWindow, TRUE);
 		isEnabled = true;
 
-		events.PushEvent(Event(Event::Type::Enable));
+		RaiseEvent<EventTypeEnabled>();
 	}
 	void Window::Disable()
 	{
 		if (isMainWindow) return;
-		if (!isEnabled) return;
 
-		::EnableWindow(m_hWindow, 0);
+		::EnableWindow(m_hWindow, FALSE);
 		isEnabled = false;
 
-		events.PushEvent(Event(Event::Type::Disable));
+		RaiseEvent<EventTypeDisabled>();
 	}
 	void Window::EnableResize()
 	{
@@ -641,7 +639,7 @@ namespace WinApiFramework
 		windowStyle = windowStyle | WS_SIZEBOX;
 		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
-		events.PushEvent(Event(Event::Type::EnableResize));
+		RaiseEvent<EventTypeResizeEnabled>();
 	}
 	void Window::DisableResize()
 	{
@@ -649,7 +647,7 @@ namespace WinApiFramework
 		windowStyle = windowStyle & (~WS_SIZEBOX);
 		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
-		events.PushEvent(Event(Event::Type::DisableResize));
+		RaiseEvent<EventTypeResizeDisabled>();
 	}
 	void Window::EnableMaximizeBox()
 	{
@@ -657,7 +655,7 @@ namespace WinApiFramework
 		windowStyle = windowStyle | WS_MAXIMIZEBOX;
 		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
-		events.PushEvent(Window::Event::Type::EnableMaximizeBox);
+		RaiseEvent<EventTypeMaximizeBoxEnabled>();
 	}
 	void Window::DisableMaximizeBox()
 	{
@@ -665,7 +663,7 @@ namespace WinApiFramework
 		windowStyle = windowStyle & (~WS_MAXIMIZEBOX);
 		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
-		events.PushEvent(Event(Event::Type::DisableMaximizeBox));
+		RaiseEvent<EventTypeMaximizeBoxDisabled>();
 	}
 	void Window::EnableMinimizeBox()
 	{
@@ -673,7 +671,7 @@ namespace WinApiFramework
 		windowStyle = windowStyle | WS_MINIMIZEBOX;
 		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
-		events.PushEvent(Event(Event::Type::EnableMinimizeBox));
+		RaiseEvent<EventTypeMinimizeBoxEnabled>();
 	}
 	void Window::DisableMinimizeBox()
 	{
@@ -681,7 +679,7 @@ namespace WinApiFramework
 		windowStyle = windowStyle & (~WS_MINIMIZEBOX);
 		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
 
-		events.PushEvent(Event(Event::Type::DisableMinimizeBox));
+		RaiseEvent<EventTypeMinimizeBoxDisabled>();
 	}
 	void Window::Activate()
 	{

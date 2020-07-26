@@ -4,6 +4,7 @@
 #include "WindowInclude.h"
 #include "ExternIncludes.h"
 #include "DataTypes.h"
+#include "event.h"
 
 namespace WinApiFramework
 {
@@ -31,10 +32,9 @@ namespace WinApiFramework
 	public:
 		const HWND& GetWindowHandle() const;
 		const std::wstring& GetWindowClassName() const;
-
-
-	public:
-		friend class Framework;
+	protected:
+		WNDPROC GetWinApiProcedure() const;
+		void PushEventToQueue(BaseEvent* event) const;
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

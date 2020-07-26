@@ -5,6 +5,8 @@
 #include "ExternIncludes.h"
 
 #include "BaseControl.h"
+#include "event.h"
+
 
 namespace WinApiFramework
 {
@@ -14,7 +16,7 @@ namespace WinApiFramework
 	template <> struct ConStruct<Window>;
 
 	// ~~~~~~~~ [CLASS] Window ~~~~~~~~
-	class Window 
+	class Window
 		: public ParentControl
 		, public HasWindowProcedure<Window>
 	{
@@ -42,121 +44,55 @@ namespace WinApiFramework
 			Maximized,
 			Normal
 		};
-		struct Event
-		{
-			enum Type
-			{
-				Move,
-				Resize,
-				Enable,
-				Disable,
-				Activate,
-				Deactivate,
-				Minimize,
-				Maximize,
-				Show,
-				Hide,
-				EnableResize,
-				DisableResize,
-				EnableMaximizeBox,
-				DisableMaximizeBox,
-				EnableMinimizeBox,
-				DisableMinimizeBox,
-				CaptionChange,
-				Close,
-				Invalid
-			};
-			Type type;
 
-			Event()
-			{
-				type = Invalid;
-			}
-			Event(Type type)
-			{
-				this->type = type;
-			}
+		enum EventType
+		{
+			EventTypeInvalid = 0,
+
+			EventTypeMoved = 1000,
+			EventTypeResized,
+			EventTypeEnabled,
+			EventTypeDisabled,
+			EventTypeActivated,
+			EventTypeDeactivated,
+			EventTypeShowed,
+			EventTypeHid,
+			EventTypeMaximized,
+			EventTypeMinimized,
+			EventTypeHScrolled,
+			EventTypeVScrolled,
+			EventTypeClose,
+			EventTypeDestroying,
+
+			EventTypeCaptionChanged,
+			EventTypeMinSizeChanged,
+			EventTypeMaxSizeChanged,
+			EventTypeResizeEnabled,
+			EventTypeResizeDisabled,
+			EventTypeMaximizeBoxEnabled,
+			EventTypeMaximizeBoxDisabled,
+			EventTypeMinimizeBoxEnabled,
+			EventTypeMinimizeBoxDisabled,
 		};
-	private:
-		struct EventsManager
+		template <EventType T> struct Event : public BaseEvent
 		{
-			// -- fields -- //
 		private:
-			const unsigned short buffLength = 32u;
-			bool eventHandlersEnabled = true;
-			std::queue<Event> events;
-			std::vector<std::function<void(Window::Event)>> eventHandlers;
-
-
-			// -- constructor -- //
+			HandlerList<Event<T>>* m_pBHL;
+			Window* m_pWindow;
 		public:
-			EventsManager()
-			{
-			}
-			~EventsManager()
-			{
-			}
+			Event(const Event& event) = delete;
+			Event(HandlerList<Event<T>>* bhl, Window* window)
+				: m_pBHL(bhl)
+				, m_pWindow(window)
+			{}
 
-
-			// -- methods -- //
-		public:
-			void PushEvent(Event newEvent)
+			void InvokeHandlers() override
 			{
-				// push event to buffer
-				events.push(newEvent);
-				if (events.size() > buffLength)
-					events.pop();
-
-				// handle event
-				if (eventHandlersEnabled)
-				{
-					for (unsigned int i = 0; i < eventHandlers.size(); ++i)
-					{
-						eventHandlers[i](newEvent);
-					}
-				}
+				if (m_pBHL) m_pBHL->Invoke(*this);
 			}
-			Event GetEvent()
+			Window* GetWindow() const
 			{
-				if (events.size() > 0u)
-				{
-					Event e = events.front();
-					events.pop();
-					return e;
-				}
-				else
-				{
-					return Event();
-				}
-			}
-			void ClearBuffer()
-			{
-				events = std::queue<Event>();
-			}
-			template <class EventReceiver> void AddEventHandler(EventReceiver* receiverObject, void(EventReceiver::*eventFunction)(Window::Event))
-			{
-				using std::placeholders::_1;
-				std::function<void(Window::Event)> f;
-				f = std::bind(eventFunction, receiverObject, _1);
-				eventHandlers.push_back(f);
-			}
-			void AddEventHandler(void(*eventFunction)(Window::Event))
-			{
-				if (eventFunction == nullptr) return;
-				std::function<void(Window::Event)> f(eventFunction);
-				eventHandlers.push_back(f);
-			}
-			void RemoveAllEventHandlers()
-			{
-				eventHandlers.clear();
-			}
-			void EnableEventHandlers()
-			{
-				eventHandlersEnabled = true;
-			}
-			void DisableEventHandlers()
-			{
-				eventHandlersEnabled = false;
+				return m_pWindow;
 			}
 		};
 
@@ -164,10 +100,9 @@ namespace WinApiFramework
 		Rect windowRect;
 		Rect clientRect;
 		SizeRect sizeRect;
-		EventsManager events;
+		EventHandlerManager m_EHM;
 
 
-		// -- constructors -- //
 	private:
 		Window();
 		Window(const Window &wnd) = delete;
@@ -176,13 +111,12 @@ namespace WinApiFramework
 		~Window();
 
 
-		// -- operators -- //
 	public:
 		Window& operator=(const Window &wnd) = delete;
 		Window& operator=(const Window &&wnd) = delete;
 
 
-		// -- methods -- // 
+
 	private:
 		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 		//LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
@@ -190,17 +124,35 @@ namespace WinApiFramework
 	public:
 		void Destroy();
 	public:
-		void PushEvent(Window::Event newEvent);
-		Window::Event GetEvent();
-		void ClearEventBuffer();
-		void EnableEventHandlers();
-		void DisableEventHandlers();
+		template <EventType ET> void RaiseEvent()
+		{
+			PushEventToQueue(new Event<ET>(m_EHM.GetHandlerList<Event<ET>>(), this));
+		}
+		template <EventType ET> void AddEventHandler(void(*eh)(Event<ET>&))
+		{
+			m_EHM.AddEventHandler<Event<ET>>(eh);
+		}
+		template <EventType ET, class ER> void AddEventHandler(ER* er, void(ER::*eh)(Event<ET>&))
+		{
+			m_EHM.AddEventHandler<Event<ET>, ER>(er, eh);
+		}
+		template <EventType ET, class ER> bool RemoveEventHandler(ER* er, void(ER::*eh)(Event<ET>&))
+		{
+			return false;
+			//return m_EHM.RemoveEventHandler<Event<ET>, ER>(er, eh);
+			// TODO: removing event handlers
+			//return m_EHM.RemoveEventHandler<ET>(event_handler);
+		}
 
 		void SetCaption(std::wstring new_caption);
 		void SetPosition(unsigned int x, unsigned int y);
-		void SetDimensions(unsigned int width, unsigned int height);
+		void SetPosition(const Point& position);
+		void Resize(unsigned int width, unsigned int height);
+		void Resize(const Size& size);
 		void SetMinSize(unsigned int minWidth, unsigned int minHeight);
+		void SetMinSize(const Size& size);
 		void SetMaxSize(unsigned int maxWidth, unsigned int maxHeight);
+		void SetMaxSize(const Size& size);
 		void SetSizeRect(SizeRect newSizeRect);
 		void SetAsMainWindow();
 
@@ -217,10 +169,7 @@ namespace WinApiFramework
 		void Minimize();
 		void Show();
 		void Hide();
-		template <class EventReceiver> void AddEventHandler(EventReceiver* receivingObject, void(EventReceiver::*eventFunction)(Window::Event))
-		{
-			events.AddEventHandler<EventReceiver>(receivingObject, eventFunction);
-		}
+
 		int ShowMessageBox(
 			std::wstring text = L"default text",
 			std::wstring caption = L"Default caption",
@@ -247,7 +196,7 @@ namespace WinApiFramework
 		const Rect& ClientRect;
 		const SizeRect& WindowSizeRect;
 		const std::wstring& Caption;
-		EventsManager& Events;
+		//EventsManager& Events;
 
 
 		// -- friends -- //

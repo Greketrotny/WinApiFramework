@@ -10,6 +10,8 @@
 #include "Mouse.h"
 #include "Keyboard.h"
 
+#include <queue>
+
 namespace WinApiFramework
 {
 	class Framework
@@ -20,6 +22,23 @@ namespace WinApiFramework
 
 		static std::vector<Window*> m_windows;
 		static Window* m_pRootWindow;
+
+		struct EventManager
+		{
+		private:
+			std::queue<BaseEvent*> m_events;
+			bool m_invocation_state;
+			int m_invocations_limit = 32;
+
+		public:
+			EventManager();
+			~EventManager();
+
+		public:
+			void PushEvent(BaseEvent* event);
+			void InvokeEvents();
+		};
+		static EventManager m_eventManager;
 
 		static HHOOK InputHook;
 		static Mouse mouse;
@@ -59,40 +78,44 @@ namespace WinApiFramework
 		};
 
 
-		// ~~ Framework::constructor ~~ //
 	public:
 		Framework(const Framework &framework) = delete;
 		Framework(const Framework &&framework) = delete;
 
 
-		// ~~ Framework::operators ~~ //
 	public:
 		Framework& operator=(const Framework &framework) = delete;
 		Framework& operator=(const Framework &&framework) = delete;
 
 
-		// ~~ Framework::methods ~~ //
 	private:
 		static LRESULT WINAPI WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
-			std::function<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)>* windProc = 
+			std::function<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)>* windProc =
 				(std::function<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)>*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 			if (windProc)
 			{
-				if (!(*windProc)(hWnd, msg, wParam, lParam))	return 0;
+				if (!(*windProc)(hWnd, msg, wParam, lParam))
+				{
+					m_eventManager.InvokeEvents();
+					return 0;
+				}
 			}
+			m_eventManager.InvokeEvents();
 			return DefWindowProc(hWnd, msg, wParam, lParam);
 		}
 		static LRESULT WINAPI InputProcedure(int code, WPARAM wParam, LPARAM lParam);
 
 	public:
+		static HINSTANCE GetProgramInstance();
 		static Window* CreateNewWindow(const ConStruct<Window>& conStruct);
 		static bool DestroyWindow(Window* const window);
 		static void DestroyAllWindows();
 		static size_t GetWindowCount();
-		static HINSTANCE GetProgramInstance();
-
+		static const Window* GetRootWindow();
 		static void SetAsMainWindow(Window *window);
+	private:
+		static void PushEvent(BaseEvent* event);
 	public:
 		static UINT ProcessMessages();
 		static void Exit(int return_value);
@@ -120,7 +143,7 @@ namespace WinApiFramework
 				Framework::callBack = f;
 			}
 		}
-		template <class ReceivingObject> 
+		template <class ReceivingObject>
 		static void SetCallBackFunction(ReceivingObject* receivingObject, void(ReceivingObject::*callBackFunction)())
 		{
 			if (receivingObject == nullptr || callBackFunction == nullptr)
@@ -130,7 +153,7 @@ namespace WinApiFramework
 			}
 			else
 			{
-				Framework::callBack = std::bind(callBackFunction, receivingObject);;
+				Framework::callBack = std::bind(callBackFunction, receivingObject);
 			}
 		}
 
@@ -143,8 +166,7 @@ namespace WinApiFramework
 
 
 		// ~~ Framework::friends ~~ //
-		friend class Window;
-		friend class Panel;
+		friend class BaseWindow;
 	};
 }
 

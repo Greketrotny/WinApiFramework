@@ -1,6 +1,12 @@
 #ifndef DATA_TYPES_H
 #define DATA_TYPES_H
 
+#include <tuple>
+#include <vector>
+#include <functional>
+#include <typeinfo>
+#include <unordered_map>
+
 namespace WinApiFramework
 {
 	struct BoundRect;
@@ -73,6 +79,37 @@ namespace WinApiFramework
 	*/
 	template <class T> struct ConStruct;
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+	// ~~~~~~~ [STRUCT] EHManager ~~~~~~~~ //
+		//template <typename E> bool RemoveEventHandler(const event_handler_t<E>& eventHandler)
+		//{
+		//	/*handlers_list_t& handlers_list = std::get<handlers_list_t<E>>(m_events_handlers_lists);
+		//	auto it = std::find(handlers_list.begin(), handlers_list.end(), eventHandler);
+		//	if (it != handlers_list.end())
+		//	{
+		//		handlers_list.erase(it);
+		//		return true;
+		//	}*/
+		//	return false;
+		//}
+		//template <typename E> void RemoveAllHandlers()
+		//{
+		//	//std::get<handlers_list_t<E>>(m_events_handlers_lists).clear();
+		//}
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+
+
+	// ~~~~~~~~ [STRUCT] BaseAction ~~~~~~~~
+	/*struct BaseAction
+	{
+	public:
+		BaseAction() = default;
+		virtual ~BaseAction() = default;
+	public:
+		virtual void ExecuteAction() = 0;
+	};*/
 }
 
 #endif // !DATA_TYPES_H
