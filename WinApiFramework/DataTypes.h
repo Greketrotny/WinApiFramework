@@ -1,12 +1,6 @@
 #ifndef DATA_TYPES_H
 #define DATA_TYPES_H
 
-#include <tuple>
-#include <vector>
-#include <functional>
-#include <typeinfo>
-#include <unordered_map>
-
 namespace WinApiFramework
 {
 	struct BoundRect;
@@ -81,35 +75,37 @@ namespace WinApiFramework
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-	// ~~~~~~~ [STRUCT] EHManager ~~~~~~~~ //
-		//template <typename E> bool RemoveEventHandler(const event_handler_t<E>& eventHandler)
-		//{
-		//	/*handlers_list_t& handlers_list = std::get<handlers_list_t<E>>(m_events_handlers_lists);
-		//	auto it = std::find(handlers_list.begin(), handlers_list.end(), eventHandler);
-		//	if (it != handlers_list.end())
-		//	{
-		//		handlers_list.erase(it);
-		//		return true;
-		//	}*/
-		//	return false;
-		//}
-		//template <typename E> void RemoveAllHandlers()
-		//{
-		//	//std::get<handlers_list_t<E>>(m_events_handlers_lists).clear();
-		//}
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-
-
-	// ~~~~~~~~ [STRUCT] BaseAction ~~~~~~~~
-	/*struct BaseAction
+	// ~~~~~~~~ MessageBox enums ~~~~~~~~
+	enum MessBoxButtonLayout
 	{
-	public:
-		BaseAction() = default;
-		virtual ~BaseAction() = default;
-	public:
-		virtual void ExecuteAction() = 0;
-	};*/
+		AbortRetryIgnore = 0x00000002L,
+		CancelTryContinue = 0x00000006L,
+		Help = 0x00004000L,
+		Ok = 0x00000000L,
+		OkCancel = 0x00000001L,
+		RetryCancel = 0x00000005L,
+		YesNo = 0x00000004L,
+		YesNoCancel = 0x00000003L
+	};
+	enum MessBoxIcon
+	{
+		IconWarning = 0x00000030L,
+		IconInformation = 0x00000040L,
+		IconQuestion = 0x00000020L,
+		IconError = 0x00000010L
+	};
+	enum MessBoxButtonPressed
+	{
+		ButtonOk = 1,
+		ButtonCancel = 2,
+		ButtonAbort = 3,
+		ButtonRetry = 4,
+		ButtonIgnore = 5,
+		ButtonYes = 6,
+		ButtonNo = 7,
+		ButtonTryAgain = 10,
+		ButtonContinue = 11
+	};
 }
 
 #endif // !DATA_TYPES_H

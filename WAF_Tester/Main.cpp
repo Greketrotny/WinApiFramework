@@ -48,6 +48,11 @@ public:
 		MainWindow->AddEventHandler<WAF::Window::EventTypeResized>(this, &MainForm::MainWindow_OnResized);
 		MainWindow->AddEventHandler<WAF::Window::EventTypeMoved>(this, &MainForm::MainWindow_OnMoved);
 
+		MainWindow->AddEventHandler<WAF::Window::EventTypeCaptionChanged>(this, &MainForm::MainWindow_OnCaptionChanged);
+
+		MainWindow->AddEventHandler<WAF::Window::EventTypeClose>(this, &MainForm::MainWindow_OnClose);
+
+
 
 		// button1
 		button1 = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
@@ -109,6 +114,21 @@ public:
 	{
 		DisplayMainWindowProps();
 		event.GetWindow()->RemoveEventHandler<WAF::Window::EventTypeActivated>(&MainWindow_OnActivatedGlobal);
+	}
+	void MainWindow_OnCaptionChanged(WAF::Window::Event<WAF::Window::EventTypeCaptionChanged>& event)
+	{
+		event.GetWindow()->Show();
+	}
+	void MainWindow_OnClose(WAF::Window::Event<WAF::Window::EventTypeClose>& event)
+	{
+		WAF::MessBoxButtonPressed mbp = event.GetWindow()->ShowMessageBox(
+			L"Exit application", 
+			L"Are you sure you want to exit the application right now?",
+			WAF::MessBoxButtonLayout::YesNo,
+			WAF::MessBoxIcon::IconWarning);
+
+		if (mbp == WAF::MessBoxButtonPressed::ButtonNo)
+			event.AbortClosing();
 	}
 
 

@@ -4,38 +4,39 @@
 
 namespace WinApiFramework
 {
-	// ~~~~~~~~ [STRUCT] EventHandler ~~~~~~~~
-	Framework::EventManager::EventManager()
+	// ~~~~~~~~ [STRUCT] EventFunctor ~~~~~~~~
+	Framework::PendingActionList::PendingActionList()
 		: m_invocation_state(false)
 	{
 	}
-	Framework::EventManager::~EventManager()
+	Framework::PendingActionList::~PendingActionList()
 	{
-		while (!m_events.empty())
+		while (!m_actions.empty())
 		{
-			delete m_events.front();
-			m_events.pop();
+			delete m_actions.front();
+			m_actions.pop_front();
 		}
 	}
 
-	void Framework::EventManager::PushEvent(BaseEvent* event)
+	void Framework::PendingActionList::AppendAction(BaseAction* action)
 	{
-		m_events.push(event);
+		m_actions.push_back(action);
 	}
-	void Framework::EventManager::InvokeEvents()
+	void Framework::PendingActionList::InvokeActions()
 	{
 		if (m_invocation_state == true) return;
 		else m_invocation_state = true;
 
-		for (int i = 0; i < m_invocations_limit && !m_events.empty(); ++i)
+		for (int i = 0; i < m_invocations_limit && !m_actions.empty(); ++i)
 		{
-			m_events.front()->InvokeHandlers();
-			delete m_events.front();
-			m_events.pop();
+			m_actions.front()->Invoke();
+			delete m_actions.front();
+			m_actions.pop_front();
 		}
 		m_invocation_state = false;
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 	// ~~~~~~~~ [CLASS] Framework ~~~~~~~~
@@ -44,7 +45,7 @@ namespace WinApiFramework
 	const HINSTANCE& Framework::ProgramInstance(hProgramInstance);
 	std::vector<Window*> Framework::m_windows;
 	Window* Framework::m_pRootWindow(nullptr);
-	Framework::EventManager Framework::m_eventManager;
+	Framework::PendingActionList Framework::m_pending_actions;
 	std::function<void()> Framework::callBack = nullptr;
 	HHOOK Framework::InputHook = SetWindowsHookEx(WH_GETMESSAGE, Framework::InputProcedure, NULL, GetThreadId(GetCurrentThread()));
 	Mouse Framework::mouse;
@@ -211,9 +212,9 @@ namespace WinApiFramework
 		window->SetCaption(window->GetCaption());
 	}
 
-	void Framework::PushEvent(BaseEvent* event)
+	void Framework::AppendAction(BaseAction* action)
 	{
-		m_eventManager.PushEvent(event);
+		m_pending_actions.AppendAction(action);
 	}
 
 	UINT Framework::ProcessMessages()
@@ -241,7 +242,7 @@ namespace WinApiFramework
 			}
 
 			// invoke handlers of occured events
-			m_eventManager.InvokeEvents();
+			m_pending_actions.InvokeActions();
 
 
 			/*while (GetMessage(&msg, NULL, 0, 0))
@@ -266,14 +267,10 @@ namespace WinApiFramework
 		PostQuitMessage(return_value);
 	}
 
-	int Framework::ShowGlobalMessageBox(std::wstring text, std::wstring caption, UINT message_box_style)
+	MessBoxButtonPressed Framework::ShowGlobalMessageBox(std::wstring text, std::wstring caption,
+		MessBoxButtonLayout buttons, MessBoxIcon icon)
 	{
-		return MessageBoxW(NULL, text.c_str(), caption.c_str(), message_box_style);
-	}
-	Framework::MessBoxButtonPressed Framework::ShowGlobalMessageBox(std::wstring text, std::wstring caption,
-		Framework::MessBoxButtonLayout buttons, Framework::MessBoxIcon icon)
-	{
-		return (Framework::MessBoxButtonPressed)MessageBox(NULL, text.c_str(), caption.c_str(),
+		return (MessBoxButtonPressed)MessageBox(NULL, caption.c_str(), text.c_str(),
 			buttons | icon);
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -25,9 +25,9 @@ namespace WinApiFramework
 	{
 		return (WNDPROC)Framework::WinApiProcedure;
 	}
-	void BaseWindow::PushEventToQueue(BaseEvent* event) const
+	void BaseWindow::AppendAction(BaseAction* action) const
 	{
-		Framework::PushEvent(event);
+		Framework::AppendAction(action);
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

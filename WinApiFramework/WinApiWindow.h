@@ -6,6 +6,7 @@
 
 #include "BaseControl.h"
 #include "event.h"
+#include "DataTypes.h"
 
 
 namespace WinApiFramework
@@ -77,22 +78,71 @@ namespace WinApiFramework
 		template <EventType T> struct Event : public BaseEvent
 		{
 		private:
-			HandlerList<Event<T>>* m_pBHL;
+			FunctorList<Event<T>>* m_pFL;
 			Window* m_pWindow;
 		public:
 			Event(const Event& event) = delete;
-			Event(HandlerList<Event<T>>* bhl, Window* window)
-				: m_pBHL(bhl)
+			Event(FunctorList<Event<T>>* fl, Window* window)
+				: m_pFL(fl)
 				, m_pWindow(window)
 			{}
 
 			void InvokeHandlers() override
 			{
-				if (m_pBHL) m_pBHL->CallHandlers(*this);
+				if (m_pFL) m_pFL->CallHandlers(*this);
 			}
 			Window* GetWindow() const
 			{
 				return m_pWindow;
+			}
+		};
+		template<> struct Event<EventTypeClose> : public BaseEvent
+		{
+		private:
+			FunctorList<Event<EventTypeClose>>* m_pFL;
+			Window* m_pWindow;
+			bool closing_aborted;
+		public:
+			Event(const Event* event) = delete;
+			Event(FunctorList<Event<EventTypeClose>>* fl, Window* window)
+				: m_pFL(fl)
+				, m_pWindow(window)
+				, closing_aborted(false)
+			{}
+			~Event() {}
+		public:
+			void InvokeHandlers() override
+			{
+				if (m_pFL) m_pFL->CallHandlers(*this);
+
+				if (!closing_aborted)
+				{
+					m_pWindow->AppendAction(new CloseAction(m_pWindow));
+				}
+			}
+			Window* GetWindow() const
+			{
+				return m_pWindow;
+			}
+			void AbortClosing()
+			{
+				closing_aborted = true;
+			}
+		};
+
+		struct CloseAction : public BaseAction
+		{
+		private:
+			Window* m_pWindow;
+		public:
+			CloseAction(Window* window)
+				: m_pWindow(window)
+			{}
+			~CloseAction() {}
+		public:
+			void Invoke() override
+			{
+				if (m_pWindow) m_pWindow->Destroy();
 			}
 		};
 
@@ -100,7 +150,7 @@ namespace WinApiFramework
 		Rect windowRect;
 		Rect clientRect;
 		SizeRect sizeRect;
-		EventHandlerManager m_EHM;
+		EventFunctorManager m_EHM;
 
 
 	private:
@@ -126,7 +176,8 @@ namespace WinApiFramework
 	public:
 		template <EventType ET> void RaiseEvent()
 		{
-			PushEventToQueue(new Event<ET>(m_EHM.GetHandlerList<Event<ET>>(), this));
+			Event<ET> event(m_EHM.GetHandlerList<Event<ET>>(), this);
+			event.InvokeHandlers();
 		}
 		template <EventType ET, class ER> void AddEventHandler(ER* object, void(ER::*function)(Event<ET>&))
 		{
@@ -171,10 +222,11 @@ namespace WinApiFramework
 		void Show();
 		void Hide();
 
-		int ShowMessageBox(
-			std::wstring text = L"default text",
-			std::wstring caption = L"Default caption",
-			UINT message_box_style = 0);
+		MessBoxButtonPressed ShowMessageBox(
+			const std::wstring& caption = L"default caption",
+			const std::wstring& text = L"default text",
+			MessBoxButtonLayout buttons = MessBoxButtonLayout::Ok,
+			MessBoxIcon icon = MessBoxIcon::IconInformation);
 
 		const std::wstring& GetCaption() const;
 	private:

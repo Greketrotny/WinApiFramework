@@ -23,61 +23,28 @@ namespace WinApiFramework
 		static std::vector<Window*> m_windows;
 		static Window* m_pRootWindow;
 
-		struct EventManager
+		struct PendingActionList
 		{
 		private:
-			std::queue<BaseEvent*> m_events;
+			std::list<BaseAction*> m_actions;
 			bool m_invocation_state;
 			int m_invocations_limit = 32;
 
 		public:
-			EventManager();
-			~EventManager();
+			PendingActionList();
+			~PendingActionList();
 
 		public:
-			void PushEvent(BaseEvent* event);
-			void InvokeEvents();
+			void AppendAction(BaseAction* action);
+			void InvokeActions();
 		};
-		static EventManager m_eventManager;
+		static PendingActionList m_pending_actions;
 
 		static HHOOK InputHook;
 		static Mouse mouse;
 		static Keyboard keyboard;
 
 		static std::function<void()> callBack;
-	public:
-		enum MessBoxButtonLayout
-		{
-			AbortRetryIgnore = 0x00000002L,
-			CancelTryContinue = 0x00000006L,
-			Help = 0x00004000L,
-			Ok = 0x00000000L,
-			OkCancel = 0x00000001L,
-			RetryCancel = 0x00000005L,
-			YesNo = 0x00000004L,
-			YesNoCancel = 0x00000003L
-		};
-		enum MessBoxIcon
-		{
-			IconWarning = 0x00000030L,
-			IconInformation = 0x00000040L,
-			IconQuestion = 0x00000020L,
-			IconError = 0x00000010L
-		};
-		enum MessBoxButtonPressed
-		{
-			ButtonOk = 1,
-			ButtonCancel = 2,
-			ButtonAbort = 3,
-			ButtonRetry = 4,
-			ButtonIgnore = 5,
-			ButtonYes = 6,
-			ButtonNo = 7,
-			ButtonTryAgain = 10,
-			ButtonContinue = 11
-		};
-
-
 	public:
 		Framework(const Framework &framework) = delete;
 		Framework(const Framework &&framework) = delete;
@@ -97,15 +64,14 @@ namespace WinApiFramework
 			{
 				if (!(*windProc)(hWnd, msg, wParam, lParam))
 				{
-					m_eventManager.InvokeEvents();
+					m_pending_actions.InvokeActions();
 					return 0;
 				}
 			}
-			m_eventManager.InvokeEvents();
+			m_pending_actions.InvokeActions();
 			return DefWindowProc(hWnd, msg, wParam, lParam);
 		}
 		static LRESULT WINAPI InputProcedure(int code, WPARAM wParam, LPARAM lParam);
-
 	public:
 		static HINSTANCE GetProgramInstance();
 		static Window* CreateNewWindow(const ConStruct<Window>& conStruct);
@@ -115,18 +81,13 @@ namespace WinApiFramework
 		static const Window* GetRootWindow();
 		static void SetAsMainWindow(Window *window);
 	private:
-		static void PushEvent(BaseEvent* event);
+		static void AppendAction(BaseAction* action);
 	public:
 		static UINT ProcessMessages();
 		static void Exit(int return_value);
-
-		static int ShowGlobalMessageBox(
-			std::wstring text = L"default text",
-			std::wstring caption = L"Default caption",
-			UINT message_box_style = 0);
 		static MessBoxButtonPressed ShowGlobalMessageBox(
+			std::wstring caption = L"default caption",
 			std::wstring text = L"default text",
-			std::wstring caption = L"Default caption",
 			MessBoxButtonLayout buttons = MessBoxButtonLayout::Ok,
 			MessBoxIcon icon = MessBoxIcon::IconInformation);
 
@@ -158,14 +119,12 @@ namespace WinApiFramework
 		}
 
 
-		// ~~ Framework::property fields ~~ //
 	public:
 		static const HINSTANCE &ProgramInstance;
 		static Mouse &Mouse;
 		static Keyboard &Keyboard;
 
 
-		// ~~ Framework::friends ~~ //
 		friend class BaseWindow;
 	};
 }

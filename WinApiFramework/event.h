@@ -1,6 +1,9 @@
 #ifndef EVENT_H_
 #define EVENT_H_
 
+#include <unordered_map>
+#include <vector>
+
 namespace WinApiFramework
 {
 	// ~~~~~~~~ [STRUCT] BaseEvent ~~~~~~~~
@@ -16,32 +19,46 @@ namespace WinApiFramework
 
 
 
-	// ~~~~~~~~ event handler functions ~~~~~~~~
+	// ~~~~~~~~ [STRUCT] BaseAction ~~~~~~~~
+	struct BaseAction
+	{
+	public:
+		BaseAction() = default;
+		virtual ~BaseAction() = default;
+	public:
+		virtual void Invoke() = 0;
+	};
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+	// ~~~~~~~~ event functions ~~~~~~~~
 	template <typename E, class C> using event_member_function_t = void(C::*)(E&);
 	template <typename E> using event_function_t = void(*)(E&);
 
 
-	// ~~~~~~~~ event handlers ~~~~~~~~
-	template <typename E> struct BaseEventHandler
+	// ~~~~~~~~ event functor ~~~~~~~~
+	template <typename E> struct BaseEventFunctor
 	{
-		BaseEventHandler() {}
-		virtual ~BaseEventHandler() {}
+		BaseEventFunctor() {}
+		virtual ~BaseEventFunctor() {}
 
 		virtual void Call(E& event) = 0;
 		virtual const event_function_t<E> GetFunction() const = 0;
 	};
-	template <typename E, class C> struct EventHandler : public BaseEventHandler<E>
+	template <typename E, class C> struct EventFunctor : public BaseEventFunctor<E>
 	{
 	private:
 		C* m_pObject;
 		event_member_function_t<E, C> m_function;
 
 	public:
-		EventHandler(C* object, event_member_function_t<E, C> function)
+		EventFunctor(C* object, event_member_function_t<E, C> function)
 			: m_pObject(object)
 			, m_function(function)
 		{}
-		~EventHandler() {}
+		~EventFunctor() {}
 
 	public:
 		void Call(E& event) override
@@ -54,16 +71,16 @@ namespace WinApiFramework
 			return *(reinterpret_cast<const event_function_t<E>*>(fn_ptr));
 		}
 	};
-	template <typename E> struct EventHandler<E, void> : public BaseEventHandler<E>
+	template <typename E> struct EventFunctor<E, void> : public BaseEventFunctor<E>
 	{
 	private:
 		event_function_t<E> m_function;
 
 	public:
-		EventHandler(event_function_t<E> function)
+		EventFunctor(event_function_t<E> function)
 			: m_function(function)
 		{}
-		~EventHandler() {}
+		~EventFunctor() {}
 
 	public:
 		void Call(E& event) override
@@ -77,31 +94,31 @@ namespace WinApiFramework
 	};
 
 
-	// ~~~~~~~~ event handler list ~~~~~~~~
-	struct BaseHandlerList
+	// ~~~~~~~~ event functor list ~~~~~~~~
+	struct BaseFunctorList
 	{
-		BaseHandlerList() = default;
-		virtual ~BaseHandlerList() {}
+		BaseFunctorList() = default;
+		virtual ~BaseFunctorList() {}
 	};
-	template <typename E> struct HandlerList : public BaseHandlerList
+	template <typename E> struct FunctorList : public BaseFunctorList
 	{
 	private:
-		std::vector<BaseEventHandler<E>*> m_ehl;
+		std::vector<BaseEventFunctor<E>*> m_ehl;
 
 	public:
-		HandlerList() {}
-		~HandlerList() 
+		FunctorList() {}
+		~FunctorList() 
 		{
 			for (auto& eh : m_ehl) 
 				delete eh;
 		}
 
 	public:
-		void AddEventHandler(BaseEventHandler<E>* eh)
+		void AddEventHandler(BaseEventFunctor<E>* eh)
 		{
 			m_ehl.push_back(eh);
 		}
-		bool RemoveEventHandler(const BaseEventHandler<E>* eh)
+		bool RemoveEventHandler(const BaseEventFunctor<E>* eh)
 		{
 			for (size_t i = 0; i < m_ehl.size(); i++)
 			{
@@ -124,8 +141,8 @@ namespace WinApiFramework
 	};
 
 
-	// ~~~~~~~~ [STRUCT] EventHandlerManager ~~~~~~~~
-	struct EventHandlerManager
+	// ~~~~~~~~ [STRUCT] EventFunctorManager ~~~~~~~~
+	struct EventFunctorManager
 	{
 	private:
 		using TypeInfoRef = std::reference_wrapper<const std::type_info>;
@@ -143,30 +160,30 @@ namespace WinApiFramework
 				return lhs.get() == rhs.get();
 			}
 		};
-		std::unordered_map<TypeInfoRef, BaseHandlerList*, Hasher, EqualTo> m_handlers_lists;
+		std::unordered_map<TypeInfoRef, BaseFunctorList*, Hasher, EqualTo> m_functor_lists;
 
 	public:
-		EventHandlerManager()
+		EventFunctorManager()
 		{
 
 		}
-		~EventHandlerManager()
+		~EventFunctorManager()
 		{
-			for (auto& h : m_handlers_lists)
+			for (auto& h : m_functor_lists)
 			{
 				delete h.second;
 			}
-			m_handlers_lists.clear();
+			m_functor_lists.clear();
 		}
 
 	public:
-		// Find list of event handlers for specified event type
-		template <typename E> HandlerList<E>* GetHandlerList()
+		// Find list of event functors for specified event type
+		template <typename E> FunctorList<E>* GetHandlerList()
 		{
-			auto search = m_handlers_lists.find(typeid(E));
-			if (search != m_handlers_lists.end())
+			auto search = m_functor_lists.find(typeid(E));
+			if (search != m_functor_lists.end())
 			{
-				return dynamic_cast<HandlerList<E>*>(search->second);
+				return dynamic_cast<FunctorList<E>*>(search->second);
 			}
 			else
 			{
@@ -176,45 +193,45 @@ namespace WinApiFramework
 
 		template <typename E, typename C> void AddEventHandler(C* object, void(C::*function)(E&))
 		{
-			AddEventHandlerToList(new EventHandler<E, C>(object, function));
+			AddEventHandlerToList(new EventFunctor<E, C>(object, function));
 		}
 		template <typename E> void AddEventHandler(void(*function)(E&))
 		{			
-			AddEventHandlerToList(new EventHandler<E, void>(function));
+			AddEventHandlerToList(new EventFunctor<E, void>(function));
 		}
 
 		template <typename E, typename C> bool RemoveEventHandler(void(C::*function)(E&))
 		{
-			BaseEventHandler<E>* eh = new EventHandler<E, C>(nullptr, function);
+			BaseEventFunctor<E>* eh = new EventFunctor<E, C>(nullptr, function);
 			bool result = RemoveEventHandlerFromList<E>(eh);
 			delete eh;
 			return result;
 		}
 		template <typename E> bool RemoveEventHandler(void(*function)(E&))
 		{
-			BaseEventHandler<E>* eh = new EventHandler<E, void>(function);
+			BaseEventFunctor<E>* eh = new EventFunctor<E, void>(function);
 			bool result = RemoveEventHandlerFromList<E>(eh);
 			delete eh;
 			return result;
 		}
 	private:
-		template <typename E> void AddEventHandlerToList(BaseEventHandler<E>* eh)
+		template <typename E> void AddEventHandlerToList(BaseEventFunctor<E>* eh)
 		{
-			HandlerList<E>* hlist = GetHandlerList<E>();
+			FunctorList<E>* hlist = GetHandlerList<E>();
 			if (hlist == nullptr)
 			{// -> HandlerManager does not contain handler list for specified event
-				HandlerList<E>* hl = new HandlerList<E>();
+				FunctorList<E>* hl = new FunctorList<E>();
 				hl->AddEventHandler(eh);
-				m_handlers_lists.insert({ typeid(E), reinterpret_cast<BaseHandlerList*>(hl) });
+				m_functor_lists.insert({ typeid(E), reinterpret_cast<BaseFunctorList*>(hl) });
 			}
 			else
 			{// -> HandlerManager has at least one event handler for specified event
 				hlist->AddEventHandler(eh);
 			}
 		}
-		template <typename E> bool RemoveEventHandlerFromList(const BaseEventHandler<E>* eh)
+		template <typename E> bool RemoveEventHandlerFromList(const BaseEventFunctor<E>* eh)
 		{
-			HandlerList<E>* hlist = GetHandlerList<E>();
+			FunctorList<E>* hlist = GetHandlerList<E>();
 			if (hlist == nullptr)
 			{// -> there is no handler list for specified event
 				return false;

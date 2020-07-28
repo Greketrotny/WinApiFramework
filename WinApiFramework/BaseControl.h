@@ -34,7 +34,7 @@ namespace WinApiFramework
 		const std::wstring& GetWindowClassName() const;
 	protected:
 		WNDPROC GetWinApiProcedure() const;
-		void PushEventToQueue(BaseEvent* event) const;
+		void AppendAction(BaseAction* action) const;
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -195,8 +195,8 @@ namespace WinApiFramework
 				// base events //
 			case WM_CLOSE:
 				RaiseEvent<EventTypeClose>();
-				if (m_hWindow) ::DestroyWindow(m_hWindow);
-				m_hWindow = NULL;
+				//if (m_hWindow) ::DestroyWindow(m_hWindow);
+				//m_hWindow = NULL;
 				return 0;
 
 			case WM_DESTROY:
@@ -701,9 +701,11 @@ namespace WinApiFramework
 	{
 		::ShowWindow(m_hWindow, SW_HIDE);
 	}
-	int Window::ShowMessageBox(std::wstring text, std::wstring caption, UINT message_box_style)
+	MessBoxButtonPressed Window::ShowMessageBox(const std::wstring& caption, const std::wstring& text, 
+		MessBoxButtonLayout buttons,
+		MessBoxIcon icon)
 	{
-		return MessageBoxW(m_hWindow, text.c_str(), caption.c_str(), message_box_style);
+		return (MessBoxButtonPressed)MessageBoxW(m_hWindow, text.c_str(), caption.c_str(), buttons | icon);
 	}
 
 	const std::wstring& Window::GetCaption() const
