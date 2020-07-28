@@ -41,11 +41,13 @@ public:
 				WAF::SizeRect(200u, 100u, 2000u, 1000u),
 				WAF::Size(800, 400)));
 		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(this, &MainForm::MainWindow_OnActivated);
-		//MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(MainWindow_OnActivatedGlobal);
-		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(this, &MainForm::MainWindow_OnActivated2);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(MainWindow_OnActivatedGlobal);
+		//MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(this, &MainForm::MainWindow_OnActivated2);
 		MainWindow->AddEventHandler<WAF::Window::EventTypeDeactivated>(this, &MainForm::MainWindow_OnDeactivated);
 
-		MainWindow->RemoveEventHandler<WAF::Window::EventTypeActivated>(this, &MainForm::MainWindow_OnActivated2);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeResized>(this, &MainForm::MainWindow_OnResized);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeMoved>(this, &MainForm::MainWindow_OnMoved);
+
 
 		// button1
 		button1 = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
@@ -98,6 +100,15 @@ public:
 	void MainWindow_OnDeactivated(WAF::Window::Event<WAF::Window::EventTypeDeactivated>& event)
 	{
 		event.GetWindow()->SetCaption(L"Window Deactivated!!!");
+	}
+	void MainWindow_OnResized(WAF::Window::Event<WAF::Window::EventTypeResized>& event)
+	{
+		DisplayMainWindowProps();
+	}
+	void MainWindow_OnMoved(WAF::Window::Event<WAF::Window::EventTypeMoved>& event)
+	{
+		DisplayMainWindowProps();
+		event.GetWindow()->RemoveEventHandler<WAF::Window::EventTypeActivated>(&MainWindow_OnActivatedGlobal);
 	}
 
 

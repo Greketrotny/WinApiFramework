@@ -88,7 +88,7 @@ namespace WinApiFramework
 
 			void InvokeHandlers() override
 			{
-				if (m_pBHL) m_pBHL->Invoke(*this);
+				if (m_pBHL) m_pBHL->CallHandlers(*this);
 			}
 			Window* GetWindow() const
 			{
@@ -128,20 +128,21 @@ namespace WinApiFramework
 		{
 			PushEventToQueue(new Event<ET>(m_EHM.GetHandlerList<Event<ET>>(), this));
 		}
-		template <EventType ET> void AddEventHandler(void(*eh)(Event<ET>&))
+		template <EventType ET, class ER> void AddEventHandler(ER* object, void(ER::*function)(Event<ET>&))
 		{
-			m_EHM.AddEventHandler<Event<ET>>(eh);
+			m_EHM.AddEventHandler<Event<ET>, ER>(object, function);
 		}
-		template <EventType ET, class ER> void AddEventHandler(ER* er, void(ER::*eh)(Event<ET>&))
+		template <EventType ET> void AddEventHandler(void(*function)(Event<ET>&))
 		{
-			m_EHM.AddEventHandler<Event<ET>, ER>(er, eh);
+			m_EHM.AddEventHandler<Event<ET>>(function);
 		}
-		template <EventType ET, class ER> bool RemoveEventHandler(ER* er, void(ER::*eh)(Event<ET>&))
+		template <EventType ET, class ER> bool RemoveEventHandler(void(ER::*function)(Event<ET>&))
 		{
-			return false;
-			//return m_EHM.RemoveEventHandler<Event<ET>, ER>(er, eh);
-			// TODO: removing event handlers
-			//return m_EHM.RemoveEventHandler<ET>(event_handler);
+			return m_EHM.RemoveEventHandler(function);
+		}
+		template <EventType ET> bool RemoveEventHandler(void(*function)(Event<ET>&))
+		{
+			return m_EHM.RemoveEventHandler(function);
 		}
 
 		void SetCaption(std::wstring new_caption);
