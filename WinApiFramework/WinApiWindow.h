@@ -20,6 +20,7 @@ namespace WinApiFramework
 	class Window
 		: public ParentControl
 		, public HasWindowProcedure<Window>
+		, public EventHandler
 	{
 		// -- fields -- //
 	private:
@@ -78,19 +79,13 @@ namespace WinApiFramework
 		template <EventType T> struct Event : public BaseEvent
 		{
 		private:
-			FunctorList<Event<T>>* m_pFL;
 			Window* m_pWindow;
 		public:
 			Event(const Event& event) = delete;
-			Event(FunctorList<Event<T>>* fl, Window* window)
-				: m_pFL(fl)
-				, m_pWindow(window)
+			Event( Window* window)
+				: m_pWindow(window)
 			{}
 
-			void InvokeHandlers() override
-			{
-				if (m_pFL) m_pFL->CallHandlers(*this);
-			}
 			Window* GetWindow() const
 			{
 				return m_pWindow;
@@ -99,25 +94,21 @@ namespace WinApiFramework
 		template<> struct Event<EventTypeClose> : public BaseEvent
 		{
 		private:
-			FunctorList<Event<EventTypeClose>>* m_pFL;
 			Window* m_pWindow;
 			bool closing_aborted;
 		public:
 			Event(const Event* event) = delete;
-			Event(FunctorList<Event<EventTypeClose>>* fl, Window* window)
-				: m_pFL(fl)
-				, m_pWindow(window)
+			Event(Window* window)
+				: m_pWindow(window)
 				, closing_aborted(false)
 			{}
 			~Event() {}
 		public:
-			void InvokeHandlers() override
+			void AfterHandling() override
 			{
-				if (m_pFL) m_pFL->CallHandlers(*this);
-
 				if (!closing_aborted)
 				{
-					m_pWindow->AppendAction(new CloseAction(m_pWindow));
+					m_pWindow->Destroy();
 				}
 			}
 			Window* GetWindow() const
@@ -130,27 +121,21 @@ namespace WinApiFramework
 			}
 		};
 
-		struct CloseAction : public BaseAction
+		struct DestroyAction : public BaseAction
 		{
 		private:
 			Window* m_pWindow;
 		public:
-			CloseAction(Window* window)
-				: m_pWindow(window)
-			{}
-			~CloseAction() {}
+			DestroyAction(Window* window);
+			~DestroyAction();
 		public:
-			void Invoke() override
-			{
-				if (m_pWindow) m_pWindow->Destroy();
-			}
+			void Invoke() override;
 		};
 
 	private:
 		Rect windowRect;
 		Rect clientRect;
 		SizeRect sizeRect;
-		EventFunctorManager m_EHM;
 
 
 	private:
@@ -166,34 +151,34 @@ namespace WinApiFramework
 		Window& operator=(const Window &&wnd) = delete;
 
 
-
 	private:
 		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 		//LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
 		bool CreateWinApiWindow(const ConStruct<Window>& config);
 	public:
 		void Destroy();
+		void Close();
 	public:
 		template <EventType ET> void RaiseEvent()
 		{
-			Event<ET> event(m_EHM.GetHandlerList<Event<ET>>(), this);
-			event.InvokeHandlers();
+			Event<ET> e(this);
+			InvokeEvent(e);
 		}
-		template <EventType ET, class ER> void AddEventHandler(ER* object, void(ER::*function)(Event<ET>&))
+		template <EventType ET, class ER> void AddEventHandler(void(ER::*function)(Event<ET>&), ER* object)
 		{
-			m_EHM.AddEventHandler<Event<ET>, ER>(object, function);
+			BindEventFunc<Event<ET>, ER>(function, object);
 		}
 		template <EventType ET> void AddEventHandler(void(*function)(Event<ET>&))
 		{
-			m_EHM.AddEventHandler<Event<ET>>(function);
+			BindEventFunc<Event<ET>>(function);
 		}
 		template <EventType ET, class ER> bool RemoveEventHandler(void(ER::*function)(Event<ET>&))
 		{
-			return m_EHM.RemoveEventHandler(function);
+			return UnbindEventFunc(function);
 		}
 		template <EventType ET> bool RemoveEventHandler(void(*function)(Event<ET>&))
 		{
-			return m_EHM.RemoveEventHandler(function);
+			return UnbindEventFunc(function);
 		}
 
 		void SetCaption(std::wstring new_caption);

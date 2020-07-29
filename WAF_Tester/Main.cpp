@@ -40,17 +40,17 @@ public:
 				WAF::Window::StartStyle::Normal,
 				WAF::SizeRect(200u, 100u, 2000u, 1000u),
 				WAF::Size(800, 400)));
-		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(this, &MainForm::MainWindow_OnActivated);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(&MainForm::MainWindow_OnActivated, this);
 		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(MainWindow_OnActivatedGlobal);
-		//MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(this, &MainForm::MainWindow_OnActivated2);
-		MainWindow->AddEventHandler<WAF::Window::EventTypeDeactivated>(this, &MainForm::MainWindow_OnDeactivated);
+		//MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(&MainForm::MainWindow_OnActivated2, this);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeDeactivated>(&MainForm::MainWindow_OnDeactivated, this);
 
-		MainWindow->AddEventHandler<WAF::Window::EventTypeResized>(this, &MainForm::MainWindow_OnResized);
-		MainWindow->AddEventHandler<WAF::Window::EventTypeMoved>(this, &MainForm::MainWindow_OnMoved);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeResized>(&MainForm::MainWindow_OnResized, this);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeMoved>(&MainForm::MainWindow_OnMoved, this);
 
-		MainWindow->AddEventHandler<WAF::Window::EventTypeCaptionChanged>(this, &MainForm::MainWindow_OnCaptionChanged);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeCaptionChanged>(&MainForm::MainWindow_OnCaptionChanged, this);
 
-		MainWindow->AddEventHandler<WAF::Window::EventTypeClose>(this, &MainForm::MainWindow_OnClose);
+		MainWindow->AddEventHandler<WAF::Window::EventTypeClose>(&MainForm::MainWindow_OnClose, this);
 
 
 
@@ -129,6 +129,11 @@ public:
 
 		if (mbp == WAF::MessBoxButtonPressed::ButtonNo)
 			event.AbortClosing();
+		else
+		{
+			event.GetWindow()->Destroy();
+			MainWindow = nullptr;
+		}
 	}
 
 

@@ -162,6 +162,8 @@ namespace WinApiFramework
 	}
 	bool Framework::DestroyWindow(Window* const window)
 	{
+		if (window == nullptr) return false;
+
 		for (size_t i = 0; i < m_windows.size(); ++i)
 		{
 			if (m_windows[i] == window)

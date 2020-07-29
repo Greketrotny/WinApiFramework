@@ -195,13 +195,9 @@ namespace WinApiFramework
 				// base events //
 			case WM_CLOSE:
 				RaiseEvent<EventTypeClose>();
-				//if (m_hWindow) ::DestroyWindow(m_hWindow);
-				//m_hWindow = NULL;
 				return 0;
 
 			case WM_DESTROY:
-				if (this == Framework::GetRootWindow())
-					PostQuitMessage(0);
 				return 0;
 
 
@@ -242,6 +238,7 @@ namespace WinApiFramework
 						isMinimized = false;
 						RaiseEvent<EventTypeMaximized>();
 						break;
+
 					case SC_MINIMIZE:
 						isMinimized = true;
 						RaiseEvent<EventTypeMinimized>();
@@ -533,7 +530,11 @@ namespace WinApiFramework
 	}
 	void Window::Destroy()
 	{
-		Framework::DestroyWindow(this);
+		AppendAction(new DestroyAction(this));
+	}
+	void Window::Close()
+	{
+		SendMessage(m_hWindow, WM_CLOSE, 0, 0);
 	}
 
 	void Window::SetCaption(std::wstring new_caption)
@@ -730,5 +731,19 @@ namespace WinApiFramework
 	{
 		return GetClientMousePosition() + GetCanvasPosition();
 	}
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+	// ~~~~~~~~ [STRUCT] Window::DestroyAction ~~~~~~~~
+	Window::DestroyAction::DestroyAction(Window* window)
+		: m_pWindow(window)
+	{}
+	Window::DestroyAction::~DestroyAction()
+	{}
+	
+	void Window::DestroyAction::Invoke()
+	{
+		if (m_pWindow) Framework::DestroyWindow(m_pWindow);
+	}
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
