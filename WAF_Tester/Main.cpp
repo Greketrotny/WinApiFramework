@@ -2,13 +2,13 @@
 #include <stdlib.h>  
 #include <crtdbg.h>  
 
-#include "WinApiFramework.h"
+#include "winapi_framework.h"
 
 #include <math.h>
 #include <time.h>
 #include <sstream>
 
-namespace WAF = WinApiFramework;
+namespace WAF = WinapiFramework;
 
 void MainWindow_OnActivatedGlobal(WAF::Window::Event<WAF::Window::EventTypeActivated>& event);
 
@@ -276,7 +276,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 //#include <time.h>
 //#include <sstream>
 //
-//namespace WAF = WinApiFramework;
+//namespace WAF = WinapiFramework;
 //
 //Graphics::Bitmap *texture1 = nullptr, *texture2 = nullptr;
 //void GenerateTexture(Graphics::Bitmap*& tex, Graphics::Color color)
@@ -805,7 +805,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 //
 //#include <sstream>
 //
-//namespace WAF = WinApiFramework;
+//namespace WAF = WinapiFramework;
 //
 //Graphics::Bitmap *texture1 = nullptr, *texture2 = nullptr;
 //void GenerateTexture(Graphics::Bitmap*& tex, Graphics::Color color)

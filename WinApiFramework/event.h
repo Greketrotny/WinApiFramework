@@ -1,10 +1,11 @@
-#ifndef EVENT_H_
-#define EVENT_H_
+#ifndef EVENT_H
+#define EVENT_H
 
+#include <typeinfo>
 #include <unordered_map>
 #include <vector>
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	// ~~~~~~~~ [STRUCT] BaseAction ~~~~~~~~
 	struct BaseAction

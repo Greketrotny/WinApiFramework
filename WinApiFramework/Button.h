@@ -1,9 +1,9 @@
 #ifndef BUTTON_H
 #define BUTTON_H
 
-#include "BaseControl.h"
+#include "base_window.h"
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	// ConStruct specialization for Button
 	class Button;

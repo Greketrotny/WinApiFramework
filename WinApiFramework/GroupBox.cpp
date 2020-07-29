@@ -1,11 +1,8 @@
-#include "Precompiled.h"
-#include "GroupBox.h"
-#include "WinApiFramework.h"
+#include "groupbox.h"
+#include "winapi_framework.h"
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
-	// ~~~~~~~~ [CLASS] GroupBox ~~~~~~~~ //
-	// ~~ GroupBox::constructor ~~ //
 	GroupBox::GroupBox(ParentControl* parentControl, const ConStruct<GroupBox>& conStruct)
 		: ChildControl(parentControl, conStruct)
 	{
@@ -19,7 +16,6 @@ namespace WinApiFramework
 		DestroyControlWindow();
 	}
 
-	// ~~ GroupBox::methods ~~ //
 	LRESULT GroupBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
 		UINT event = HIWORD(wParam);
@@ -39,9 +35,9 @@ namespace WinApiFramework
 		// set caption position
 		switch (m_caption_position)
 		{
-			case WinApiFramework::GroupBox::Left:	m_controlStyle |= BS_LEFT;		break;
-			case WinApiFramework::GroupBox::Center:	m_controlStyle |= BS_CENTER;	break;
-			case WinApiFramework::GroupBox::Right:	m_controlStyle |= BS_RIGHT;		break;
+			case WinapiFramework::GroupBox::Left:	m_controlStyle |= BS_LEFT;		break;
+			case WinapiFramework::GroupBox::Center:	m_controlStyle |= BS_CENTER;	break;
+			case WinapiFramework::GroupBox::Right:	m_controlStyle |= BS_RIGHT;		break;
 		}
 
 
@@ -84,9 +80,9 @@ namespace WinApiFramework
 
 		switch (m_caption_position)
 		{
-			case WinApiFramework::GroupBox::Left:	m_controlStyle |= BS_LEFT;		break;
-			case WinApiFramework::GroupBox::Center:	m_controlStyle |= BS_CENTER;	break;
-			case WinApiFramework::GroupBox::Right:	m_controlStyle |= BS_RIGHT;		break;
+			case WinapiFramework::GroupBox::Left:	m_controlStyle |= BS_LEFT;		break;
+			case WinapiFramework::GroupBox::Center:	m_controlStyle |= BS_CENTER;	break;
+			case WinapiFramework::GroupBox::Right:	m_controlStyle |= BS_RIGHT;		break;
 		}
 
 		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
@@ -104,5 +100,4 @@ namespace WinApiFramework
 	{
 		return m_caption_position;
 	}
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 }

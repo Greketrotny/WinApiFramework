@@ -1,12 +1,15 @@
-#ifndef BASE_CONTROL_H
-#define BASE_CONTROL_H
+#ifndef BASE_WINDOW_H
+#define BASE_WINDOW_H
 
-#include "WindowInclude.h"
-#include "ExternIncludes.h"
-#include "DataTypes.h"
+#include "window_include.h"
+#include "data_types.h"
 #include "event.h"
 
-namespace WinApiFramework
+#include <queue>
+#include <vector>
+#include <functional>
+
+namespace WinapiFramework
 {
 	class ParentControl;
 
@@ -46,7 +49,6 @@ namespace WinApiFramework
 
 	class ChildControl : virtual public BaseWindow
 	{
-		// ~~ ChildControl::fields ~~ //
 	protected:
 		ParentControl* const m_pParentControl;
 		DWORD m_controlStyle = WS_CHILD | WS_VISIBLE;
@@ -144,13 +146,11 @@ namespace WinApiFramework
 		};
 
 
-		// ~~ ChildControl::constructor ~~ //
 	public:
 		ChildControl(ParentControl* const parentControl, const ConStruct<ChildControl>& conStruct);
 		virtual ~ChildControl();
 
 
-		// ~~ ChildControl::methods ~~ //
 	protected:
 		virtual LRESULT ControlProcedure(WPARAM wParam, LPARAM lParam) = 0;
 		virtual bool CreateControlWindow() = 0;
@@ -173,12 +173,10 @@ namespace WinApiFramework
 		bool IsMouseInside() const;
 
 
-		// ~~ property fields ~~ //
 	public:
 		const Rect& Rectangle;
 
 
-		// ~~ ChildControl::friends ~~ //
 	public:
 		friend class ParentControl;
 		friend class Window;
@@ -311,4 +309,4 @@ namespace WinApiFramework
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
 
-#endif // !STORAGE_CONTROL_H
+#endif // !BASE_WINDOW_H

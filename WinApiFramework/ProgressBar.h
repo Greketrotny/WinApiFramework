@@ -1,9 +1,11 @@
-#ifndef PROGRESS_BAR_H
-#define PROGRESS_BAR_H
+#ifndef PROGRESSBAR_H
+#define PROGRESSBAR_H
 
-#include "BaseControl.h"
+#include "base_window.h"
 
-namespace WinApiFramework
+#include "Color.h"
+
+namespace WinapiFramework
 {
 	class ProgressBar;
 	template <> struct ConStruct<ProgressBar>;
@@ -142,4 +144,4 @@ namespace WinApiFramework
 	};
 }
 
-#endif // !PROGRESS_BAR_H
+#endif // !PROGRESSBAR_H

@@ -1,15 +1,16 @@
-#ifndef WIN_API_WINDOW_H
-#define WIN_API_WINDOW_H
+#ifndef WINDOW_H
+#define WINDOW_H
 
-#include "WindowInclude.h"
-#include "ExternIncludes.h"
+#include "window_include.h"
 
-#include "BaseControl.h"
+#include "base_window.h"
 #include "event.h"
-#include "DataTypes.h"
+#include "data_types.h"
 
+#include <string>
+#include <algorithm>
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	class Framework;
 

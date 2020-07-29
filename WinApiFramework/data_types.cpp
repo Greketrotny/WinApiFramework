@@ -1,6 +1,6 @@
-#include "DataTypes.h"
+#include "data_types.h"
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	// ~~~~~~~~ [STRUCT] Point ~~~~~~~~ //
 	Point::Point(int x, int y)
@@ -41,12 +41,14 @@ namespace WinApiFramework
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
 
+
 	// ~~~~~~~~ [STRUCT] Size ~~~~~~~~ //
 	Size::Size(int width, int height)
 		:width(width)
 		, height(height)
 	{}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
 
 
 	// ~~~~~~~~ [STRUCT] Rect ~~~~~~~~ //
@@ -88,6 +90,7 @@ namespace WinApiFramework
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 
 
+
 	// ~~~~~~~~ [STRUCT] SizeRect ~~~~~~~~ //
 	SizeRect::SizeRect(
 		int minWidth,
@@ -102,6 +105,7 @@ namespace WinApiFramework
 		, maxSize(maxSize)
 	{}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
 
 
 	// ~~~~~~~~ [STRUCT] BoundRect ~~~~~~~~ //
@@ -140,6 +144,7 @@ namespace WinApiFramework
 		return (point.x >= left && point.y >= top && point.x <= right && point.y <= bottom);
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
 
 
 	// ~~~~~~~~ [STRUCT] Range ~~~~~~~~ //

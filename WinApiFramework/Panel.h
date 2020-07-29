@@ -1,9 +1,9 @@
 #ifndef PANEL_H
 #define PANEL_H
 
-#include "BaseControl.h"
+#include "base_window.h"
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	class Panel;
 	template <> struct ConStruct<Panel>;

@@ -1,8 +1,7 @@
-#include "Precompiled.h"
-#include "BaseControl.h"
-#include "WinApiFramework.h"
+#include "base_window.h"
+#include "winapi_framework.h"
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	// ~~~~~~~~ [CLASS] BaseWindow ~~~~~~~~
 	BaseWindow::BaseWindow()

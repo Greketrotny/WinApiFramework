@@ -1,10 +1,11 @@
 #ifndef MOUSE_H
 #define MOUSE_H
 
-#include "WindowInclude.h"
-#include "ExternIncludes.h"
+#include <vector>
+#include <queue>
+#include <functional>
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	class Mouse
 	{

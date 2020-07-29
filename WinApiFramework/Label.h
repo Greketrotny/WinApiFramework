@@ -1,9 +1,9 @@
 #ifndef LABEL_H
 #define LABEL_H
 
-#include "BaseControl.h"
+#include "base_window.h"
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	class Label;
 	template <> struct ConStruct<Label>;

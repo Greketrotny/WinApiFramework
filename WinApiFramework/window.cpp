@@ -1,10 +1,9 @@
-#include "Precompiled.h"
-#include "WinApiWindow.h"
-#include "WinApiFramework.h"
+#include "window.h"
+#include "winapi_framework.h"
 
 #undef IsMinimized
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	// ~~~~~~~~ [CLASS] Window ~~~~~~~~ //
 	Window::Window()

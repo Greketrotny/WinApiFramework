@@ -77,8 +77,9 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>D:\Users\Grzegorz\Programming\Projects\C++\Graphics\Graphics;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeaderFile>Precompiled.h</PrecompiledHeaderFile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -172,70 +173,64 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="BaseControl.cpp" />
-    <ClCompile Include="Button.cpp" />
-    <ClCompile Include="CheckBox.cpp">
+    <ClCompile Include="base_window.cpp" />
+    <ClCompile Include="button.cpp" />
+    <ClCompile Include="checkbox.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="DataTypes.cpp">
+    <ClCompile Include="data_types.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="Edit.cpp">
+    <ClCompile Include="edit.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="GraphicsBox.cpp">
+    <ClCompile Include="graphicsbox.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="GroupBox.cpp">
+    <ClCompile Include="groupbox.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Keyboard.cpp" />
-    <ClCompile Include="Label.cpp">
+    <ClCompile Include="keyboard.cpp" />
+    <ClCompile Include="label.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Mouse.cpp" />
-    <ClCompile Include="Panel.cpp" />
-    <ClCompile Include="Precompiled.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Precompiled.h</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="ProgressBar.cpp">
+    <ClCompile Include="mouse.cpp" />
+    <ClCompile Include="panel.cpp" />
+    <ClCompile Include="progressbar.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="TrackBar.cpp">
+    <ClCompile Include="trackbar.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="WinApiFramework.cpp">
+    <ClCompile Include="winapi_framework.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="WinApiWindow.cpp" />
+    <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BaseControl.h" />
-    <ClInclude Include="Button.h" />
-    <ClInclude Include="CheckBox.h" />
-    <ClInclude Include="DataTypes.h" />
-    <ClInclude Include="Edit.h" />
+    <ClInclude Include="base_window.h" />
+    <ClInclude Include="button.h" />
+    <ClInclude Include="checkbox.h" />
+    <ClInclude Include="data_types.h" />
+    <ClInclude Include="edit.h" />
     <ClInclude Include="event.h" />
-    <ClInclude Include="ExternIncludes.h" />
-    <ClInclude Include="GraphicsBox.h" />
-    <ClInclude Include="GroupBox.h" />
-    <ClInclude Include="Keyboard.h" />
-    <ClInclude Include="Label.h" />
-    <ClInclude Include="Mouse.h" />
-    <ClInclude Include="Panel.h" />
-    <ClInclude Include="Precompiled.h" />
-    <ClInclude Include="ProgressBar.h" />
-    <ClInclude Include="TrackBar.h" />
-    <ClInclude Include="WinApiFramework.h" />
-    <ClInclude Include="WinApiWindow.h" />
-    <ClInclude Include="WinApiWindowControls.h">
+    <ClInclude Include="graphicsbox.h" />
+    <ClInclude Include="groupbox.h" />
+    <ClInclude Include="keyboard.h" />
+    <ClInclude Include="label.h" />
+    <ClInclude Include="mouse.h" />
+    <ClInclude Include="panel.h" />
+    <ClInclude Include="progressbar.h" />
+    <ClInclude Include="trackbar.h" />
+    <ClInclude Include="winapi_framework.h" />
+    <ClInclude Include="window.h" />
+    <ClInclude Include="all_controls.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="WindowInclude.h" />
+    <ClInclude Include="window_include.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

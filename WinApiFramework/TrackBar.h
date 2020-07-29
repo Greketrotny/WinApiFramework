@@ -1,10 +1,9 @@
-#ifndef TRACK_BAR_H
-#define TRACK_BAR_H
+#ifndef TRACKBAR_H
+#define TRACKBAR_H
 
-#include "BaseControl.h"
+#include "base_window.h"
 
-
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	class TrackBar;
 	template <> struct ConStruct<TrackBar>;
@@ -188,4 +187,4 @@ namespace WinApiFramework
 	};
 }
 
-#endif // !TRACK_BAR_H
+#endif // !TRACKBAR_H

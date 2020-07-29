@@ -1,9 +1,9 @@
-#ifndef GROUP_BOX_H
-#define GROUP_BOX_H
+#ifndef GROUPBOX_H
+#define GROUPBOX_H
 
-#include "BaseControl.h"
+#include "base_window.h"
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	// ConStruct specialization for GroupBox
 	class GroupBox;
@@ -98,4 +98,4 @@ namespace WinApiFramework
 	};
 }
 
-#endif // !GROUP_BOX_H
+#endif // !GROUPBOX_H

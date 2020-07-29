@@ -1,10 +1,9 @@
-#ifndef CHECK_BOX_H
-#define CHECK_BOX_H
+#ifndef CHECKBOX_H
+#define CHECKBOX_H
 
+#include "base_window.h"
 
-#include "BaseControl.h"
-
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	class CheckBox;
 	template <> struct ConStruct<CheckBox>;
@@ -106,4 +105,4 @@ namespace WinApiFramework
 	};
 }
 
-#endif // !CHECK_BOX_H
+#endif // !CHECKBOX_H

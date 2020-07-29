@@ -1,9 +1,9 @@
 #ifndef EDIT_H
 #define EDIT_H
 
-#include "BaseControl.h"
+#include "base_window.h"
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	class Edit;
 	template <> struct ConStruct<Edit>;

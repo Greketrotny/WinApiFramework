@@ -1,11 +1,8 @@
-#include "Precompiled.h"
-#include "Edit.h"
-#include "WinApiFramework.h"
+#include "edit.h"
+#include "winapi_framework.h"
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
-	// [CLASS] Edit --------------------------------|
-	// -- constructors -- //
 	Edit::Edit(ParentControl* parentControl, const ConStruct<Edit>& conStruct)
 		: ChildControl(parentControl, conStruct)
 		, Events(m_events)
@@ -30,8 +27,6 @@ namespace WinApiFramework
 		DestroyControlWindow();
 	}
 
-	// -- methods -- //
-	// private:
 	LRESULT Edit::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
 		UINT event = HIWORD(wParam);
@@ -106,10 +101,10 @@ namespace WinApiFramework
 		// set scrolling style
 		switch (m_scrollingStyle)
 		{
-			case WinApiFramework::Edit::NoScrolling:	break;
-			case WinApiFramework::Edit::Horizontal:			m_controlStyle |= WS_HSCROLL;	break;
-			case WinApiFramework::Edit::Vertical:			m_controlStyle |= WS_VSCROLL;	break;
-			case WinApiFramework::Edit::HorizontalVertical:	m_controlStyle |= WS_HSCROLL | WS_VSCROLL;	break;
+			case WinapiFramework::Edit::NoScrolling:	break;
+			case WinapiFramework::Edit::Horizontal:			m_controlStyle |= WS_HSCROLL;	break;
+			case WinapiFramework::Edit::Vertical:			m_controlStyle |= WS_VSCROLL;	break;
+			case WinapiFramework::Edit::HorizontalVertical:	m_controlStyle |= WS_HSCROLL | WS_VSCROLL;	break;
 		}
 
 		m_controlStyle |= WS_BORDER | ES_NOHIDESEL;
@@ -143,7 +138,7 @@ namespace WinApiFramework
 	{
 		DestroyWindow(m_hWindow);
 	}
-	// public:
+	
 	void Edit::SetText(const std::wstring& newText)
 	{
 		m_text = newText;
@@ -164,9 +159,9 @@ namespace WinApiFramework
 		m_controlStyle = (m_controlStyle & (~(ES_LEFT | ES_CENTER | ES_RIGHT)));
 		switch (m_textAlignment)
 		{
-			case WinApiFramework::Edit::Left:	m_controlStyle |= ES_LEFT;		break;
-			case WinApiFramework::Edit::Center:	m_controlStyle |= ES_CENTER;	break;
-			case WinApiFramework::Edit::Right:	m_controlStyle |= ES_RIGHT;		break;
+			case WinapiFramework::Edit::Left:	m_controlStyle |= ES_LEFT;		break;
+			case WinapiFramework::Edit::Center:	m_controlStyle |= ES_CENTER;	break;
+			case WinapiFramework::Edit::Right:	m_controlStyle |= ES_RIGHT;		break;
 		}
 		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
 		InvalidateRect(m_hWindow, NULL, TRUE);
@@ -404,5 +399,4 @@ namespace WinApiFramework
 	{
 		return SendMessage(m_hWindow, EM_LINEFROMCHAR, charIndex, 0);
 	}
-	// [CLASS] Edit --------------------------------|
 }

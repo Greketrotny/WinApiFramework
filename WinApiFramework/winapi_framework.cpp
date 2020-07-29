@@ -1,8 +1,7 @@
-#include "Precompiled.h"
-#include "WinApiFramework.h"
+#include "winapi_framework.h"
 
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	// ~~~~~~~~ [STRUCT] EventFunctor ~~~~~~~~
 	Framework::PendingActionList::PendingActionList()

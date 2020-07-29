@@ -1,10 +1,13 @@
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
-#include "WindowInclude.h"
-#include "ExternIncludes.h"
+#include "window_include.h"
 
-namespace WinApiFramework
+#include <queue>
+#include <vector>
+#include <functional>
+
+namespace WinapiFramework
 {
 	class Keyboard
 	{

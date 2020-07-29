@@ -1,10 +1,8 @@
-#include "Precompiled.h"
-#include "Panel.h"
-#include "WinApiFramework.h"
+#include "panel.h"
+#include "winapi_framework.h"
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
-	// ~~~~~~~~ [CLASS] Panel ~~~~~~~~ //
 	Panel::Panel(ParentControl* parentControl, const ConStruct<Panel>& conStruct)
 		: ChildControl(parentControl, conStruct)
 		, HasWindowProcedure(this, &Panel::WindowProcedure)
@@ -95,5 +93,4 @@ namespace WinApiFramework
 	{
 		return m_pParentControl->GetMousePosition() - m_rect.position;
 	}
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
 }

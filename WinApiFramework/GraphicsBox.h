@@ -1,15 +1,33 @@
-#ifndef GRAPHICS_BOX_H
-#define GRAPHICS_BOX_H
+#ifndef GRAPHICSBOX_H
+#define GRAPHICSBOX_H
 
+#include "base_window.h"
 
-#include "BaseControl.h"
+// Direct 2D
+#pragma comment(lib, "d2d1")
+#include <d2d1.h>
+#include <d2d1helper.h>
+#include <d2d1effects.h>
+
+// DWrite factory for fonts
+#pragma comment(lib, "Dwrite")
+#include "dwrite.h"
+
+// for Graphics
+#include "Color.h"
+#include "Bitmap.h"
+#include "Point.h"
+#include "Rect.h"
+
 
 #include "atlbase.h"
 #include <memory>
+#include <vector>
+#include <string>
 
 namespace G = Graphics;
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	class GraphicsBox;
 	template <> struct ConStruct<GraphicsBox>;

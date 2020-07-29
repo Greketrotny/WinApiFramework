@@ -1,5 +1,5 @@
-#ifndef WIN_API_WINDOW_CONTROLS_H
-#define WIN_API_WINDOW_CONTROLS_H
+#ifndef ALL_CONTROLS_H
+#define ALL_CONTROLS_H
 
 #include "Button.h"
 //#include "CheckBox.h"

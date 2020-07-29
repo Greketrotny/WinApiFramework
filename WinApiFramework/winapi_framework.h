@@ -1,18 +1,18 @@
 #ifndef WIN_API_FRAMEWORK
 #define WIN_API_FRAMEWORK
 
-#include "WindowInclude.h"
-#include "ExternIncludes.h"
+#include "window_include.h"
 
-#include "WinApiWindow.h"
-#include "WinApiWindowControls.h"
+#include "window.h"
+#include "all_controls.h"
 
-#include "Mouse.h"
-#include "Keyboard.h"
+#include "mouse.h"
+#include "keyboard.h"
 
-#include <queue>
+#include <list>			// std::list
+#include <functional>	// std::function
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
 	class Framework
 	{

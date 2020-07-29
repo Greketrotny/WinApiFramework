@@ -1,14 +1,11 @@
-#include "Precompiled.h"
-#include "TrackBar.h"
-#include "WinApiFramework.h"
+#include "trackbar.h"
+#include "winapi_framework.h"
 
 #include <algorithm>	// std::clamp()
 
 
-namespace WinApiFramework
+namespace WinapiFramework
 {
-	// ~~~~~~~~ [CLASS] TrackBar ~~~~~~~~
-	// ~~ constructor ~~ //
 	TrackBar::TrackBar(ParentControl* parentControl, const ConStruct< TrackBar>& conStruct)
 		: ChildControl(parentControl, conStruct)
 		, Events(m_events)
@@ -30,8 +27,6 @@ namespace WinApiFramework
 		DestroyControlWindow();
 	}
 
-	// ~~ methods ~~ //
-	// private:
 	LRESULT TrackBar::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
 		UINT event = LOWORD(wParam);
@@ -97,11 +92,11 @@ namespace WinApiFramework
 		switch (m_tickStyle)
 		{
 			
-			case WinApiFramework::TrackBar::Default:	break;
-			case WinApiFramework::TrackBar::Top:	m_controlStyle |= TBS_TOP;		break;
-			case WinApiFramework::TrackBar::Bottom:	m_controlStyle |= TBS_BOTTOM;	break;
-			case WinApiFramework::TrackBar::Both:	m_controlStyle |= TBS_BOTH;		break;
-			case WinApiFramework::TrackBar::NoTicks:m_controlStyle |= TBS_NOTICKS;	break;
+			case WinapiFramework::TrackBar::Default:	break;
+			case WinapiFramework::TrackBar::Top:	m_controlStyle |= TBS_TOP;		break;
+			case WinapiFramework::TrackBar::Bottom:	m_controlStyle |= TBS_BOTTOM;	break;
+			case WinapiFramework::TrackBar::Both:	m_controlStyle |= TBS_BOTH;		break;
+			case WinapiFramework::TrackBar::NoTicks:m_controlStyle |= TBS_NOTICKS;	break;
 		}
 		m_controlStyle |= TBS_AUTOTICKS;
 
@@ -174,7 +169,6 @@ namespace WinApiFramework
 		return (m_ThumbPosition >= m_selectRange.min && m_ThumbPosition <= m_selectRange.max) ? true : false;
 	}
 
-	// ~~ TrackBar::setters ~~ //
 	/*void TrackBar::SetPosition(int x, int y)
 	{
 		//RECT label1Rect, label2Rect;
@@ -276,10 +270,10 @@ namespace WinApiFramework
 
 			switch (m_toolTipsStyle)
 			{
-				case WinApiFramework::TrackBar::ToolTipsStyleTop:	
+				case WinapiFramework::TrackBar::ToolTipsStyleTop:	
 					SendMessage(m_hWindow, TBM_SETTIPSIDE, TBTS_TOP, 0);
 					break;
-				case WinApiFramework::TrackBar::ToolTipsStyleBottom:
+				case WinapiFramework::TrackBar::ToolTipsStyleBottom:
 					SendMessage(m_hWindow, TBM_SETTIPSIDE, TBTS_BOTTOM, 0);
 					break;
 			}
@@ -307,7 +301,6 @@ namespace WinApiFramework
 		m_events.PushEvent(Event(Event::Type::TicksFrequencyChanged));
 	}
 
-	// ~~ TrackBar::getters ~~ //
 	int TrackBar::GetPosition()
 	{
 		return m_ThumbPosition;
@@ -344,5 +337,4 @@ namespace WinApiFramework
 	{
 		return m_largeStep;
 	}
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
