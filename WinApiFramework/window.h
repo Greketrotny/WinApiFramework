@@ -19,14 +19,12 @@ namespace WinapiFramework
 
 	// ~~~~~~~~ [CLASS] Window ~~~~~~~~
 	class Window
-		: public ParentControl
+		: public ParentWindow
 		, public HasWindowProcedure<Window>
-		, public EventHandler
 	{
 		// -- fields -- //
 	private:
-		std::wstring caption;
-		LONG windowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_BORDER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
+		std::wstring m_caption;
 		unsigned int window_id;
 		bool isMainWindow = false;
 		bool isEnabled = true;
@@ -34,20 +32,7 @@ namespace WinapiFramework
 		bool isMinimized = false;
 		bool mouseOnWindow = false;
 
-	public:
-		enum Position
-		{
-			Center,
-			Custom,
-			Default
-		};
-		enum StartStyle
-		{
-			Minimized,
-			Maximized,
-			Normal
-		};
-
+	public:		
 		enum EventType
 		{
 			EventTypeInvalid = 0,
@@ -134,9 +119,8 @@ namespace WinapiFramework
 		};
 
 	private:
-		Rect windowRect;
-		Rect clientRect;
-		SizeRect sizeRect;
+		Rect m_client_rect;
+		Size m_min_size, m_max_size;
 
 
 	private:
@@ -148,16 +132,17 @@ namespace WinapiFramework
 
 
 	public:
-		Window& operator=(const Window &wnd) = delete;
-		Window& operator=(const Window &&wnd) = delete;
+		Window& operator=(const Window &other) = delete;
+		Window& operator=(const Window &&other) = delete;
 
 
 	private:
 		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 		//LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
-		bool CreateWinApiWindow(const ConStruct<Window>& config);
+		bool CreateWinapiWindow() override;
+		void DestroyWinapiWindow() override;
 	public:
-		void Destroy();
+		void Destroy() override;
 		void Close();
 	public:
 		template <EventType ET> void RaiseEvent()
@@ -182,20 +167,15 @@ namespace WinapiFramework
 			return UnbindEventFunc(function);
 		}
 
-		void SetCaption(std::wstring new_caption);
-		void SetPosition(unsigned int x, unsigned int y);
-		void SetPosition(const Point& position);
-		void Resize(unsigned int width, unsigned int height);
-		void Resize(const Size& size);
+		void SetCaption(const std::wstring& new_caption);
+		void Move(int x, int y) override;
+		void Resize(int width, int height) override;
 		void SetMinSize(unsigned int minWidth, unsigned int minHeight);
 		void SetMinSize(const Size& size);
 		void SetMaxSize(unsigned int maxWidth, unsigned int maxHeight);
 		void SetMaxSize(const Size& size);
-		void SetSizeRect(SizeRect newSizeRect);
 		void SetAsMainWindow();
 
-		void Enable();
-		void Disable();
 		void EnableResize();
 		void DisableResize();
 		void EnableMaximizeBox();
@@ -207,6 +187,8 @@ namespace WinapiFramework
 		void Minimize();
 		void Show();
 		void Hide();
+
+		unsigned int GetId() const;
 
 		MessBoxButtonPressed ShowMessageBox(
 			const std::wstring& caption = L"default caption",
@@ -222,23 +204,7 @@ namespace WinapiFramework
 		Point GetClientMousePosition() const;
 		Point GetCanvasMousePosition() const;
 
-
-	// -- property fields -- //
-	public:
-		const HWND& WndHandle;
-		const bool& IsMainWindow;
-		const bool& IsEnabled;
-		const bool& IsActivated;
-		const bool& IsMinimized;
-		const unsigned int& Id;
-		const Rect& WindowRect;
-		const Rect& ClientRect;
-		const SizeRect& WindowSizeRect;
-		const std::wstring& Caption;
-		//EventsManager& Events;
-
-
-		// -- friends -- //
+		
 		friend Framework;
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -246,34 +212,28 @@ namespace WinapiFramework
 
 	template <> struct ConStruct<Window>
 	{
-		// ~~ ConStruct<Window>::fields ~~
 	public:
 		std::wstring caption;
 		Rect rect;
-		Window::Position position;
-		Window::StartStyle startStyle;
-		SizeRect sizeRect;
-		Size canvasSize;
+		Size min_size;
+		Size max_size;
+		Size canvas_size;
 
 
-		// ~~ ConStruct<Window>::constructor ~~
 	public:
 		ConStruct(
-			const std::wstring& caption = L"default title",
+			const std::wstring& caption = L"Window",
 			const Rect rect = Rect(),
-			Window::Position position = Window::Position::Center,
-			Window::StartStyle startStyle = Window::StartStyle::Normal,
-			SizeRect sizeRect = SizeRect(),
-			Size canvasSize = Size(800, 600))
+			const Size& min_size = Size(100, 100),
+			const Size& max_size = Size(std::numeric_limits<int>::max(), std::numeric_limits<int>::max()),
+			const Size& canvasSize = Size(800, 600))
 			: caption(caption)
 			, rect(rect)
-			, position(position)
-			, startStyle(startStyle)
-			, sizeRect(sizeRect)
-			, canvasSize(canvasSize)
+			, min_size(min_size)
+			, max_size(max_size)
+			, canvas_size(canvasSize)
 		{}
-		~ConStruct()
-		{}
+		~ConStruct() {}
 	};
 }
 

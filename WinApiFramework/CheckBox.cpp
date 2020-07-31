@@ -19,11 +19,11 @@ namespace WinapiFramework
 			this->m_boxState = UnCheck;
 		}
 
-		CreateControlWindow();
+		CreateWinapiWindow();
 	}
 	CheckBox::~CheckBox()
 	{
-		DestroyControlWindow();
+		DestroyWinapiWindow();
 	}
 
 	LRESULT CheckBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
@@ -67,7 +67,7 @@ namespace WinapiFramework
 		}
 		return 0;
 	}
-	bool CheckBox::CreateControlWindow()
+	bool CheckBox::CreateWinapiWindow()
 	{
 		m_controlStyle |= BS_NOTIFY | BS_CHECKBOX | BS_MULTILINE | BS_AUTO3STATE;
 
@@ -91,7 +91,7 @@ namespace WinapiFramework
 
 		return true;
 	}
-	void CheckBox::DestroyControlWindow()
+	void CheckBox::DestroyWinapiWindow()
 	{
 		DestroyWindow(m_hWindow);
 	}

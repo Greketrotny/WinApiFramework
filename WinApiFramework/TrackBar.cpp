@@ -20,11 +20,11 @@ namespace WinapiFramework
 		m_selectRangeEnabled = conStruct.enableSelectRange;
 		m_toolTipsStyle = conStruct.toolTipsStyle;
 
-		CreateControlWindow();
+		CreateWinapiWindow();
 	}
 	TrackBar::~TrackBar()
 	{
-		DestroyControlWindow();
+		DestroyWinapiWindow();
 	}
 
 	LRESULT TrackBar::ControlProcedure(WPARAM wParam, LPARAM lParam)
@@ -78,7 +78,7 @@ namespace WinapiFramework
 		}
 		return 0;
 	}
-	bool TrackBar::CreateControlWindow()
+	bool TrackBar::CreateWinapiWindow()
 	{
 		// [>] Set TrackBar styles
 		// set orienttaion
@@ -140,7 +140,7 @@ namespace WinapiFramework
 
 		return true;
 	}
-	void TrackBar::DestroyControlWindow()
+	void TrackBar::DestroyWinapiWindow()
 	{
 		::DestroyWindow(m_hWindow);
 	}

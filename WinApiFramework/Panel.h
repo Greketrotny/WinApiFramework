@@ -9,44 +9,19 @@ namespace WinapiFramework
 	template <> struct ConStruct<Panel>;
 
 	class Panel 
-		: public ChildControl
-		, public ParentControl
+		: public ParentWindow
 		, public HasWindowProcedure<Panel>
 	{
-	public:
-		struct Event
-		{
-			enum Type
-			{
-				Invalid = 0,
-				Move = 1,
-				Resize = 2,
-				Enable = 3,
-				Disable = 4
-			};
-			Type type;
-
-			Event(Type type = Type::Invalid)
-			{
-				this->type = type;
-			}
-		};
-	private:
-		ChildControl::EventsManager<Panel::Event> m_events;
-
-		std::wstring window_class_name = L"panelClassName";	// TODO: change to create differents
-
-
 	private:
 		Panel(const Panel& panel) = delete;
 		Panel(Panel&& panel) = delete;
-		Panel(ParentControl* parentControl, const ConStruct<Panel>& conStruct);
+		Panel(ParentWindow* parent, const ConStruct<Panel>& conStruct);
 		~Panel();
 
 
 	private:
-		Panel& operator=(const Panel &otherButton) = delete;
-		Panel& operator=(Panel &&otherButton) = delete;
+		Panel& operator=(const Panel &other) = delete;
+		Panel& operator=(Panel &&other) = delete;
 
 
 	private:
@@ -61,27 +36,20 @@ namespace WinapiFramework
 		}*/
 		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 		LRESULT ControlProcedure(WPARAM wParam, LPARAM lParam) override;
-		bool CreateControlWindow() override;
-		void DestroyControlWindow() override;
-		void PushBaseEvent(ChildControl::Event event) override
-		{
-			m_events.PushEvent(Panel::Event((Panel::Event::Type)event.type));
-		}
-	public:
-		Point GetMousePosition() const override;
+		bool CreateWinapiWindow() override;
+		void DestroyWinapiWindow() override;
 
-	public:
-		ChildControl::EventsManager<Panel::Event>& Events;
 
 	public:
 		friend class ControlCreator;
 	};
 
-	template <> struct ConStruct<Panel> : ConStruct<ChildControl>
+	template <> struct ConStruct<Panel>
 	{
+		Rect rect;
 
-		ConStruct(ConStruct<ChildControl> conStruct = ConStruct<ChildControl>())
-			: ConStruct<ChildControl>::ConStruct(conStruct)
+		ConStruct(const Rect& rect)
+			: rect(rect)
 		{}
 	};
 }

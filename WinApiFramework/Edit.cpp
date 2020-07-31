@@ -20,11 +20,11 @@ namespace WinapiFramework
 		m_passwordChar = conStruct.passwordChar;
 		m_scrollingStyle = conStruct.scrollingStyle;
 
-		CreateControlWindow();
+		CreateWinapiWindow();
 	}
 	Edit::~Edit()
 	{
-		DestroyControlWindow();
+		DestroyWinapiWindow();
 	}
 
 	LRESULT Edit::ControlProcedure(WPARAM wParam, LPARAM lParam)
@@ -61,7 +61,7 @@ namespace WinapiFramework
 		}
 		return 0;
 	}
-	bool Edit::CreateControlWindow()
+	bool Edit::CreateWinapiWindow()
 	{
 		// [>] Set edit styles
 		// set text alignment
@@ -134,7 +134,7 @@ namespace WinapiFramework
 
 		return true;
 	}
-	void Edit::DestroyControlWindow()
+	void Edit::DestroyWinapiWindow()
 	{
 		DestroyWindow(m_hWindow);
 	}

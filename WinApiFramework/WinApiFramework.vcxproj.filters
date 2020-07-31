@@ -84,6 +84,9 @@
     <ClCompile Include="trackbar.cpp">
       <Filter>Source Files\WinApiFramework\Controls</Filter>
     </ClCompile>
+    <ClCompile Include="window_modules.cpp">
+      <Filter>Source Files\WinApiFramework\BaseClasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="event.h">
@@ -139,6 +142,9 @@
     </ClInclude>
     <ClInclude Include="trackbar.h">
       <Filter>Header Files\WinApiFramework\Controls</Filter>
+    </ClInclude>
+    <ClInclude Include="window_modules.h">
+      <Filter>Header Files\WinApiFramework\BaseClasses</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

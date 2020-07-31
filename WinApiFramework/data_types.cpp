@@ -91,23 +91,6 @@ namespace WinapiFramework
 
 
 
-	// ~~~~~~~~ [STRUCT] SizeRect ~~~~~~~~ //
-	SizeRect::SizeRect(
-		int minWidth,
-		int minHeight,
-		int maxWidth,
-		int maxHeight)
-		: minSize(minWidth, minHeight)
-		, maxSize(maxWidth, maxHeight)
-	{}
-	SizeRect::SizeRect(const Size& minSize, const Size& maxSize)
-		: minSize(minSize)
-		, maxSize(maxSize)
-	{}
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
-
-
-
 	// ~~~~~~~~ [STRUCT] BoundRect ~~~~~~~~ //
 	BoundRect::BoundRect(int left, int top, int right, int bottom)
 		: left(left)

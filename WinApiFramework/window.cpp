@@ -7,30 +7,22 @@ namespace WinapiFramework
 {
 	// ~~~~~~~~ [CLASS] Window ~~~~~~~~ //
 	Window::Window()
-		: HasWindowProcedure(this, &Window::WindowProcedure)
-		, WndHandle(m_hWindow)
-		, IsMainWindow(isMainWindow)
-		, IsEnabled(isEnabled)
-		, IsActivated(isActivated)
-		, IsMinimized(isMinimized)
-		, Id(window_id)
-		, WindowRect(windowRect)
-		, ClientRect(clientRect)
-		, WindowSizeRect(sizeRect)
-		, Caption(caption)
-		//, Events(events)
-	{
-	}
+		: ParentWindow(nullptr)
+		, HasWindowProcedure(this, &Window::WindowProcedure)
+	{}
 	Window::Window(unsigned int id, const ConStruct<Window> &conStruct)
 		: Window()
 	{
 		window_id = id;
-		m_WindowClassName = L"WindowClass" + std::to_wstring((window_id));
+		m_window_style = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_BORDER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
+		m_window_class_name = L"WindowClass" + std::to_wstring((window_id));
 
-		caption = conStruct.caption;
-		windowRect = conStruct.rect;
-		SetSizeRect(conStruct.sizeRect);
-		m_canvasRect = BoundRect(0, 0, 100, 100);
+		m_window_rect = conStruct.rect;
+		m_caption = conStruct.caption;
+		m_min_size = conStruct.min_size;
+		m_max_size = conStruct.max_size;
+
+		m_canvasRect = BoundRect(0, 0, 100, 100);	// TODO: take user input into consideration
 		m_canvasDrift = Point(0, 0);
 
 		// create window class
@@ -42,14 +34,13 @@ namespace WinapiFramework
 	Window::~Window()
 	{
 		// destroy all child controls
-		DestroyAllChildControls();
+		DestroyAllChildren();
 
 		// destroy window
-		::DestroyWindow(m_hWindow);
-		m_hWindow = NULL;
+		DestroyWinapiWindow();
 
 		// unregister the window class
-		UnregisterClass(m_WindowClassName.c_str(), Framework::GetProgramInstance());
+		UnregisterClass(m_window_class_name.c_str(), Framework::GetProgramInstance());
 	}
 
 
@@ -89,7 +80,7 @@ namespace WinapiFramework
 						if (pos > m_canvasRect.top) pos--;
 						break;
 					case SB_LINEDOWN:
-						if (pos < (m_canvasRect.bottom) - clientRect.size.height) pos++;
+						if (pos < (m_canvasRect.bottom) - m_client_rect.size.height) pos++;
 						break;
 					case SB_PAGEUP:
 						pos -= si.nPage;
@@ -153,7 +144,7 @@ namespace WinapiFramework
 						if (pos > m_canvasRect.left) pos--;
 						break;
 					case SB_LINERIGHT:
-						if (pos < (m_canvasRect.right) - clientRect.size.width) pos++;
+						if (pos < (m_canvasRect.right) - m_client_rect.size.width) pos++;
 						break;
 					case SB_PAGELEFT:
 						pos -= si.nPage;
@@ -248,21 +239,21 @@ namespace WinapiFramework
 			case WM_MOVE:
 			{
 				RECT r;
-				if (GetWindowRect(m_hWindow, &r))
+				if (::GetWindowRect(m_hWindow, &r))
 				{
-					windowRect.position.x = r.left;
-					windowRect.position.y = r.top;
-					windowRect.size.width = r.right - r.left;
-					windowRect.size.height = r.bottom - r.top;
+					m_window_rect.position.x = r.left;
+					m_window_rect.position.y = r.top;
+					m_window_rect.size.width = r.right - r.left;
+					m_window_rect.size.height = r.bottom - r.top;
 				}
 				if (GetClientRect(m_hWindow, &r))
 				{
 					POINT p{ 0, 0 };
 					ClientToScreen(m_hWindow, &p);
-					clientRect.position.x = p.x;
-					clientRect.position.y = p.y;
-					clientRect.size.width = r.right - r.left;
-					clientRect.size.height = r.bottom - r.top;
+					m_client_rect.position.x = p.x;
+					m_client_rect.position.y = p.y;
+					m_client_rect.size.width = r.right - r.left;
+					m_client_rect.size.height = r.bottom - r.top;
 				}
 
 				RaiseEvent<EventTypeMoved>();
@@ -273,12 +264,12 @@ namespace WinapiFramework
 			{
 				RECT r;
 				// set window rect
-				if (GetWindowRect(m_hWindow, &r))
+				if (::GetWindowRect(m_hWindow, &r))
 				{
-					windowRect.position.x = r.left;
-					windowRect.position.y = r.top;
-					windowRect.size.width = r.right - r.left;
-					windowRect.size.height = r.bottom - r.top;
+					m_window_rect.position.x = r.left;
+					m_window_rect.position.y = r.top;
+					m_window_rect.size.width = r.right - r.left;
+					m_window_rect.size.height = r.bottom - r.top;
 				}
 
 				// set client rect
@@ -286,22 +277,22 @@ namespace WinapiFramework
 				{
 					POINT p{ 0, 0 };
 					ClientToScreen(m_hWindow, &p);
-					clientRect.position.x = p.x;
-					clientRect.position.y = p.y;
-					clientRect.size.width = r.right - r.left;
-					clientRect.size.height = r.bottom - r.top;
+					m_client_rect.position.x = p.x;
+					m_client_rect.position.y = p.y;
+					m_client_rect.size.width = r.right - r.left;
+					m_client_rect.size.height = r.bottom - r.top;
 				}
 
 
 				// [>] Adjust canvas position
 				Point deltaXY(0, 0);
-				if (m_canvasRect.right - m_canvasDrift.x < clientRect.size.width)
+				if (m_canvasRect.right - m_canvasDrift.x < m_client_rect.size.width)
 				{
-					deltaXY.x = std::min(m_canvasDrift.x - m_canvasRect.left, clientRect.size.width - (m_canvasRect.right - m_canvasDrift.x));
+					deltaXY.x = std::min(m_canvasDrift.x - m_canvasRect.left, m_client_rect.size.width - (m_canvasRect.right - m_canvasDrift.x));
 				}
-				if (m_canvasRect.bottom - m_canvasDrift.y < clientRect.size.height)
+				if (m_canvasRect.bottom - m_canvasDrift.y < m_client_rect.size.height)
 				{
-					deltaXY.y = std::min(m_canvasDrift.y - m_canvasRect.top, clientRect.size.height - (m_canvasRect.bottom - m_canvasDrift.y));
+					deltaXY.y = std::min(m_canvasDrift.y - m_canvasRect.top, m_client_rect.size.height - (m_canvasRect.bottom - m_canvasDrift.y));
 				}
 
 				if (deltaXY.y != 0 || deltaXY.x != 0)
@@ -325,7 +316,7 @@ namespace WinapiFramework
 				// vertical scroll
 				si.nMin = m_canvasRect.top;
 				si.nMax = m_canvasRect.bottom;
-				si.nPage = clientRect.size.height;
+				si.nPage = m_client_rect.size.height;
 				si.nPos = m_canvasDrift.y;
 				si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 				SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
@@ -333,7 +324,7 @@ namespace WinapiFramework
 				// horizontal scroll
 				si.nMin = m_canvasRect.left;
 				si.nMax = m_canvasRect.right;
-				si.nPage = clientRect.size.width;
+				si.nPage = m_client_rect.size.width;
 				si.nPos = m_canvasDrift.x;
 				si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 				SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
@@ -345,10 +336,10 @@ namespace WinapiFramework
 			case WM_GETMINMAXINFO:
 			{
 				LPMINMAXINFO mmi = (LPMINMAXINFO)lParam;
-				mmi->ptMinTrackSize.x = sizeRect.minSize.width;
-				mmi->ptMinTrackSize.y = sizeRect.minSize.height;
-				mmi->ptMaxTrackSize.x = sizeRect.maxSize.width;
-				mmi->ptMaxTrackSize.y = sizeRect.maxSize.height;
+				mmi->ptMinTrackSize.x = m_min_size.width;
+				mmi->ptMinTrackSize.y = m_min_size.height;
+				mmi->ptMaxTrackSize.x = m_max_size.width;
+				mmi->ptMaxTrackSize.y = m_max_size.height;
 
 				return 0;
 			}
@@ -371,9 +362,9 @@ namespace WinapiFramework
 			//		if (wParam & (MK_LBUTTON | MK_RBUTTON))
 			//		{
 			//			/*pt.x = (0 > pt.x) ? 0 : pt.x;
-			//			pt.x = ((int)windowRect.width < pt.x) ? (int)windowRect.width : pt.x;
+			//			pt.x = ((int)m_window_rect.width < pt.x) ? (int)m_window_rect.width : pt.x;
 			//			pt.y = (0 > pt.y) ? 0 : pt.y;
-			//			pt.y = ((int)windowRect.height < y) ? (int)windowRect.height : y;*/
+			//			pt.y = ((int)m_window_rect.height < y) ? (int)m_window_rect.height : y;*/
 			//		}
 			//		else
 			//		{
@@ -421,15 +412,15 @@ namespace WinapiFramework
 	//	}
 	//	return 1;*/
 	//}
-	bool Window::CreateWinApiWindow(const ConStruct<Window>& conStruct)
+	bool Window::CreateWinapiWindow()
 	{
 		// [>] Create WindowClassEx
 		WNDCLASSEX wc;
 		ZeroMemory(&wc, sizeof(WNDCLASSEX));
 
 		wc.hInstance = Framework::GetProgramInstance();
-		wc.lpfnWndProc = GetWinApiProcedure();
-		wc.lpszClassName = m_WindowClassName.c_str();
+		wc.lpfnWndProc = GetFrameworkProcedure();
+		wc.lpszClassName = m_window_class_name.c_str();
 		wc.lpszMenuName = nullptr;
 		wc.cbSize = (sizeof(WNDCLASSEX));
 		wc.cbClsExtra = 0;
@@ -447,41 +438,33 @@ namespace WinapiFramework
 			return false;
 		}
 
-
-		// [>] Set window styles
-		// set start window style
-		if (conStruct.startStyle == Window::StartStyle::Maximized)
-			windowStyle |= WS_MAXIMIZE;
-		else if (conStruct.startStyle == Window::StartStyle::Minimized)
-			windowStyle |= WS_MINIMIZE;
-
 		// setup window rect
-		RECT r = { (LONG)windowRect.position.x, (LONG)windowRect.position.y, (LONG)(windowRect.position.x + windowRect.size.width), (LONG)(windowRect.position.y + windowRect.size.height) };
-		AdjustWindowRect(&r, windowStyle, FALSE);
-		windowRect.position.x = r.left;
-		windowRect.position.y = r.top;
-		windowRect.size.width = r.right - r.left;
-		windowRect.size.height = r.bottom - r.top;
+		RECT r = { (LONG)m_window_rect.position.x, (LONG)m_window_rect.position.y, (LONG)(m_window_rect.position.x + m_window_rect.size.width), (LONG)(m_window_rect.position.y + m_window_rect.size.height) };
+		AdjustWindowRect(&r, m_window_style, FALSE);
+		m_window_rect.position.x = r.left;
+		m_window_rect.position.y = r.top;
+		m_window_rect.size.width = r.right - r.left;
+		m_window_rect.size.height = r.bottom - r.top;
 
-		if (conStruct.position == Position::Center)
+		/*if (conStruct.position == Position::Center)
 		{
 			int w = GetSystemMetrics(SM_CXSCREEN);
 			int h = GetSystemMetrics(SM_CYSCREEN);
 
-			windowRect.position.x = (w - std::min(windowRect.size.width, w)) / 2;
-			windowRect.position.y = (h - std::min(windowRect.size.height, h)) / 2;
+			m_window_rect.position.x = (w - std::min(m_window_rect.size.width, w)) / 2;
+			m_window_rect.position.y = (h - std::min(m_window_rect.size.height, h)) / 2;
 		}
 		else if (conStruct.position == Position::Default)
 		{
-			windowRect.position.x = 100;
-			windowRect.position.y = 100;
-		}
+			m_window_rect.position.x = 100;
+			m_window_rect.position.y = 100;
+		}*/
 
 
 		// [>] Create window
-		m_hWindow = CreateWindow((LPCWSTR)m_WindowClassName.c_str(), (LPCWSTR)caption.c_str(),
-			windowStyle,
-			windowRect.position.x, windowRect.position.y, windowRect.size.width, windowRect.size.height,
+		m_hWindow = CreateWindow((LPCWSTR)m_window_class_name.c_str(), (LPCWSTR)m_caption.c_str(),
+			m_window_style,
+			m_window_rect.position.x, m_window_rect.position.y, m_window_rect.size.width, m_window_rect.size.height,
 			nullptr, nullptr, Framework::GetProgramInstance(), nullptr);
 
 		if (!m_hWindow)
@@ -491,10 +474,10 @@ namespace WinapiFramework
 		}
 
 		// set pointer to Window class to receive messages
-		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_windowProcedure);
+		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_window_procedure);
 
 		// set window scrolling
-		SetWindowLongPtr(m_hWindow, GWL_STYLE, windowStyle | WS_HSCROLL | WS_VSCROLL);
+		SetWindowLongPtr(m_hWindow, GWL_STYLE, m_window_style | WS_HSCROLL | WS_VSCROLL);
 		SetWindowPos(m_hWindow, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_DRAWFRAME);
 
 
@@ -507,7 +490,7 @@ namespace WinapiFramework
 		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 		si.nMin = m_canvasRect.top;
 		si.nMax = m_canvasRect.bottom;
-		si.nPage = clientRect.size.height;
+		si.nPage = m_client_rect.size.height;
 		si.nPos = m_canvasDrift.y;
 		SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
 
@@ -515,7 +498,7 @@ namespace WinapiFramework
 		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 		si.nMin = m_canvasRect.left;
 		si.nMax = m_canvasRect.right;
-		si.nPage = clientRect.size.width;
+		si.nPage = m_client_rect.size.width;
 		si.nPos = m_canvasDrift.x;
 		SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
 
@@ -527,6 +510,12 @@ namespace WinapiFramework
 
 		return true;
 	}
+	void Window::DestroyWinapiWindow()
+	{
+		::DestroyWindow(m_hWindow);
+		m_hWindow = NULL;
+	}
+
 	void Window::Destroy()
 	{
 		AppendAction(new DestroyAction(this));
@@ -536,51 +525,43 @@ namespace WinapiFramework
 		SendMessage(m_hWindow, WM_CLOSE, 0, 0);
 	}
 
-	void Window::SetCaption(std::wstring new_caption)
+	void Window::SetCaption(const std::wstring& new_caption)
 	{
-		caption = new_caption;
-		SetWindowText(m_hWindow, (LPCWSTR)(((isMainWindow) ? L"[Main Window] " : L"") + caption).c_str());
+		m_caption = new_caption;
+		SetWindowText(m_hWindow, (LPCWSTR)(((isMainWindow) ? L"[Main Window] " : L"") + m_caption).c_str());
 		RaiseEvent<EventTypeCaptionChanged>();
 	}
-	void Window::SetPosition(unsigned int x, unsigned int y)
+	void Window::Move(int x, int y)
 	{
-		windowRect.position.x = x;
-		windowRect.position.y = y;
+		m_window_rect.position.x = x;
+		m_window_rect.position.y = y;
 
 		SetWindowPos(m_hWindow, nullptr,
-			windowRect.position.x, windowRect.position.y,
-			windowRect.size.width, windowRect.size.height,
+			m_window_rect.position.x, m_window_rect.position.y,
+			m_window_rect.size.width, m_window_rect.size.height,
 			0);
 
 		RaiseEvent<EventTypeMoved>();
 	}
-	void Window::SetPosition(const Point& position)
+	void Window::Resize(int width, int height)
 	{
-		SetPosition(position.x, position.y);
-	}
-	void Window::Resize(unsigned int width, unsigned int height)
-	{
-		windowRect.size.width = width;
-		windowRect.size.height = height;
+		m_window_rect.size.width = std::max(width, 0);
+		m_window_rect.size.height = std::max(height, 0);
 
 		SetWindowPos(m_hWindow, nullptr,
-			windowRect.position.x, windowRect.position.y,
-			windowRect.size.width, windowRect.size.height,
+			m_window_rect.position.x, m_window_rect.position.y,
+			m_window_rect.size.width, m_window_rect.size.height,
 			0);
 
 		RaiseEvent<EventTypeResized>();
 	}
-	void Window::Resize(const Size& size)
-	{
-		Resize(size.width, size.height);
-	}
 	void Window::SetMinSize(unsigned int minWidth, unsigned int minHeight)
 	{
-		sizeRect.minSize.width = minWidth;
-		sizeRect.minSize.height = minHeight;
+		m_min_size.width = minWidth;
+		m_min_size.height = minHeight;
 
-		if (sizeRect.minSize.width > sizeRect.maxSize.width) sizeRect.minSize.width = sizeRect.maxSize.width;
-		if (sizeRect.minSize.height > sizeRect.maxSize.height) sizeRect.minSize.height = sizeRect.maxSize.height;
+		if (m_min_size.width > m_max_size.width) m_min_size.width = m_max_size.width;
+		if (m_min_size.height > m_max_size.height) m_min_size.height = m_max_size.height;
 
 		RaiseEvent<EventTypeMinSizeChanged>();
 	}
@@ -590,11 +571,11 @@ namespace WinapiFramework
 	}
 	void Window::SetMaxSize(unsigned int maxWidth, unsigned int maxHeight)
 	{
-		sizeRect.maxSize.width = maxWidth;
-		sizeRect.maxSize.height = maxHeight;
+		m_max_size.width = maxWidth;
+		m_max_size.height = maxHeight;
 
-		if (sizeRect.maxSize.width < sizeRect.minSize.width)  sizeRect.maxSize.width = sizeRect.minSize.width;
-		if (sizeRect.maxSize.height < sizeRect.minSize.height)  sizeRect.maxSize.height = sizeRect.minSize.height;
+		if (m_max_size.width < m_min_size.width)  m_max_size.width = m_min_size.width;
+		if (m_max_size.height < m_min_size.height)  m_max_size.height = m_min_size.height;
 
 		RaiseEvent<EventTypeMaxSizeChanged>();
 	}
@@ -602,82 +583,56 @@ namespace WinapiFramework
 	{
 		SetMaxSize(size.width, size.height);
 	}
-	void Window::SetSizeRect(SizeRect newSizeRect)
-	{
-		sizeRect = newSizeRect;
-
-		if (sizeRect.maxSize.width < sizeRect.minSize.width) sizeRect.maxSize.width = sizeRect.minSize.width;
-		if (sizeRect.maxSize.height < sizeRect.minSize.height) sizeRect.maxSize.height = sizeRect.minSize.height;
-
-		RaiseEvent<EventTypeMinSizeChanged>();
-		RaiseEvent<EventTypeMaxSizeChanged>();
-	}
 	void Window::SetAsMainWindow()
 	{
 		Framework::SetAsMainWindow(this);
 	}
 
-	void Window::Enable()
-	{
-		::EnableWindow(m_hWindow, TRUE);
-		isEnabled = true;
-
-		RaiseEvent<EventTypeEnabled>();
-	}
-	void Window::Disable()
-	{
-		if (isMainWindow) return;
-
-		::EnableWindow(m_hWindow, FALSE);
-		isEnabled = false;
-
-		RaiseEvent<EventTypeDisabled>();
-	}
 	void Window::EnableResize()
 	{
-		windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
-		windowStyle = windowStyle | WS_SIZEBOX;
-		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
+		m_window_style = GetWindowLong(m_hWindow, GWL_STYLE);
+		m_window_style = m_window_style | WS_SIZEBOX;
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
 		RaiseEvent<EventTypeResizeEnabled>();
 	}
 	void Window::DisableResize()
 	{
-		windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
-		windowStyle = windowStyle & (~WS_SIZEBOX);
-		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
+		m_window_style = GetWindowLong(m_hWindow, GWL_STYLE);
+		m_window_style = m_window_style & (~WS_SIZEBOX);
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
 		RaiseEvent<EventTypeResizeDisabled>();
 	}
 	void Window::EnableMaximizeBox()
 	{
-		windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
-		windowStyle = windowStyle | WS_MAXIMIZEBOX;
-		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
+		m_window_style = GetWindowLong(m_hWindow, GWL_STYLE);
+		m_window_style = m_window_style | WS_MAXIMIZEBOX;
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
 		RaiseEvent<EventTypeMaximizeBoxEnabled>();
 	}
 	void Window::DisableMaximizeBox()
 	{
-		windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
-		windowStyle = windowStyle & (~WS_MAXIMIZEBOX);
-		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
+		m_window_style = GetWindowLong(m_hWindow, GWL_STYLE);
+		m_window_style = m_window_style & (~WS_MAXIMIZEBOX);
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
 		RaiseEvent<EventTypeMaximizeBoxDisabled>();
 	}
 	void Window::EnableMinimizeBox()
 	{
-		windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
-		windowStyle = windowStyle | WS_MINIMIZEBOX;
-		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
+		m_window_style = GetWindowLong(m_hWindow, GWL_STYLE);
+		m_window_style = m_window_style | WS_MINIMIZEBOX;
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
 		RaiseEvent<EventTypeMinimizeBoxEnabled>();
 	}
 	void Window::DisableMinimizeBox()
 	{
-		windowStyle = GetWindowLong(m_hWindow, GWL_STYLE);
-		windowStyle = windowStyle & (~WS_MINIMIZEBOX);
-		SetWindowLong(m_hWindow, GWL_STYLE, windowStyle);
+		m_window_style = GetWindowLong(m_hWindow, GWL_STYLE);
+		m_window_style = m_window_style & (~WS_MINIMIZEBOX);
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
 		RaiseEvent<EventTypeMinimizeBoxDisabled>();
 	}
@@ -701,6 +656,11 @@ namespace WinapiFramework
 	{
 		::ShowWindow(m_hWindow, SW_HIDE);
 	}
+	unsigned int Window::GetId() const
+	{
+		return window_id;
+	}
+
 	MessBoxButtonPressed Window::ShowMessageBox(const std::wstring& caption, const std::wstring& text, 
 		MessBoxButtonLayout buttons,
 		MessBoxIcon icon)
@@ -710,7 +670,7 @@ namespace WinapiFramework
 
 	const std::wstring& Window::GetCaption() const
 	{
-		return caption;
+		return m_caption;
 	}
 
 
@@ -720,11 +680,11 @@ namespace WinapiFramework
 	}
 	Point Window::GetWindowMousePosition() const
 	{
-		return Point(Framework::Mouse.X - windowRect.position.x, Framework::Mouse.Y - windowRect.position.y);
+		return Point(Framework::Mouse.X - m_window_rect.position.x, Framework::Mouse.Y - m_window_rect.position.y);
 	}
 	Point Window::GetClientMousePosition() const
 	{
-		return Point(Framework::Mouse.X - clientRect.position.x, Framework::Mouse.Y - clientRect.position.y);
+		return Point(Framework::Mouse.X - m_client_rect.position.x, Framework::Mouse.Y - m_client_rect.position.y);
 	}
 	Point Window::GetCanvasMousePosition() const
 	{

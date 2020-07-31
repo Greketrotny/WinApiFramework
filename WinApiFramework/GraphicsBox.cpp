@@ -10,13 +10,13 @@ namespace WinapiFramework
 		, Gfx(m_graphics)
 		, Events(m_events)
 	{
-		CreateControlWindow();
+		CreateWinapiWindow();
 
 		Gfx.InitGraphics(conStruct.graphics);
 	}
 	GraphicsBox::~GraphicsBox()
 	{
-		DestroyControlWindow();
+		DestroyWinapiWindow();
 	}
 
 	LRESULT GraphicsBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
@@ -29,7 +29,7 @@ namespace WinapiFramework
 		}
 		return 0;
 	}
-	bool GraphicsBox::CreateControlWindow()
+	bool GraphicsBox::CreateWinapiWindow()
 	{
 		m_controlStyle |= WS_BORDER;
 
@@ -56,7 +56,7 @@ namespace WinapiFramework
 
 		return true;
 	}
-	void GraphicsBox::DestroyControlWindow()
+	void GraphicsBox::DestroyWinapiWindow()
 	{
 		::DestroyWindow(m_hWindow);
 	}

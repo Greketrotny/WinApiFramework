@@ -10,9 +10,8 @@ namespace WinapiFramework
 	template <> struct ConStruct<Button>;
 
 	// ~~~~~~~~ [CLASS] Button ~~~~~~~~ //
-	class Button : public ChildControl
+	class Button : public BaseWindow
 	{
-		// ~~ Button::fields ~~ //
 	public:
 		enum CaptionPosition
 		{
@@ -27,86 +26,51 @@ namespace WinapiFramework
 			BottomCenter,
 			BottomRight
 		};
-		struct Event
-		{
-			enum Type
-			{
-				Invalid = 0,
-				Move = 1,
-				Resize = 2,
-				Enable = 3,
-				Disable = 4,
-				Click,
-				DoubleClick,
-				Focus,
-				Unfocus,
-				CaptionChanged,
-				CaptionPositionChanged
-			};
-			Type type;
-			Button* button;
-
-			Event(Type type = Type::Invalid, Button* button = nullptr)
-			{
-				this->type = type;
-				this->button = button;
-			}
-		};
 	private:
 		std::wstring m_caption;
 		CaptionPosition m_caption_position;
-		ChildControl::EventsManager<Button::Event> m_events;
 
 
-		// -- constructors -- //
 	private:
 		Button(const Button &otherButton) = delete;
 		Button(Button &&otherButton) = delete;
-		Button(ParentControl* parentcontrol, const ConStruct<Button>& conStruct);
+		Button(ParentWindow* parent, const ConStruct<Button>& conStruct);
 		~Button();
 
 
-		// -- operators -- //
 	private:
 		Button& operator=(const Button &otherButton) = delete;
 		Button& operator=(Button &&otherButton) = delete;
 
 
-		// -- methods -- //
 	private:
 		LRESULT ControlProcedure(WPARAM wParam, LPARAM lParam) override;
-		bool CreateControlWindow() override;
-		void DestroyControlWindow() override;
-		void PushBaseEvent(ChildControl::Event event) override
-		{
-			m_events.PushEvent(Button::Event((Button::Event::Type)event.type, this));
-		}
+		bool CreateWinapiWindow() override;
+		void DestroyWinapiWindow() override;
 	public:
 		void SetCaption(std::wstring newCaption);
 		void SetCaptionPosition(CaptionPosition captionPosition);
-		CaptionPosition GetCaptionPosition();
+
+		const std::wstring& GetCaption() const;
+		CaptionPosition GetCaptionPosition() const;
 
 
-		// -- property fields -- //
-		const std::wstring& Caption;
-		ChildControl::EventsManager<Button::Event>& Events;
-
-		// -- friends -- //
 	public:
-		friend class ControlCreator;
+		friend class ObjectCreator;
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-	template <> struct ConStruct<Button> : ConStruct<ChildControl>
+	template <> struct ConStruct<Button>
 	{
+		Rect rect;
 		std::wstring caption;
 		Button::CaptionPosition caption_position;
 
-		ConStruct(ConStruct<ChildControl> conStruct = ConStruct<ChildControl>(),
-				  std::wstring caption = L"text",
+		ConStruct(const Rect& rect,
+			std::wstring caption = L"text",
 			Button::CaptionPosition caption_position = Button::CaptionPosition::Center)
-			: ConStruct<ChildControl>::ConStruct(conStruct)
+			: rect(rect)
 			, caption(caption)
 			, caption_position(caption_position)
 		{}

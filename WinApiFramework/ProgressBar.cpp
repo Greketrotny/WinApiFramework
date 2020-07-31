@@ -21,11 +21,11 @@ namespace WinapiFramework
 		m_barDisplayStyle = conStruct.barDisplayStyle;
 		m_step = conStruct.step;
 
-		CreateControlWindow();
+		CreateWinapiWindow();
 	}
 	ProgressBar::~ProgressBar()
 	{
-		DestroyControlWindow();
+		DestroyWinapiWindow();
 	}
 
 	LRESULT ProgressBar::ControlProcedure(WPARAM wParam, LPARAM lParam)
@@ -38,7 +38,7 @@ namespace WinapiFramework
 		}
 		return 0;
 	}
-	bool ProgressBar::CreateControlWindow()
+	bool ProgressBar::CreateWinapiWindow()
 	{
 		// [>] Set ProgressBar styles
 		// set bar orientation
@@ -86,7 +86,7 @@ namespace WinapiFramework
 
 		return true;
 	}
-	void ProgressBar::DestroyControlWindow()
+	void ProgressBar::DestroyWinapiWindow()
 	{
 		DestroyWindow(m_hWindow);
 	}

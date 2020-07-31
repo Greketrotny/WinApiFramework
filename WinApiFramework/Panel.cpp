@@ -3,16 +3,17 @@
 
 namespace WinapiFramework
 {
-	Panel::Panel(ParentControl* parentControl, const ConStruct<Panel>& conStruct)
-		: ChildControl(parentControl, conStruct)
+	Panel::Panel(ParentWindow* parent, const ConStruct<Panel>& conStruct)
+		: ParentWindow(parent)
 		, HasWindowProcedure(this, &Panel::WindowProcedure)
-		, Events(m_events)
 	{
-		CreateControlWindow();
+		m_window_rect = conStruct.rect;
+
+		CreateWinapiWindow();
 	}
 	Panel::~Panel()
 	{
-		DestroyControlWindow();
+		DestroyWinapiWindow();
 	}
 
 
@@ -37,7 +38,7 @@ namespace WinapiFramework
 	{
 		return 1;
 	}
-	bool Panel::CreateControlWindow()
+	bool Panel::CreateWinapiWindow()
 	{
 		// [>] Create WindowClassEx
 		WNDCLASSEX wc;
@@ -45,8 +46,8 @@ namespace WinapiFramework
 
 
 		wc.hInstance = Framework::GetProgramInstance();
-		wc.lpfnWndProc = GetWinApiProcedure();
-		wc.lpszClassName = window_class_name.c_str();
+		wc.lpfnWndProc = GetFrameworkProcedure();
+		wc.lpszClassName = m_window_class_name.c_str();
 		wc.lpszMenuName = nullptr;
 		wc.cbSize = (sizeof(WNDCLASSEX));
 		wc.cbClsExtra = 0;
@@ -65,13 +66,13 @@ namespace WinapiFramework
 		}
 
 		// [>] Create window
-		m_hWindow = CreateWindow((LPCWSTR)window_class_name.c_str(), L"caption",
+		m_hWindow = CreateWindow((LPCWSTR)m_window_class_name.c_str(), L"caption",
 			//m_controlStyle, 
 			WS_VISIBLE | WS_BORDER | WS_CHILD | WS_CLIPCHILDREN,
-			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
-			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
-			m_rect.size.width, m_rect.size.height,
-			m_pParentControl->GetWindowHandle(), nullptr, Framework::GetProgramInstance(), nullptr);
+			m_window_rect.position.x - mp_parent->GetCanvasPosition().x,
+			m_window_rect.position.y - mp_parent->GetCanvasPosition().y,
+			m_window_rect.size.width, m_window_rect.size.height,
+			mp_parent->GetWindowHandle(), nullptr, Framework::GetProgramInstance(), nullptr);
 
 		if (!m_hWindow)
 		{
@@ -80,17 +81,12 @@ namespace WinapiFramework
 		}
 
 		// set pointer to Window class to receive messages
-		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_windowProcedure);
+		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_window_procedure);
 
 		return true;
 	}
-	void Panel::DestroyControlWindow()
+	void Panel::DestroyWinapiWindow()
 	{
 		DestroyWindow(m_hWindow);
-	}
-
-	Point Panel::GetMousePosition() const
-	{
-		return m_pParentControl->GetMousePosition() - m_rect.position;
 	}
 }

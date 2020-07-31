@@ -13,11 +13,11 @@ namespace WinapiFramework
 		m_caption = conStruct.caption;
 		m_textAlignment = conStruct.textAlignment;
 
-		CreateControlWindow();
+		CreateWinapiWindow();
 	}
 	Label::~Label()
 	{
-		DestroyControlWindow();
+		DestroyWinapiWindow();
 	}
 
 	LRESULT Label::ControlProcedure(WPARAM wParam, LPARAM lParam)
@@ -46,7 +46,7 @@ namespace WinapiFramework
 		}
 		return 0;
 	}
-	bool Label::CreateControlWindow()
+	bool Label::CreateWinapiWindow()
 	{
 		// set text alignment
 		if (m_textAlignment == Label::Left)
@@ -80,7 +80,7 @@ namespace WinapiFramework
 
 		return true;
 	}
-	void Label::DestroyControlWindow()
+	void Label::DestroyWinapiWindow()
 	{
 		DestroyWindow(m_hWindow);
 	}

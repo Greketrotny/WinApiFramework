@@ -19,6 +19,7 @@ public:
 
 	WAF::Button* button1 = nullptr;
 	WAF::Button* button2 = nullptr;
+	WAF::Button* button3 = nullptr;
 
 	std::vector<WAF::Button*> panelButtons;
 	WAF::Panel* panel = nullptr;
@@ -36,9 +37,8 @@ public:
 			WAF::ConStruct<WAF::Window>(
 				L"WinApiFramework test",
 				WAF::Rect(50, 50, 1000, 600),
-				WAF::Window::Position::Center,
-				WAF::Window::StartStyle::Normal,
-				WAF::SizeRect(200u, 100u, 2000u, 1000u),
+				WAF::Size(200, 200),
+				WAF::Size(1200, 700),
 				WAF::Size(800, 400)));
 		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(&MainForm::MainWindow_OnActivated, this);
 		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(MainWindow_OnActivatedGlobal);
@@ -55,41 +55,48 @@ public:
 
 
 		// button1
-		button1 = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(WAF::Point(20, 20), { 100, 50 })),
+		button1 = MainWindow->CreateChild<WAF::Button>(WAF::ConStruct<WAF::Button>(
+			WAF::Rect(WAF::Point(20, 20), WAF::Size(100, 50)),
 			L"Button1",
 			WAF::Button::CaptionPosition::Center));
-		button1->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
+		//button1->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
 
 		// button2
-		button2 = MainWindow->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(WAF::Point(700, 350), { 100, 50 })),
-			L"button2"));
-		button2->Events.AddEventHandler<MainForm>(this, &MainForm::Button2_EH);
+		button2 = MainWindow->CreateChild<WAF::Button>(WAF::ConStruct<WAF::Button>(
+			WAF::Rect(WAF::Point(300, 20), WAF::Size(100, 50)),
+			L"Button2",
+			WAF::Button::CaptionPosition::Center));
+		//button2->Events.AddEventHandler<MainForm>(this, &MainForm::Button2_EH);
+
+		// button3
+		button3 = MainWindow->CreateChild<WAF::Button>(WAF::ConStruct<WAF::Button>(
+			WAF::Rect(WAF::Point(20, 300), WAF::Size(100, 50)),
+			L"Button3",
+			WAF::Button::CaptionPosition::Center));
 
 
-		// panel
-		panel = MainWindow->CreateControl<WAF::Panel>(WAF::ConStruct<WAF::Panel>(
-			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(150, 10, 400, 200))));
-		panel->Events.AddEventHandler<MainForm>(this, &MainForm::Panel_EH);
+		//// panel
+		//panel = MainWindow->CreateControl<WAF::Panel>(WAF::ConStruct<WAF::Panel>(
+		//	WAF::ConStruct<WAF::ChildControl>(WAF::Rect(150, 10, 400, 200))));
+		//panel->Events.AddEventHandler<MainForm>(this, &MainForm::Panel_EH);
 
-		// panel buttons
-		int buttonWidth = 100;
-		int buttonHeight = 50;
-		for (int x = 0; x < 4; x++)
-		{
-			for (int y = 0; y < 4; y++)
-			{
-				WAF::Button* button = panel->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
-					WAF::ConStruct<WAF::ChildControl>(WAF::Rect(x * buttonWidth, y * buttonHeight, buttonWidth, buttonHeight)),
-					L"button" + std::to_wstring(x * 2 + y)));
-				panelButtons.push_back(button);
-			}
-		}
+		//// panel buttons
+		//int buttonWidth = 100;
+		//int buttonHeight = 50;
+		//for (int x = 0; x < 4; x++)
+		//{
+		//	for (int y = 0; y < 4; y++)
+		//	{
+		//		WAF::Button* button = panel->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
+		//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(x * buttonWidth, y * buttonHeight, buttonWidth, buttonHeight)),
+		//			L"button" + std::to_wstring(x * 2 + y)));
+		//		panelButtons.push_back(button);
+		//	}
+		//}
 	}
 	~MainForm()
 	{
-		if (MainWindow) MainWindow->Destroy();
+		// if (MainWindow) MainWindow->Destroy();
 	}
 
 
@@ -137,52 +144,52 @@ public:
 	}
 
 
-	void Button1_EH(WAF::Button::Event event)
-	{
-		switch (event.type)
-		{
-			case WAF::Button::Event::Type::Click:
-				event.button->SetCaption(L"button1 clicked!");
-				//event.button->SetCaptionPosition((WAF::Button::CaptionPosition)(event.button->GetCaptionPosition() + 1));
-				break;
-			case WAF::Button::Event::Type::DoubleClick:
-				event.button->SetCaption(L"button1 double clicked!");
-				break;
-		}
-	}
-	void Button2_EH(WAF::Button::Event event)
-	{
-		switch (event.type)
-		{
-			case WAF::Button::Event::Type::Click:
-				event.button->SetCaption(L"button2 clicked!");
-				break;
-			case WAF::Button::Event::Type::DoubleClick:
-				event.button->SetCaption(L"button2 double clicked!");
-				break;
-		}
-	}
-	void Button3_EH(WAF::Button::Event event)
-	{
-		switch (event.type)
-		{
-			case WAF::Button::Event::Type::Click:
-				event.button->SetCaption(L"button3 clicked!");
-				break;
-			case WAF::Button::Event::Type::DoubleClick:
-				event.button->SetCaption(L"button3 double clicked!");
-				break;
-		}
-	}
-	void Panel_EH(WAF::Panel::Event event)
-	{
-		switch (event.type)
-		{
-			case WAF::Panel::Event::Type::Resize:
-				//button3->Resize(panel->Rectangle.size.width / 2, panel->Rectangle.size.height / 2);
-				break;
-		}
-	}
+	//void Button1_EH(WAF::Button::Event event)
+	//{
+	//	switch (event.type)
+	//	{
+	//		case WAF::Button::Event::Type::Click:
+	//			event.button->SetCaption(L"button1 clicked!");
+	//			//event.button->SetCaptionPosition((WAF::Button::CaptionPosition)(event.button->GetCaptionPosition() + 1));
+	//			break;
+	//		case WAF::Button::Event::Type::DoubleClick:
+	//			event.button->SetCaption(L"button1 double clicked!");
+	//			break;
+	//	}
+	//}
+	//void Button2_EH(WAF::Button::Event event)
+	//{
+	//	switch (event.type)
+	//	{
+	//		case WAF::Button::Event::Type::Click:
+	//			event.button->SetCaption(L"button2 clicked!");
+	//			break;
+	//		case WAF::Button::Event::Type::DoubleClick:
+	//			event.button->SetCaption(L"button2 double clicked!");
+	//			break;
+	//	}
+	//}
+	//void Button3_EH(WAF::Button::Event event)
+	//{
+	//	switch (event.type)
+	//	{
+	//		case WAF::Button::Event::Type::Click:
+	//			event.button->SetCaption(L"button3 clicked!");
+	//			break;
+	//		case WAF::Button::Event::Type::DoubleClick:
+	//			event.button->SetCaption(L"button3 double clicked!");
+	//			break;
+	//	}
+	//}
+	//void Panel_EH(WAF::Panel::Event event)
+	//{
+	//	switch (event.type)
+	//	{
+	//		case WAF::Panel::Event::Type::Resize:
+	//			//button3->Resize(panel->Rectangle.size.width / 2, panel->Rectangle.size.height / 2);
+	//			break;
+	//	}
+	//}
 	
 	// FrameworkKeyboard
 	void FrameworkKeyboardEventHandler(WAF::Keyboard::KeyEvent event)
@@ -205,7 +212,7 @@ public:
 				break;
 			case WAF::Mouse::Event::Type::Move:
 			{
-				/*MainWindow->SetCaption(
+				MainWindow->SetCaption(
 					L"WindowM: " +
 					std::to_wstring(MainWindow->GetWindowMousePosition().x) +
 					L" : " +
@@ -217,8 +224,9 @@ public:
 					L" CanvasM: " +
 					std::to_wstring(MainWindow->GetCanvasMousePosition().x) +
 					L" : " +
-					std::to_wstring(MainWindow->GetCanvasMousePosition().y));*/
+					std::to_wstring(MainWindow->GetCanvasMousePosition().y));
 
+				button2->SetCaption(std::to_wstring(button2->GetMousePosition().x));
 				//panel->Move(MainWindow->GetCanvasMousePosition() - WAF::Point(panel->GetRect().size.width / 2, panel->GetRect().size.height));
 				break;
 			}
@@ -230,9 +238,9 @@ public:
 	{
 		MainWindow->SetCaption(
 			L"Position: [" +
-			std::to_wstring(MainWindow->WindowRect.position.x) + L":" + std::to_wstring(MainWindow->WindowRect.position.y) +
+			std::to_wstring(MainWindow->GetWindowRect().position.x) + L":" + std::to_wstring(MainWindow->GetWindowRect().position.y) +
 			L"] Resolution: [" +
-			std::to_wstring(MainWindow->WindowRect.size.width) + L":" + std::to_wstring(MainWindow->WindowRect.size.height) +
+			std::to_wstring(MainWindow->GetWindowRect().size.width) + L":" + std::to_wstring(MainWindow->GetWindowRect().size.height) +
 			L"]");
 	}
 };

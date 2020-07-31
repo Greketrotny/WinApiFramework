@@ -140,14 +140,14 @@ namespace WinapiFramework
 		unsigned int next_id = 0;
 		for (Window *w : m_windows)
 		{
-			if (w->Id == next_id)
+			if (w->GetId() == next_id)
 				next_id++;
 		}
 
 		// create window
 		Window* window = new Window(next_id, conStruct);
 		m_windows.push_back(window);
-		window->CreateWinApiWindow(conStruct);
+		window->CreateWinapiWindow();
 
 		// first window is main automaticly
 		if (m_pRootWindow == nullptr)

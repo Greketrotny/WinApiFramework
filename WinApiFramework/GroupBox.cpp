@@ -9,11 +9,11 @@ namespace WinapiFramework
 		m_caption = conStruct.caption;
 		m_caption_position = conStruct.caption_position;
 
-		CreateControlWindow();
+		CreateWinapiWindow();
 	}
 	GroupBox::~GroupBox()
 	{
-		DestroyControlWindow();
+		DestroyWinapiWindow();
 	}
 
 	LRESULT GroupBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
@@ -26,7 +26,7 @@ namespace WinapiFramework
 		}
 		return 0;
 	}
-	bool GroupBox::CreateControlWindow()
+	bool GroupBox::CreateWinapiWindow()
 	{
 		// [>] Set groupbox style
 		m_controlStyle |= (BS_NOTIFY | BS_GROUPBOX);
@@ -60,7 +60,7 @@ namespace WinapiFramework
 
 		return true;
 	}
-	void GroupBox::DestroyControlWindow()
+	void GroupBox::DestroyWinapiWindow()
 	{
 		::DestroyWindow(m_hWindow);
 	}

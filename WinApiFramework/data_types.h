@@ -39,13 +39,6 @@ namespace WinapiFramework
 
 		bool IsPointInside(const Point& point) const;
 	};
-	struct SizeRect
-	{
-		Size minSize, maxSize;
-
-		SizeRect(int minWidth = 0, int minHeight = 0, int maxWidth = 0x7FFFFFFF, int maxHeight = 0x7FFFFFFF);
-		SizeRect(const Size& minSize, const Size& maxSize);
-	};
 	struct BoundRect
 	{
 		int left, top, right, bottom;
