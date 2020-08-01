@@ -33,6 +33,7 @@ namespace WinapiFramework
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+	typedef int event_type_t;
 
 	// ~~~~~~~~ event functions ~~~~~~~~
 	template <typename E, class C> using event_member_function_t = void(C::*)(E&);
@@ -178,6 +179,11 @@ namespace WinapiFramework
 		}
 
 	protected:
+		template <typename E, typename... Params> void RaiseEventByHandler(Params... params)
+		{
+			E e(params...);
+			InvokeEvent<E>(e);
+		}
 		template <typename E> void InvokeEvent(E& event)
 		{
 			event.BeforeHandling();

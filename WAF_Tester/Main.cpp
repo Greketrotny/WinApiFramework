@@ -10,7 +10,7 @@
 
 namespace WAF = WinapiFramework;
 
-void MainWindow_OnActivatedGlobal(WAF::Window::Event<WAF::Window::EventTypeActivated>& event);
+void MainWindow_OnActivatedGlobal(WAF::Window::Events::EventActivate& event);
 
 class MainForm
 {
@@ -40,17 +40,18 @@ public:
 				WAF::Size(200, 200),
 				WAF::Size(1200, 700),
 				WAF::Size(800, 400)));
-		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(&MainForm::MainWindow_OnActivated, this);
-		MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(MainWindow_OnActivatedGlobal);
-		//MainWindow->AddEventHandler<WAF::Window::EventTypeActivated>(&MainForm::MainWindow_OnActivated2, this);
-		MainWindow->AddEventHandler<WAF::Window::EventTypeDeactivated>(&MainForm::MainWindow_OnDeactivated, this);
 
-		MainWindow->AddEventHandler<WAF::Window::EventTypeResized>(&MainForm::MainWindow_OnResized, this);
-		MainWindow->AddEventHandler<WAF::Window::EventTypeMoved>(&MainForm::MainWindow_OnMoved, this);
+		MainWindow->AddEventHandler<WAF::Window::Events::EventActivate>(&MainForm::MainWindow_OnActivated, this);
+		MainWindow->AddEventHandler<WAF::Window::Events::EventActivate>(MainWindow_OnActivatedGlobal);
+		MainWindow->AddEventHandler<WAF::Window::Events::EventActivate>(&MainForm::MainWindow_OnActivated2, this);
+		MainWindow->AddEventHandler<WAF::Window::Events::EventDeactivate>(&MainForm::MainWindow_OnDeactivated, this);
 
-		MainWindow->AddEventHandler<WAF::Window::EventTypeCaptionChanged>(&MainForm::MainWindow_OnCaptionChanged, this);
+		MainWindow->AddEventHandler<WAF::Window::Events::EventResize>(&MainForm::MainWindow_OnResized, this);
+		MainWindow->AddEventHandler<WAF::Window::Events::EventMove>(&MainForm::MainWindow_OnMoved, this);
 
-		MainWindow->AddEventHandler<WAF::Window::EventTypeClose>(&MainForm::MainWindow_OnClose, this);
+		MainWindow->AddEventHandler<WAF::Window::Events::EventCaptionChange>(&MainForm::MainWindow_OnCaptionChanged, this);
+
+		MainWindow->AddEventHandler<WAF::Window::Events::EventClose>(&MainForm::MainWindow_OnClose, this);
 
 
 
@@ -101,45 +102,46 @@ public:
 
 
 	// -- MainForm::event_handlers -- //
-	void MainWindow_OnActivated(WAF::Window::Event<WAF::Window::EventTypeActivated>& event)
+	void MainWindow_OnActivated(WAF::Window::Events::EventActivate& event)
 	{
-		event.GetWindow()->SetCaption(L"Window Activated!!!");
+		MainWindow->SetCaption(L"Window Activated!!!");
 	}
-	void MainWindow_OnActivated2(WAF::Window::Event<WAF::Window::EventTypeActivated>& event)
+	void MainWindow_OnActivated2(WAF::Window::Events::EventActivate& event)
 	{
-		event.GetWindow()->SetCaption(event.GetWindow()->GetCaption() + L" + second function");
+		MainWindow->SetCaption(MainWindow->GetCaption() + L" + second function");
 	}
-	void MainWindow_OnDeactivated(WAF::Window::Event<WAF::Window::EventTypeDeactivated>& event)
+	void MainWindow_OnDeactivated(WAF::Window::Events::EventDeactivate& event)
 	{
-		event.GetWindow()->SetCaption(L"Window Deactivated!!!");
+		MainWindow->SetCaption(L"Window Deactivated!!!");
+		MainWindow->Resize(MainWindow->GetWindowRect().size.width, 500);
 	}
-	void MainWindow_OnResized(WAF::Window::Event<WAF::Window::EventTypeResized>& event)
+	void MainWindow_OnResized(WAF::Window::Events::EventResize& event)
 	{
 		DisplayMainWindowProps();
 	}
-	void MainWindow_OnMoved(WAF::Window::Event<WAF::Window::EventTypeMoved>& event)
+	void MainWindow_OnMoved(WAF::Window::Events::EventMove& event)
 	{
 		DisplayMainWindowProps();
-		event.GetWindow()->RemoveEventHandler<WAF::Window::EventTypeActivated>(&MainWindow_OnActivatedGlobal);
+		MainWindow->RemoveEventHandler<WAF::Window::Events::EventActivate>(&MainWindow_OnActivatedGlobal);
 	}
-	void MainWindow_OnCaptionChanged(WAF::Window::Event<WAF::Window::EventTypeCaptionChanged>& event)
+	void MainWindow_OnCaptionChanged(WAF::Window::Events::EventCaptionChange& event)
 	{
-		event.GetWindow()->Show();
+		MainWindow->DisableMaximizeBox();
 	}
-	void MainWindow_OnClose(WAF::Window::Event<WAF::Window::EventTypeClose>& event)
+	void MainWindow_OnClose(WAF::Window::Events::EventClose& event)
 	{
-		WAF::MessBoxButtonPressed mbp = event.GetWindow()->ShowMessageBox(
+		WAF::MessBoxButtonPressed mbp = MainWindow->ShowMessageBox(
 			L"Exit application", 
 			L"Are you sure you want to exit the application right now?",
 			WAF::MessBoxButtonLayout::YesNo,
-			WAF::MessBoxIcon::IconWarning);
+			WAF::MessBoxIcon::IconQuestion);
 
 		if (mbp == WAF::MessBoxButtonPressed::ButtonNo)
 			event.AbortClosing();
 		else
 		{
-			event.GetWindow()->Destroy();
-			MainWindow = nullptr;
+			MainWindow->Destroy();
+			//MainWindow = nullptr;
 		}
 	}
 
@@ -212,7 +214,7 @@ public:
 				break;
 			case WAF::Mouse::Event::Type::Move:
 			{
-				MainWindow->SetCaption(
+				/*MainWindow->SetCaption(
 					L"WindowM: " +
 					std::to_wstring(MainWindow->GetWindowMousePosition().x) +
 					L" : " +
@@ -224,7 +226,7 @@ public:
 					L" CanvasM: " +
 					std::to_wstring(MainWindow->GetCanvasMousePosition().x) +
 					L" : " +
-					std::to_wstring(MainWindow->GetCanvasMousePosition().y));
+					std::to_wstring(MainWindow->GetCanvasMousePosition().y));*/
 
 				button2->SetCaption(std::to_wstring(button2->GetMousePosition().x));
 				//panel->Move(MainWindow->GetCanvasMousePosition() - WAF::Point(panel->GetRect().size.width / 2, panel->GetRect().size.height));
@@ -247,10 +249,11 @@ public:
 MainForm *MF;
 
 
-void MainWindow_OnActivatedGlobal(WAF::Window::Event<WAF::Window::EventTypeActivated>& event)
+void MainWindow_OnActivatedGlobal(WAF::Window::Events::EventActivate& event)
 {
-	event.GetWindow()->SetCaption(L"Winodw Activated from global function.");
+	MF->MainWindow->SetCaption(L"Winodw Activated from global function.");
 }
+
 
 void CallBackFunction()
 {

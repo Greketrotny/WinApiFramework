@@ -22,17 +22,34 @@ namespace WinapiFramework
 	}
 	void BaseWindow::Destroy()
 	{
+		DoDestroy();
+	}
+	void BaseWindow::DoDestroy()
+	{
 		assert(mp_parent);
 		mp_parent->DestroyChild(this);
 	}
+
 	void BaseWindow::Enable()
+	{
+		DoEnable();
+		RaiseEventByHandler<BaseWindowEvents::EventEnable>();
+	}
+	void BaseWindow::DoEnable()
 	{
 		::EnableWindow(m_hWindow, TRUE);
 	}
+
 	void BaseWindow::Disable()
+	{
+		DoDisable();
+		RaiseEventByHandler<BaseWindowEvents::EventDisable>();
+	}
+	void BaseWindow::DoDisable()
 	{
 		::EnableWindow(m_hWindow, FALSE);
 	}
+
 	void BaseWindow::Move(int x, int y)
 	{
 		assert(mp_parent);
@@ -40,43 +57,55 @@ namespace WinapiFramework
 		m_window_rect.position.x = x;
 		m_window_rect.position.y = y;
 
-		SetWindowPos(this->m_hWindow, nullptr,
+		DoMove(
 			m_window_rect.position.x - mp_parent->GetCanvasPosition().x,
-			m_window_rect.position.y - mp_parent->GetCanvasPosition().y,
-			m_window_rect.size.width, m_window_rect.size.height,
-			SWP_NOSIZE);
+			m_window_rect.position.y - mp_parent->GetCanvasPosition().y);
 
-		// TODO: raise event
+
+		RaiseEventByHandler<BaseWindowEvents::EventMove>();
 	}
 	void BaseWindow::Move(const Point& position)
 	{
 		Move(position.x, position.y);
 	}
+	void BaseWindow::DoMove(int x, int y)
+	{
+		SetWindowPos(m_hWindow, nullptr,
+			x, y,
+			0, 0,
+			SWP_NOSIZE);
+	}
+
 	void BaseWindow::Resize(int width, int height)
 	{
-		assert(mp_parent);
-
 		m_window_rect.size.width = width;
 		m_window_rect.size.height = height;
 
 		if (m_window_rect.size.width < 0) m_window_rect.size.width = 0;
 		if (m_window_rect.size.height < 0) m_window_rect.size.height = 0;
 
-		SetWindowPos(m_hWindow, nullptr,
-			m_window_rect.position.x - mp_parent->GetCanvasPosition().x,
-			m_window_rect.position.y - mp_parent->GetCanvasPosition().y,
-			m_window_rect.size.width, m_window_rect.size.height,
-			SWP_NOMOVE);
+		DoResize(m_window_rect.size.width, m_window_rect.size.height);
+
+		RaiseEventByHandler<BaseWindowEvents::EventResize>();
 	}
 	void BaseWindow::Resize(const Size& size)
 	{
 		Resize(size.width, size.height);
 	}
+	void BaseWindow::DoResize(int width, int height)
+	{
+		SetWindowPos(m_hWindow, nullptr,
+			0, 0,
+			width, height,
+			SWP_NOMOVE);
+	}
+
 	void BaseWindow::SetRect(const Rect& rect)
 	{
 		Move(rect.position);
 		Resize(rect.size);
 	}
+
 	Point BaseWindow::GetMousePosition() const
 	{
 		assert(mp_parent);

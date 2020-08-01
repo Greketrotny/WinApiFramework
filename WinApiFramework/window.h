@@ -32,79 +32,51 @@ namespace WinapiFramework
 		bool isMinimized = false;
 		bool mouseOnWindow = false;
 
-	public:		
-		enum EventType
+	public:
+		struct Events : public ParentEvents
 		{
-			EventTypeInvalid = 0,
-
-			EventTypeMoved = 1000,
-			EventTypeResized,
-			EventTypeEnabled,
-			EventTypeDisabled,
-			EventTypeActivated,
-			EventTypeDeactivated,
-			EventTypeShowed,
-			EventTypeHid,
-			EventTypeMaximized,
-			EventTypeMinimized,
-			EventTypeHScrolled,
-			EventTypeVScrolled,
-			EventTypeClose,
-			EventTypeDestroying,
-
-			EventTypeCaptionChanged,
-			EventTypeMinSizeChanged,
-			EventTypeMaxSizeChanged,
-			EventTypeResizeEnabled,
-			EventTypeResizeDisabled,
-			EventTypeMaximizeBoxEnabled,
-			EventTypeMaximizeBoxDisabled,
-			EventTypeMinimizeBoxEnabled,
-			EventTypeMinimizeBoxDisabled,
-		};
-		template <EventType T> struct Event : public BaseEvent
-		{
-		private:
-			Window* m_pWindow;
-		public:
-			Event(const Event& event) = delete;
-			Event( Window* window)
-				: m_pWindow(window)
-			{}
-
-			Window* GetWindow() const
+			struct EventActivate : public BaseEvent {};
+			struct EventDeactivate : public BaseEvent {};
+			struct EventShow : public BaseEvent {};
+			struct EventHide : public BaseEvent {};
+			struct EventMaximize : public BaseEvent {};
+			struct EventMinimize : public BaseEvent {};
+			struct EventHScrolled : public BaseEvent {};
+			struct EventVScrolled : public BaseEvent{};
+			struct EventClose : public BaseEvent
 			{
-				return m_pWindow;
-			}
-		};
-		template<> struct Event<EventTypeClose> : public BaseEvent
-		{
-		private:
-			Window* m_pWindow;
-			bool closing_aborted;
-		public:
-			Event(const Event* event) = delete;
-			Event(Window* window)
-				: m_pWindow(window)
-				, closing_aborted(false)
-			{}
-			~Event() {}
-		public:
-			void AfterHandling() override
-			{
-				if (!closing_aborted)
+			private:
+				Window* mp_window;
+				bool closing_aborted;
+			public:
+				EventClose(const EventClose* event) = delete;
+				EventClose(Window* window)
+					: mp_window(window)
+					, closing_aborted(false)
+				{}
+				~EventClose() {}
+			public:
+				void AfterHandling() override
 				{
-					m_pWindow->Destroy();
+					if (!closing_aborted)
+					{
+						mp_window->Destroy();
+					}
 				}
-			}
-			Window* GetWindow() const
-			{
-				return m_pWindow;
-			}
-			void AbortClosing()
-			{
-				closing_aborted = true;
-			}
+				void AbortClosing()
+				{
+					closing_aborted = true;
+				}
+			};
+			struct EventCaptionChange : public BaseEvent {};
+			struct EventMinSizeChange : public BaseEvent {};
+			struct EventMaxSizeChange : public BaseEvent {};
+			struct EventResizeEnable : public BaseEvent {};
+			struct EventResizeDisable : public BaseEvent {};
+			struct EventMaximizeBoxEnable : public BaseEvent {};
+			struct EventMaximizeBoxDisable : public BaseEvent {};
+			struct EventMinimizeBoxEnable : public BaseEvent {};
+			struct EventMinimizeBoxDisable : public BaseEvent {};
 		};
 
 		struct DestroyAction : public BaseAction
@@ -145,24 +117,24 @@ namespace WinapiFramework
 		void Destroy() override;
 		void Close();
 	public:
-		template <EventType ET> void RaiseEvent()
+		template <class ET, typename... Params> void RaiseEvent(Params... params)
 		{
-			Event<ET> e(this);
+			ET e(params...);
 			InvokeEvent(e);
 		}
-		template <EventType ET, class ER> void AddEventHandler(void(ER::*function)(Event<ET>&), ER* object)
+		template <class E, class ER> void AddEventHandler(void(ER::*function)(E&), ER* object)
 		{
-			BindEventFunc<Event<ET>, ER>(function, object);
+			BindEventFunc<E, ER>(function, object);
 		}
-		template <EventType ET> void AddEventHandler(void(*function)(Event<ET>&))
+		template <class E> void AddEventHandler(void(*function)(E&))
 		{
-			BindEventFunc<Event<ET>>(function);
+			BindEventFunc<E>(function);
 		}
-		template <EventType ET, class ER> bool RemoveEventHandler(void(ER::*function)(Event<ET>&))
+		template <class E, class ER> bool RemoveEventHandler(void(ER::*function)(E&))
 		{
 			return UnbindEventFunc(function);
 		}
-		template <EventType ET> bool RemoveEventHandler(void(*function)(Event<ET>&))
+		template <class E> bool RemoveEventHandler(void(*function)(E&))
 		{
 			return UnbindEventFunc(function);
 		}

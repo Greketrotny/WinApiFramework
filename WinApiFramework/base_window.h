@@ -25,6 +25,15 @@ namespace WinapiFramework
 		std::wstring m_window_class_name;
 		Rect m_window_rect;
 
+	protected:
+		struct BaseWindowEvents
+		{
+			struct EventEnable : public BaseEvent {};
+			struct EventDisable : public BaseEvent {};
+			struct EventMove : public BaseEvent {};
+			struct EventResize : public BaseEvent {};
+		};
+
 
 	protected:
 		BaseWindow(const BaseWindow& other) = delete;
@@ -40,13 +49,22 @@ namespace WinapiFramework
 		virtual void DestroyWinapiWindow() = 0;
 	public:
 		virtual void Destroy();
+		void DoDestroy();
+
 		virtual void Enable();
+		void DoEnable();
+
 		virtual void Disable();
+		void DoDisable();
 
 		virtual void Move(int x, int y);
 		void Move(const Point& position);
+		void DoMove(int x, int y);
+
 		virtual void Resize(int width, int height);
 		void Resize(const Size& size);
+		void DoResize(int width, int height);
+
 		void SetRect(const Rect& rect);
 
 		virtual Point GetMousePosition() const;
@@ -76,6 +94,14 @@ namespace WinapiFramework
 	{
 	private:
 		std::vector<BaseWindow*> m_children;
+
+	protected:
+		struct ParentEvents : public BaseWindowEvents
+		{
+			struct EventCreateChild : public BaseEvent {};
+			struct EventDestroyChild : public BaseEvent {};
+			struct EventDestroyAllChildren : public BaseEvent {};
+		};
 
 
 	protected:

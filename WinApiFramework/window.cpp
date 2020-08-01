@@ -114,7 +114,7 @@ namespace WinapiFramework
 
 				SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
 
-				RaiseEvent<EventTypeVScrolled>();
+				RaiseEvent<Events::EventVScrolled>();
 				return 0;
 			}
 
@@ -178,14 +178,19 @@ namespace WinapiFramework
 
 				SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
 
-				RaiseEvent<EventTypeHScrolled>();
+				RaiseEvent<Events::EventHScrolled>();
 				return 0;
 			}
 
 				// base events //
 			case WM_CLOSE:
-				RaiseEvent<EventTypeClose>();
+			{
+				//Events::EventClose e(this);
+				//InvokeEvent(e);
+				RaiseEvent<Events::EventClose>(this);
+
 				return 0;
+			}
 
 			case WM_DESTROY:
 				return 0;
@@ -198,12 +203,18 @@ namespace WinapiFramework
 				if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE)
 				{
 					isActivated = true;
-					RaiseEvent<EventTypeActivated>();
+
+					Events::EventActivate e;
+					InvokeEvent(e);
+					//RaiseEvent<EventTypeActivated>();
 				}
 				else
 				{
 					isActivated = false;
-					RaiseEvent<EventTypeDeactivated>();
+
+					Events::EventDeactivate e;
+					InvokeEvent(e);
+					// RaiseEvent<EventTypeDeactivated>();
 				}
 				break;
 			}
@@ -212,11 +223,11 @@ namespace WinapiFramework
 			{
 				if (wParam == TRUE)
 				{
-					RaiseEvent<EventTypeShowed>();
+					RaiseEvent<Events::EventShow>();
 				}
 				else
 				{
-					RaiseEvent<EventTypeHid>();
+					RaiseEvent<Events::EventHide>();
 				}
 				return 0;
 			}
@@ -226,12 +237,12 @@ namespace WinapiFramework
 				{
 					case SC_MAXIMIZE:
 						isMinimized = false;
-						RaiseEvent<EventTypeMaximized>();
+						RaiseEvent<Events::EventMaximize>();
 						break;
 
 					case SC_MINIMIZE:
 						isMinimized = true;
-						RaiseEvent<EventTypeMinimized>();
+						RaiseEvent<Events::EventMinimize>();
 						break;
 				}
 				break;
@@ -256,7 +267,7 @@ namespace WinapiFramework
 					m_client_rect.size.height = r.bottom - r.top;
 				}
 
-				RaiseEvent<EventTypeMoved>();
+				RaiseEvent<Events::EventMove>();
 				return 0;
 			}
 
@@ -329,7 +340,7 @@ namespace WinapiFramework
 				si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 				SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
 
-				RaiseEvent<EventTypeResized>();
+				//RaiseEvent<Events::EventResize>();
 				return 0;
 			}
 
@@ -529,31 +540,21 @@ namespace WinapiFramework
 	{
 		m_caption = new_caption;
 		SetWindowText(m_hWindow, (LPCWSTR)(((isMainWindow) ? L"[Main Window] " : L"") + m_caption).c_str());
-		RaiseEvent<EventTypeCaptionChanged>();
+		RaiseEvent<Events::EventCaptionChange>();
 	}
 	void Window::Move(int x, int y)
 	{
 		m_window_rect.position.x = x;
 		m_window_rect.position.y = y;
 
-		SetWindowPos(m_hWindow, nullptr,
-			m_window_rect.position.x, m_window_rect.position.y,
-			m_window_rect.size.width, m_window_rect.size.height,
-			0);
-
-		RaiseEvent<EventTypeMoved>();
+		DoMove(m_window_rect.position.x, m_window_rect.position.y);
 	}
 	void Window::Resize(int width, int height)
 	{
 		m_window_rect.size.width = std::max(width, 0);
 		m_window_rect.size.height = std::max(height, 0);
 
-		SetWindowPos(m_hWindow, nullptr,
-			m_window_rect.position.x, m_window_rect.position.y,
-			m_window_rect.size.width, m_window_rect.size.height,
-			0);
-
-		RaiseEvent<EventTypeResized>();
+		DoResize(m_window_rect.size.width, m_window_rect.size.height);
 	}
 	void Window::SetMinSize(unsigned int minWidth, unsigned int minHeight)
 	{
@@ -563,7 +564,7 @@ namespace WinapiFramework
 		if (m_min_size.width > m_max_size.width) m_min_size.width = m_max_size.width;
 		if (m_min_size.height > m_max_size.height) m_min_size.height = m_max_size.height;
 
-		RaiseEvent<EventTypeMinSizeChanged>();
+		RaiseEvent<Events::EventMinSizeChange>();
 	}
 	void Window::SetMinSize(const Size& size)
 	{
@@ -577,7 +578,7 @@ namespace WinapiFramework
 		if (m_max_size.width < m_min_size.width)  m_max_size.width = m_min_size.width;
 		if (m_max_size.height < m_min_size.height)  m_max_size.height = m_min_size.height;
 
-		RaiseEvent<EventTypeMaxSizeChanged>();
+		RaiseEvent<Events::EventMaxSizeChange>();
 	}
 	void Window::SetMaxSize(const Size& size)
 	{
@@ -594,7 +595,7 @@ namespace WinapiFramework
 		m_window_style = m_window_style | WS_SIZEBOX;
 		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
-		RaiseEvent<EventTypeResizeEnabled>();
+		RaiseEvent<Events::EventResizeEnable>();
 	}
 	void Window::DisableResize()
 	{
@@ -602,7 +603,7 @@ namespace WinapiFramework
 		m_window_style = m_window_style & (~WS_SIZEBOX);
 		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
-		RaiseEvent<EventTypeResizeDisabled>();
+		RaiseEvent<Events::EventResizeDisable>();
 	}
 	void Window::EnableMaximizeBox()
 	{
@@ -610,7 +611,7 @@ namespace WinapiFramework
 		m_window_style = m_window_style | WS_MAXIMIZEBOX;
 		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
-		RaiseEvent<EventTypeMaximizeBoxEnabled>();
+		RaiseEvent<Events::EventMaximizeBoxEnable>();
 	}
 	void Window::DisableMaximizeBox()
 	{
@@ -618,7 +619,7 @@ namespace WinapiFramework
 		m_window_style = m_window_style & (~WS_MAXIMIZEBOX);
 		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
-		RaiseEvent<EventTypeMaximizeBoxDisabled>();
+		RaiseEvent<Events::EventMaximizeBoxDisable>();
 	}
 	void Window::EnableMinimizeBox()
 	{
@@ -626,7 +627,7 @@ namespace WinapiFramework
 		m_window_style = m_window_style | WS_MINIMIZEBOX;
 		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
-		RaiseEvent<EventTypeMinimizeBoxEnabled>();
+		RaiseEvent<Events::EventMinimizeBoxEnable>();
 	}
 	void Window::DisableMinimizeBox()
 	{
@@ -634,7 +635,7 @@ namespace WinapiFramework
 		m_window_style = m_window_style & (~WS_MINIMIZEBOX);
 		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
-		RaiseEvent<EventTypeMinimizeBoxDisabled>();
+		RaiseEvent<Events::EventMinimizeBoxDisable>();
 	}
 	void Window::Activate()
 	{
