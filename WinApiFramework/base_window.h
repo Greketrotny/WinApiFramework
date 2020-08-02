@@ -23,7 +23,7 @@ namespace WinapiFramework
 		HWND m_hWindow;
 		DWORD m_window_style;
 		std::wstring m_window_class_name;
-		Rect m_window_rect;
+		Rect m_rect;
 
 	protected:
 		struct BaseWindowEvents
@@ -49,24 +49,21 @@ namespace WinapiFramework
 		virtual void DestroyWinapiWindow() = 0;
 	public:
 		virtual void Destroy();
-		void DoDestroy();
-
 		virtual void Enable();
-		void DoEnable();
-
 		virtual void Disable();
-		void DoDisable();
-
 		virtual void Move(int x, int y);
-		void Move(const Point& position);
-		void DoMove(int x, int y);
-
+		void Move(const Point& position);		
 		virtual void Resize(int width, int height);
 		void Resize(const Size& size);
+		void SetRect(const Rect& rect);
+	protected:
+		void DoDestroy();
+		void DoEnable();
+		void DoDisable();
+		void DoMove(int x, int y);
 		void DoResize(int width, int height);
 
-		void SetRect(const Rect& rect);
-
+	public:
 		virtual Point GetMousePosition() const;
 		bool IsMouseInside() const;
 
@@ -128,8 +125,8 @@ namespace WinapiFramework
 		}
 		bool DestroyChild(BaseWindow* child);
 		void DestroyAllChildren();
-	public:
-		virtual Point GetMousePosition() const = 0;
+
+		virtual Point GetMousePosition() const;
 	protected:
 		LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
 	};

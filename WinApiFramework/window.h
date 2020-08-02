@@ -22,7 +22,6 @@ namespace WinapiFramework
 		: public ParentWindow
 		, public HasWindowProcedure<Window>
 	{
-		// -- fields -- //
 	private:
 		std::wstring m_caption;
 		unsigned int window_id;
@@ -68,7 +67,7 @@ namespace WinapiFramework
 					closing_aborted = true;
 				}
 			};
-			struct EventCaptionChange : public BaseEvent {};
+			struct EventSetCaption : public BaseEvent {};
 			struct EventMinSizeChange : public BaseEvent {};
 			struct EventMaxSizeChange : public BaseEvent {};
 			struct EventResizeEnable : public BaseEvent {};
@@ -122,25 +121,10 @@ namespace WinapiFramework
 			ET e(params...);
 			InvokeEvent(e);
 		}
-		template <class E, class ER> void AddEventHandler(void(ER::*function)(E&), ER* object)
-		{
-			BindEventFunc<E, ER>(function, object);
-		}
-		template <class E> void AddEventHandler(void(*function)(E&))
-		{
-			BindEventFunc<E>(function);
-		}
-		template <class E, class ER> bool RemoveEventHandler(void(ER::*function)(E&))
-		{
-			return UnbindEventFunc(function);
-		}
-		template <class E> bool RemoveEventHandler(void(*function)(E&))
-		{
-			return UnbindEventFunc(function);
-		}
 
 		void SetCaption(const std::wstring& new_caption);
 		void Move(int x, int y) override;
+		void MoveToCenter();
 		void Resize(int width, int height) override;
 		void SetMinSize(unsigned int minWidth, unsigned int minHeight);
 		void SetMinSize(const Size& size);

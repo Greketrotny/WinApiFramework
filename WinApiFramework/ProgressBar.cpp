@@ -3,17 +3,13 @@
 
 namespace WinapiFramework
 {
-	ProgressBar::ProgressBar(ParentControl* parentControl, const ConStruct< ProgressBar>& conStruct)
-		: ChildControl(parentControl, conStruct)
-		, MinValue(m_minValue)
-		, MaxValue(m_maxValue)
-		, Position(m_position)
-		, Step(m_step)
-		, State(m_barState)
-		, Events(m_events)
+	ProgressBar::ProgressBar(ParentWindow* parent, const ConStruct< ProgressBar>& conStruct)
+		: BaseWindow(parent)
 	{
-		m_minValue = std::max(0, conStruct.range.min);
-		m_maxValue = std::max(unsigned int(conStruct.range.max), m_minValue);
+		m_rect = conStruct.rect;
+
+		m_minValue = conStruct.range.min;
+		m_maxValue = std::max(conStruct.range.max, m_minValue);
 
 		m_position = conStruct.position;
 		m_barState = conStruct.barState;
@@ -40,31 +36,33 @@ namespace WinapiFramework
 	}
 	bool ProgressBar::CreateWinapiWindow()
 	{
+		m_window_style |= WS_CHILD | WS_VISIBLE;
+
 		// [>] Set ProgressBar styles
 		// set bar orientation
 		switch (m_barOrientation)
 		{
 			case WinapiFramework::ProgressBar::Horizontal:	break;
-			case WinapiFramework::ProgressBar::Vertical: m_controlStyle |= PBS_VERTICAL;
+			case WinapiFramework::ProgressBar::Vertical: m_window_style |= PBS_VERTICAL;
 		}
 
 		// set bar display style
 		switch (m_barDisplayStyle)
 		{
 			case WinapiFramework::ProgressBar::Default:	break;
-			case WinapiFramework::ProgressBar::Marquee:	m_controlStyle |= PBS_MARQUEE;					break;
-			case WinapiFramework::ProgressBar::Smooth:	m_controlStyle |= PBS_SMOOTH;					break;
-			case WinapiFramework::ProgressBar::SmoothReversed:	m_controlStyle |= PBS_SMOOTHREVERSE;	break;
+			case WinapiFramework::ProgressBar::Marquee:			m_window_style |= PBS_MARQUEE;			break;
+			case WinapiFramework::ProgressBar::Smooth:			m_window_style |= PBS_SMOOTH;			break;
+			case WinapiFramework::ProgressBar::SmoothReversed:	m_window_style |= PBS_SMOOTHREVERSE;	break;
 		}
 
 
 		// create window
 		m_hWindow = CreateWindow(PROGRESS_CLASS, NULL,
-			m_controlStyle,
-			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
-			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
+			m_window_style,
+			m_rect.position.x - mp_parent->GetCanvasPosition().x,
+			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			m_pParentControl->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+			mp_parent->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 		// check control creation
 		if (!m_hWindow)
@@ -83,6 +81,7 @@ namespace WinapiFramework
 		SetPosition(m_position);
 		SetStep(m_step);
 		SetState(m_barState);
+		SetDisplayStyle(m_barDisplayStyle);
 
 		return true;
 	}
@@ -91,45 +90,46 @@ namespace WinapiFramework
 		DestroyWindow(m_hWindow);
 	}
 
-	void ProgressBar::SetMinValue(unsigned int value)
+	void ProgressBar::SetMinValue(int value)
 	{
 		if (value > m_maxValue) value = m_maxValue;
 		m_minValue = value;
 
 		SendMessage(m_hWindow, PBM_SETRANGE, 0, MAKELPARAM(value, m_maxValue));
-		m_events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::MinValueChanged));
+		RaiseEventByHandler<Events::EventSetMinValue>();
 	}
-	void ProgressBar::SetMaxValue(unsigned int value)
+	void ProgressBar::SetMaxValue(int value)
 	{
 		if (value < m_minValue) value = m_minValue;
 		m_maxValue = value;
 
 		SendMessage(m_hWindow, PBM_SETRANGE, 0, MAKELPARAM(m_maxValue, value));
-		m_events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::MaxValueChanged));
+		RaiseEventByHandler<Events::EventSetMaxValue>();
 	}
-	void ProgressBar::SetRange(unsigned int min, unsigned int max)
+	void ProgressBar::SetRange(int min, int max)
 	{
 		if (min >= max) max = min + 1;
 		m_minValue = min;
 		m_maxValue = max;
-		m_events.PushEvent(Event(Event::Type::RangeChanged));
+		RaiseEventByHandler<Events::EventSetRange>();
 
-		SendMessage(m_hWindow, PBM_SETRANGE, 0, MAKELPARAM(m_minValue, m_maxValue));
+		SendMessage(m_hWindow, PBM_SETRANGE32, m_minValue, m_maxValue);
 	}
-	void ProgressBar::SetStep(unsigned int step)
+	void ProgressBar::SetStep(int step)
 	{
 		this->m_step = step;
 		SendMessage(m_hWindow, PBM_SETSTEP, step, 0);
-		m_events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::StepChanged));
+		RaiseEventByHandler<Events::EventSetStep>();
 	}
-	void ProgressBar::SetPosition(unsigned int position)
+	void ProgressBar::SetPosition(int position)
 	{
 		if (position < m_minValue) position = m_minValue;
 		if (position > m_maxValue) position = m_maxValue;
 		this->m_position = position;
 
+		if (m_barDisplayStyle == BarDisplayStyle::Marquee) return;
 		SendMessage(m_hWindow, PBM_SETPOS, position, 0);
-		m_events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::PositionChanged));
+		RaiseEventByHandler<Events::EventSetPosition>();
 	}
 	void ProgressBar::SetState(ProgressBar::BarState state)
 	{
@@ -141,43 +141,83 @@ namespace WinapiFramework
 			SendMessage(m_hWindow, PBM_SETSTATE, 0, PBST_ERROR);
 
 		m_barState = state;
-		m_events.PushEvent(ProgressBar::Event(ProgressBar::Event::Type::BarStateChanged));
+		RaiseEventByHandler<Events::EventSetStep>();
 	}
 	void ProgressBar::SetOrientation(ProgressBar::BarOrientation barOrientation)
 	{
-		if (m_controlStyle & PBS_VERTICAL) m_controlStyle = m_controlStyle & (~PBS_VERTICAL);
+		if (m_window_style & PBS_VERTICAL) m_window_style = m_window_style & (~PBS_VERTICAL);
 
 		m_barOrientation = barOrientation;
-		if (m_barOrientation == ProgressBar::BarOrientation::Vertical) m_controlStyle |= PBS_VERTICAL;
+		if (m_barOrientation == ProgressBar::BarOrientation::Vertical) m_window_style |= PBS_VERTICAL;
 
-		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
-		m_events.PushEvent(Event(Event::Type::BarOrientationChanged));
+		RaiseEventByHandler<Events::EventSetBarOriantation>();
 	}
 	void ProgressBar::SetDisplayStyle(ProgressBar::BarDisplayStyle barDisplayStyle)
 	{
-		m_controlStyle = m_controlStyle & (~(PBS_MARQUEE | PBS_SMOOTH | PBS_SMOOTHREVERSE));
+		m_window_style = m_window_style & (~(PBS_MARQUEE | PBS_SMOOTH | PBS_SMOOTHREVERSE));
 
 		m_barDisplayStyle = barDisplayStyle;
 		switch (m_barDisplayStyle)
 		{
 			case WinapiFramework::ProgressBar::Default:	break;
-			case WinapiFramework::ProgressBar::Marquee:			m_controlStyle |= PBS_MARQUEE;			break;
-			case WinapiFramework::ProgressBar::Smooth:			m_controlStyle |= PBS_SMOOTH;			break;
-			case WinapiFramework::ProgressBar::SmoothReversed:	m_controlStyle |= PBS_SMOOTHREVERSE;	break;
+			case WinapiFramework::ProgressBar::Marquee:			m_window_style |= PBS_MARQUEE;			break;
+			case WinapiFramework::ProgressBar::Smooth:			m_window_style |= PBS_SMOOTH;			break;
+			case WinapiFramework::ProgressBar::SmoothReversed:	m_window_style |= PBS_SMOOTHREVERSE;	break;
 		}
-		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
-		m_events.PushEvent(Event(Event::Type::BarDisplayStyleChanged));
+		if (m_barDisplayStyle == BarDisplayStyle::Marquee)
+			SendMessage(m_hWindow, PBM_SETMARQUEE, TRUE, 30);
+		else
+			SendMessage(m_hWindow, PBM_SETMARQUEE, FALSE, 30);
+
+		RaiseEventByHandler<Events::EventSetDisplayStyle>();
 	}
 	void ProgressBar::StepIt()
 	{
 		m_position += m_step;
 		SetPosition(m_position);
+		RaiseEventByHandler<Events::EventStep>();
 	}
 	void ProgressBar::StepIt(int step)
 	{
 		m_position += step;
 		SetPosition(m_position);
+		RaiseEventByHandler<Events::EventStep>();
+	}
+
+	int ProgressBar::GetMinValue()
+	{
+		return m_minValue;
+	}
+	int ProgressBar::GetMaxValue()
+	{
+		return m_maxValue;
+	}
+	Range ProgressBar::GetRange()
+	{
+		return Range(m_minValue, m_maxValue);
+	}
+	int ProgressBar::GetStep()
+	{
+		return m_step;
+	}
+	int ProgressBar::GetPosition()
+	{
+		return m_position;
+	}
+	ProgressBar::BarState ProgressBar::GetState()
+	{
+		return m_barState;
+	}
+	ProgressBar::BarOrientation ProgressBar::GetBarOrientation()
+	{
+		return m_barOrientation;
+	}
+	ProgressBar::BarDisplayStyle ProgressBar::GetBarDisplayStyle()
+	{
+		return m_barDisplayStyle;
 	}
 }

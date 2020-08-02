@@ -54,12 +54,12 @@ namespace WinapiFramework
 	{
 		assert(mp_parent);
 
-		m_window_rect.position.x = x;
-		m_window_rect.position.y = y;
+		m_rect.position.x = x;
+		m_rect.position.y = y;
 
 		DoMove(
-			m_window_rect.position.x - mp_parent->GetCanvasPosition().x,
-			m_window_rect.position.y - mp_parent->GetCanvasPosition().y);
+			m_rect.position.x - mp_parent->GetCanvasPosition().x,
+			m_rect.position.y - mp_parent->GetCanvasPosition().y);
 
 
 		RaiseEventByHandler<BaseWindowEvents::EventMove>();
@@ -78,13 +78,13 @@ namespace WinapiFramework
 
 	void BaseWindow::Resize(int width, int height)
 	{
-		m_window_rect.size.width = width;
-		m_window_rect.size.height = height;
+		m_rect.size.width = width;
+		m_rect.size.height = height;
 
-		if (m_window_rect.size.width < 0) m_window_rect.size.width = 0;
-		if (m_window_rect.size.height < 0) m_window_rect.size.height = 0;
+		if (m_rect.size.width < 0) m_rect.size.width = 0;
+		if (m_rect.size.height < 0) m_rect.size.height = 0;
 
-		DoResize(m_window_rect.size.width, m_window_rect.size.height);
+		DoResize(m_rect.size.width, m_rect.size.height);
 
 		RaiseEventByHandler<BaseWindowEvents::EventResize>();
 	}
@@ -110,15 +110,15 @@ namespace WinapiFramework
 	{
 		assert(mp_parent);
 
-		return mp_parent->GetMousePosition() - this->m_window_rect.position;
+		return mp_parent->GetMousePosition() - this->m_rect.position;
 	}
 	bool BaseWindow::IsMouseInside() const
 	{
 		Point mouse = GetMousePosition();
 		return (mouse.x >= 0
 			&& mouse.y >= 0
-			&& mouse.x < m_window_rect.size.width
-			&& mouse.y < m_window_rect.size.height);
+			&& mouse.x < m_rect.size.width
+			&& mouse.y < m_rect.size.height);
 	}
 
 	const HWND& BaseWindow::GetWindowHandle() const
@@ -131,7 +131,7 @@ namespace WinapiFramework
 	}
 	const Rect& BaseWindow::GetWindowRect() const
 	{
-		return m_window_rect;
+		return m_rect;
 	}
 	
 	ParentWindow* const BaseWindow::GetParent() const
@@ -184,6 +184,13 @@ namespace WinapiFramework
 		}
 		m_children.clear();
 	}
+
+	Point ParentWindow::GetMousePosition() const
+	{
+		assert(mp_parent);
+		return mp_parent->GetMousePosition() - m_rect.position;
+	}
+
 	LRESULT ParentWindow::ProcessChildMessage(WPARAM wParam, LPARAM lParam)
 	{
 		for (BaseWindow*& child : m_children)

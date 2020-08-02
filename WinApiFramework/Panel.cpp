@@ -7,7 +7,8 @@ namespace WinapiFramework
 		: ParentWindow(parent)
 		, HasWindowProcedure(this, &Panel::WindowProcedure)
 	{
-		m_window_rect = conStruct.rect;
+		m_rect = conStruct.rect;
+		m_window_class_name = mp_parent->GetWindowClassName() + L"PanelClass" + std::to_wstring(int(this));
 
 		CreateWinapiWindow();
 	}
@@ -69,9 +70,9 @@ namespace WinapiFramework
 		m_hWindow = CreateWindow((LPCWSTR)m_window_class_name.c_str(), L"caption",
 			//m_controlStyle, 
 			WS_VISIBLE | WS_BORDER | WS_CHILD | WS_CLIPCHILDREN,
-			m_window_rect.position.x - mp_parent->GetCanvasPosition().x,
-			m_window_rect.position.y - mp_parent->GetCanvasPosition().y,
-			m_window_rect.size.width, m_window_rect.size.height,
+			m_rect.position.x - mp_parent->GetCanvasPosition().x,
+			m_rect.position.y - mp_parent->GetCanvasPosition().y,
+			m_rect.size.width, m_rect.size.height,
 			mp_parent->GetWindowHandle(), nullptr, Framework::GetProgramInstance(), nullptr);
 
 		if (!m_hWindow)

@@ -10,20 +10,51 @@
 
 namespace WAF = WinapiFramework;
 
-void MainWindow_OnActivatedGlobal(WAF::Window::Events::EventActivate& event);
+
+Graphics::Bitmap* texture1 = nullptr, *texture2 = nullptr;
+Graphics::Bitmap* GenerateTexture(int width, int height, Graphics::Color color)
+{
+	Graphics::Bitmap* tex = new Graphics::Bitmap(300, 200);
+	for (int x = 0; x < tex->Width; ++x)
+	{
+		for (int y = 0; y < tex->Height; ++y)
+		{
+			if ((x % 2 == 0) ^ (y % 2 == 0))
+			{
+				tex->SetPixel(x, y, color);
+			}
+			else
+			{
+				tex->SetPixel(x, y, Graphics::Color(color.GetR(), color.GetG(), color.GetB(), 0x00));
+			}
+			//unsigned char value = ((x % 2 == 0) ^ (y % 2 == 0)) ? 255 : 0;
+			////texture->SetPixel(x, y, Graphics::Color(value, value, value, 0xFF));
+			//tex->SetPixel(x, y, Graphics::Color(color.GetR(), color.GetG(), color.GetB(), value));
+		}
+	}
+	return tex;
+}
+
+
 
 class MainForm
 {
 public:
 	WAF::Window *MainWindow = nullptr;
 
-	WAF::Button* button1 = nullptr;
-	WAF::Button* button2 = nullptr;
-	WAF::Button* button3 = nullptr;
+	WAF::Label* lbEventLog = nullptr;
+	std::vector<std::wstring> eventHistory;
 
-	std::vector<WAF::Button*> panelButtons;
+	WAF::Button* button1 = nullptr;
+	WAF::CheckBox* checkBox1 = nullptr;
+	WAF::Edit* edit1 = nullptr;
+	WAF::GraphicsBox* gfxBox = nullptr;
+	WAF::ProgressBar* progressBar = nullptr;
+	WAF::TrackBar* trackBar = nullptr;
+	WAF::GroupBox* groupBox = nullptr;
 	WAF::Panel* panel = nullptr;
 
+	std::vector<WAF::Button*> panel_buttons;
 
 public:
 	MainForm()
@@ -36,64 +67,111 @@ public:
 		MainWindow = WAF::Framework::CreateNewWindow(
 			WAF::ConStruct<WAF::Window>(
 				L"WinApiFramework test",
-				WAF::Rect(50, 50, 1000, 600),
+				WAF::Rect(50, 50, 1200, 700),
 				WAF::Size(200, 200),
-				WAF::Size(1200, 700),
+				WAF::Size(1600, 800),
 				WAF::Size(800, 400)));
+		MainWindow->MoveToCenter();
 
-		MainWindow->AddEventHandler<WAF::Window::Events::EventActivate>(&MainForm::MainWindow_OnActivated, this);
-		MainWindow->AddEventHandler<WAF::Window::Events::EventActivate>(MainWindow_OnActivatedGlobal);
-		MainWindow->AddEventHandler<WAF::Window::Events::EventActivate>(&MainForm::MainWindow_OnActivated2, this);
-		MainWindow->AddEventHandler<WAF::Window::Events::EventDeactivate>(&MainForm::MainWindow_OnDeactivated, this);
+		MainWindow->BindEventFunc<WAF::Window::Events::EventActivate>(&MainForm::MainWindow_OnActivated, this);
+		MainWindow->BindEventFunc<WAF::Window::Events::EventDeactivate>(&MainForm::MainWindow_OnDeactivated, this);
 
-		MainWindow->AddEventHandler<WAF::Window::Events::EventResize>(&MainForm::MainWindow_OnResized, this);
-		MainWindow->AddEventHandler<WAF::Window::Events::EventMove>(&MainForm::MainWindow_OnMoved, this);
+		MainWindow->BindEventFunc<WAF::Window::Events::EventResize>(&MainForm::MainWindow_OnResized, this);
+		MainWindow->BindEventFunc<WAF::Window::Events::EventMove>(&MainForm::MainWindow_OnMoved, this);
 
-		MainWindow->AddEventHandler<WAF::Window::Events::EventCaptionChange>(&MainForm::MainWindow_OnCaptionChanged, this);
+		MainWindow->BindEventFunc<WAF::Window::Events::EventSetCaption>(&MainForm::MainWindow_OnCaptionChanged, this);
 
-		MainWindow->AddEventHandler<WAF::Window::Events::EventClose>(&MainForm::MainWindow_OnClose, this);
+		MainWindow->BindEventFunc<WAF::Window::Events::EventClose>(&MainForm::MainWindow_OnClose, this);
 
 
+		// lbEventLog
+		lbEventLog = MainWindow->CreateChild<WAF::Label>(WAF::ConStruct<WAF::Label>(
+			WAF::Rect(WAF::Point(620, 10), WAF::Size(280, 380)),
+			L"event log",
+			WAF::Label::TextAlignment::Left));
+		lbEventLog->BindEventFunc<WAF::Label::Events::EventClick>(&MainForm::lbEventLog_OnClicked, this);
+		lbEventLog->BindEventFunc<WAF::Label::Events::EventDoubleClick>(&MainForm::lbEventLog_OnDoubleClicked, this);
 
 		// button1
 		button1 = MainWindow->CreateChild<WAF::Button>(WAF::ConStruct<WAF::Button>(
-			WAF::Rect(WAF::Point(20, 20), WAF::Size(100, 50)),
+			WAF::Rect(WAF::Point(20, 420), WAF::Size(100, 50)),
 			L"Button1",
 			WAF::Button::CaptionPosition::Center));
-		//button1->Events.AddEventHandler<MainForm>(this, &MainForm::Button1_EH);
+		button1->BindEventFunc<WAF::Button::Events::EventClick>(&MainForm::Button1_OnClick, this);
+		button1->BindEventFunc<WAF::Button::Events::EventDoubleClick>(&MainForm::Button1_OnDoubleClick, this);
 
-		// button2
-		button2 = MainWindow->CreateChild<WAF::Button>(WAF::ConStruct<WAF::Button>(
-			WAF::Rect(WAF::Point(300, 20), WAF::Size(100, 50)),
-			L"Button2",
-			WAF::Button::CaptionPosition::Center));
-		//button2->Events.AddEventHandler<MainForm>(this, &MainForm::Button2_EH);
+		// checkBox1
+		checkBox1 = MainWindow->CreateChild<WAF::CheckBox>(WAF::ConStruct<WAF::CheckBox>(
+			WAF::Rect(WAF::Point(20, 480), WAF::Size(100, 20)),
+			L"checkBox1",
+			true,
+			WAF::CheckBox::BoxStateCheck));
+		checkBox1->BindEventFunc<WAF::CheckBox::Events::EventSetCaption>(&MainForm::CheckBox1_OnSetCaption, this);
+		checkBox1->BindEventFunc<WAF::CheckBox::Events::EventSetState>(&MainForm::CheckBox1_OnSetState, this);
 
-		// button3
-		button3 = MainWindow->CreateChild<WAF::Button>(WAF::ConStruct<WAF::Button>(
-			WAF::Rect(WAF::Point(20, 300), WAF::Size(100, 50)),
-			L"Button3",
-			WAF::Button::CaptionPosition::Center));
+		// edit1
+		edit1 = MainWindow->CreateChild<WAF::Edit>(WAF::ConStruct<WAF::Edit>(
+			WAF::Rect(350, 400, 200, 200),
+			L"text",
+			L""));
+		edit1->BindEventFunc<WAF::Edit::Events::EventSetText>(&MainForm::Edit1_OnSetText, this);
 
+		// gfxBox1
+		gfxBox = MainWindow->CreateChild<WAF::GraphicsBox>(WAF::ConStruct<WAF::GraphicsBox>(
+			WAF::Rect(10, 10, 600, 380)));
 
-		//// panel
-		//panel = MainWindow->CreateControl<WAF::Panel>(WAF::ConStruct<WAF::Panel>(
-		//	WAF::ConStruct<WAF::ChildControl>(WAF::Rect(150, 10, 400, 200))));
-		//panel->Events.AddEventHandler<MainForm>(this, &MainForm::Panel_EH);
+		// progressBar
+		progressBar = MainWindow->CreateChild<WAF::ProgressBar>(WAF::ConStruct < WAF::ProgressBar>(
+			WAF::Rect(20, 520, 200, 20),
+			WAF::Range(-100, 100),
+			50, WAF::ProgressBar::BarState::Normal,
+			WAF::ProgressBar::BarOrientation::Horizontal,
+			WAF::ProgressBar::BarDisplayStyle::Marquee));
 
-		//// panel buttons
-		//int buttonWidth = 100;
-		//int buttonHeight = 50;
-		//for (int x = 0; x < 4; x++)
-		//{
-		//	for (int y = 0; y < 4; y++)
-		//	{
-		//		WAF::Button* button = panel->CreateControl<WAF::Button>(WAF::ConStruct<WAF::Button>(
-		//			WAF::ConStruct<WAF::ChildControl>(WAF::Rect(x * buttonWidth, y * buttonHeight, buttonWidth, buttonHeight)),
-		//			L"button" + std::to_wstring(x * 2 + y)));
-		//		panelButtons.push_back(button);
-		//	}
-		//}
+		// trackbar
+		trackBar = MainWindow->CreateChild<WAF::TrackBar>(WAF::ConStruct<WAF::TrackBar>(
+			WAF::Rect(20, 550, 200, 50),
+			WAF::Range(0, 100),
+			50, 1, 5,
+			WAF::TrackBar::Orientation::Horizontal,
+			WAF::TrackBar::TickStyle::Bottom,	10,
+			true, WAF::Range(20, 80),
+			WAF::TrackBar::ToolTipsStyle::ToolTipsStyleTop));
+		trackBar->BindEventFunc<WAF::TrackBar::Events::EventLineUp>(&MainForm::TrackBar_OnLineUp, this);
+		trackBar->BindEventFunc<WAF::TrackBar::Events::EventLineDown>(&MainForm::TrackBar_OnLineDown, this);
+		trackBar->BindEventFunc<WAF::TrackBar::Events::EventPageUp>(&MainForm::TrackBar_OnPageUp, this);
+		trackBar->BindEventFunc<WAF::TrackBar::Events::EventPageDown>(&MainForm::TrackBar_OnPageDown, this);
+		trackBar->BindEventFunc<WAF::TrackBar::Events::EventMoveToMax>(&MainForm::TrackBar_OnMax, this);
+		trackBar->BindEventFunc<WAF::TrackBar::Events::EventMoveToMin>(&MainForm::TrackBar_OnMin, this);
+		trackBar->BindEventFunc<WAF::TrackBar::Events::EventDragThumb>(&MainForm::TrackBar_OnDrag, this);
+		trackBar->BindEventFunc<WAF::TrackBar::Events::EventFinishDrag>(&MainForm::TrackBar_OnFinishDrag, this);
+
+		// groupBox
+		groupBox = MainWindow->CreateChild<WAF::GroupBox>(WAF::ConStruct<WAF::GroupBox>(
+			WAF::Rect(10, 400, 300, 200),
+			L"group box caption",
+			WAF::GroupBox::CaptionPosition::Center));
+		
+		// panel
+		panel = MainWindow->CreateChild<WAF::Panel>(WAF::ConStruct<WAF::Panel>(
+			WAF::Rect(620, 400, 300, 200)));
+
+		// panel buttons
+		const int grid_x = 3;
+		const int grid_y = 6;
+		const int b_width = panel->GetWindowRect().size.width / grid_x;
+		const int b_height = panel->GetWindowRect().size.height / grid_y;
+		for (int x = 0; x < grid_x; x++)
+		{
+			for (int y = 0; y < grid_y; y++)
+			{
+				WAF::Button* panel_button = panel->CreateChild<WAF::Button>(WAF::ConStruct<WAF::Button>(
+					WAF::Rect(WAF::Point(x * b_width, y * b_height), WAF::Size(b_width, b_height))));
+
+				panel_buttons.push_back(panel_button);
+			}
+		}
+
 	}
 	~MainForm()
 	{
@@ -101,32 +179,31 @@ public:
 	}
 
 
-	// -- MainForm::event_handlers -- //
+	// ~~ MainForm event handlers ~~
+	// ~~ MainWindow ~~
 	void MainWindow_OnActivated(WAF::Window::Events::EventActivate& event)
 	{
 		MainWindow->SetCaption(L"Window Activated!!!");
-	}
-	void MainWindow_OnActivated2(WAF::Window::Events::EventActivate& event)
-	{
-		MainWindow->SetCaption(MainWindow->GetCaption() + L" + second function");
+		LogEvent(L"MainWindow: activated");
 	}
 	void MainWindow_OnDeactivated(WAF::Window::Events::EventDeactivate& event)
 	{
 		MainWindow->SetCaption(L"Window Deactivated!!!");
-		MainWindow->Resize(MainWindow->GetWindowRect().size.width, 500);
+		LogEvent(L"MainWindow: deactivated");
 	}
 	void MainWindow_OnResized(WAF::Window::Events::EventResize& event)
 	{
 		DisplayMainWindowProps();
+		LogEvent(L"MainWindow: resized");
 	}
 	void MainWindow_OnMoved(WAF::Window::Events::EventMove& event)
 	{
 		DisplayMainWindowProps();
-		MainWindow->RemoveEventHandler<WAF::Window::Events::EventActivate>(&MainWindow_OnActivatedGlobal);
+		LogEvent(L"MainWindow: moved");
 	}
-	void MainWindow_OnCaptionChanged(WAF::Window::Events::EventCaptionChange& event)
+	void MainWindow_OnCaptionChanged(WAF::Window::Events::EventSetCaption& event)
 	{
-		MainWindow->DisableMaximizeBox();
+		LogEvent(L"MainWindow: caption changed");
 	}
 	void MainWindow_OnClose(WAF::Window::Events::EventClose& event)
 	{
@@ -140,59 +217,120 @@ public:
 			event.AbortClosing();
 		else
 		{
+			lbEventLog->Destroy();
+			lbEventLog = nullptr;
+
 			MainWindow->Destroy();
+
 			//MainWindow = nullptr;
 		}
 	}
 
+	// ~~ lbEventLog ~~
+	void lbEventLog_OnClicked(WAF::Label::Events::EventClick& event)
+	{
+		LogEvent(L"lbEventLog: clicked");
+	}
+	void lbEventLog_OnDoubleClicked(WAF::Label::Events::EventDoubleClick& event)
+	{
+		LogEvent(L"lbEventLog: double clicked");
+	}
+	void LogEvent(const std::wstring& log)
+	{
+		static int event_counter = 0;
+		eventHistory.push_back(log);
+		event_counter++;
 
-	//void Button1_EH(WAF::Button::Event event)
-	//{
-	//	switch (event.type)
-	//	{
-	//		case WAF::Button::Event::Type::Click:
-	//			event.button->SetCaption(L"button1 clicked!");
-	//			//event.button->SetCaptionPosition((WAF::Button::CaptionPosition)(event.button->GetCaptionPosition() + 1));
-	//			break;
-	//		case WAF::Button::Event::Type::DoubleClick:
-	//			event.button->SetCaption(L"button1 double clicked!");
-	//			break;
-	//	}
-	//}
-	//void Button2_EH(WAF::Button::Event event)
-	//{
-	//	switch (event.type)
-	//	{
-	//		case WAF::Button::Event::Type::Click:
-	//			event.button->SetCaption(L"button2 clicked!");
-	//			break;
-	//		case WAF::Button::Event::Type::DoubleClick:
-	//			event.button->SetCaption(L"button2 double clicked!");
-	//			break;
-	//	}
-	//}
-	//void Button3_EH(WAF::Button::Event event)
-	//{
-	//	switch (event.type)
-	//	{
-	//		case WAF::Button::Event::Type::Click:
-	//			event.button->SetCaption(L"button3 clicked!");
-	//			break;
-	//		case WAF::Button::Event::Type::DoubleClick:
-	//			event.button->SetCaption(L"button3 double clicked!");
-	//			break;
-	//	}
-	//}
-	//void Panel_EH(WAF::Panel::Event event)
-	//{
-	//	switch (event.type)
-	//	{
-	//		case WAF::Panel::Event::Type::Resize:
-	//			//button3->Resize(panel->Rectangle.size.width / 2, panel->Rectangle.size.height / 2);
-	//			break;
-	//	}
-	//}
+		while (eventHistory.size() > 24)
+   		{
+			eventHistory.erase(eventHistory.begin());
+   		}
+   
+   		std::wstring events = L"";
+   		for (size_t i = 0; i < eventHistory.size(); i++)
+   		{
+   			events += L"#" + std::to_wstring(event_counter + i - eventHistory.size()) + L": " + eventHistory[i] + L"\n";
+   		}
+   		if (lbEventLog) lbEventLog->SetCaption(events);
+	}
+
+	// ~~ button1 ~~
+	void Button1_OnClick(WAF::Button::Events::EventClick& event)
+	{
+		LogEvent(L"button1: clicked");
+		button1->SetCaption(L"button1 clicked!");
+	}
+	void Button1_OnDoubleClick(WAF::Button::Events::EventDoubleClick& event)
+	{
+		LogEvent(L"button1: double clicked");
+		button1->SetCaption(L"button1 double clicked!");
+	}
 	
+	// ~~ checkBox1 ~~ 
+	void CheckBox1_OnSetCaption(WAF::CheckBox::Events::EventSetCaption& event)
+	{
+		LogEvent(L"checkBox1: set caption");
+	}
+	void CheckBox1_OnSetState(WAF::CheckBox::Events::EventSetState& event)
+	{
+		switch (event.new_state)
+		{
+			case WAF::CheckBox::BoxStateCheck:
+				LogEvent(L"checkBox1: box state check");
+				checkBox1->SetCaption(L"checked");
+				break;
+			case WAF::CheckBox::BoxStateMiddle:
+				LogEvent(L"checkBox1: box state middle");
+				checkBox1->SetCaption(L"middle");
+				break;
+			case WAF::CheckBox::BoxStateUnCheck:
+				LogEvent(L"checkBox1: box state uncheck");
+				checkBox1->SetCaption(L"uncheck");
+				break;
+		}
+	}
+
+	// ~~ edit1 ~~
+	void Edit1_OnSetText(WAF::Edit::Events::EventSetText& event)
+	{
+		LogEvent(L"edit1: set text");
+	}
+	
+	// ~~ trackbar ~~ 
+	void TrackBar_OnLineUp(WAF::TrackBar::Events::EventLineUp& event)
+	{
+		LogEvent(L"trackbar: line up");
+	}
+	void TrackBar_OnLineDown(WAF::TrackBar::Events::EventLineDown& event)
+	{
+		LogEvent(L"trackbar: line down");
+	}
+	void TrackBar_OnPageUp(WAF::TrackBar::Events::EventPageUp& event)
+	{
+		LogEvent(L"trackbar: page up");
+	}
+	void TrackBar_OnPageDown(WAF::TrackBar::Events::EventPageDown& event)
+	{
+		LogEvent(L"trackbar: page down");
+	}
+	void TrackBar_OnMax(WAF::TrackBar::Events::EventMoveToMax& event)
+	{
+		LogEvent(L"trackbar: moved to max");
+	}
+	void TrackBar_OnMin(WAF::TrackBar::Events::EventMoveToMin& event)
+	{
+		LogEvent(L"trackbar: moved to min");
+	}
+	void TrackBar_OnDrag(WAF::TrackBar::Events::EventDragThumb& event)
+	{
+		LogEvent(L"trackbar: drag " + std::to_wstring(trackBar->GetPosition()));
+	}
+	void TrackBar_OnFinishDrag(WAF::TrackBar::Events::EventFinishDrag& event)
+	{
+		LogEvent(L"trackbar: finish drag");
+	}
+
+
 	// FrameworkKeyboard
 	void FrameworkKeyboardEventHandler(WAF::Keyboard::KeyEvent event)
 	{
@@ -203,14 +341,26 @@ public:
 				{
 					WAF::Framework::Exit(0);
 				}
+
+				if (event.key == WAF::Keyboard::Key::Comma)
+				{
+					if (progressBar) progressBar->StepIt(-10);
+				}
+				if (event.key == WAF::Keyboard::Key::Dot)
+				{
+					if (progressBar) progressBar->StepIt(10);
+				}
 		}
 	}
 	void FrameworkMouse_EH(WAF::Mouse::Event event)
 	{
 		switch (event.type)
 		{
-			case WAF::Mouse::Event::Type::RightPress:
-				//panel->Move(MainWindow->GetCanvasMousePosition());
+			case WAF::Mouse::Event::Type::LeftPress:
+				if (WAF::Framework::Keyboard.KeyPressed(WAF::Keyboard::Key::Control))
+				{
+					panel->Move(MainWindow->GetCanvasMousePosition() - WAF::Point(panel->GetWindowRect().size.width / 2, panel->GetWindowRect().size.height / 2));
+				}
 				break;
 			case WAF::Mouse::Event::Type::Move:
 			{
@@ -228,7 +378,6 @@ public:
 					L" : " +
 					std::to_wstring(MainWindow->GetCanvasMousePosition().y));*/
 
-				button2->SetCaption(std::to_wstring(button2->GetMousePosition().x));
 				//panel->Move(MainWindow->GetCanvasMousePosition() - WAF::Point(panel->GetRect().size.width / 2, panel->GetRect().size.height));
 				break;
 			}
@@ -249,15 +398,55 @@ public:
 MainForm *MF;
 
 
-void MainWindow_OnActivatedGlobal(WAF::Window::Events::EventActivate& event)
-{
-	MF->MainWindow->SetCaption(L"Winodw Activated from global function.");
-}
-
-
 void CallBackFunction()
 {
 	Sleep(1);
+
+	float mouseX = MF->gfxBox->GetMousePosition().x;
+	float mouseY = MF->gfxBox->GetMousePosition().y;
+
+	// [>] Begin Drawing
+	MF->gfxBox->Gfx.BeginDraw();
+	/*MF->gfxBox->Gfx.Clear(Graphics::Color(0xA0, 0xA0, 0xA0, 0xFF));*/
+	MF->gfxBox->Gfx.Clear(Graphics::Color::White);
+
+	if (MF->gfxBox->IsMouseInside()) MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0x00, 0xFF, 0x00));
+	else MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0xFF, 0x00, 0x00));
+
+	if (WAF::Framework::Mouse.LeftPressed) MF->gfxBox->Gfx.DrawLine(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(200.0f, 200.0f), 5.0f);
+
+	if (WAF::Framework::Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
+		*texture1,
+		Graphics::Rect<float>(mouseX, mouseY, mouseX + texture1->Width, mouseY + texture1->Height),
+		Graphics::Rect<float>(0.0f, 0.0f, texture1->Width, texture1->Height),
+		1.0f, WAF::GraphicsBox::InterpolationMode::InterpolationModeNearestNeighbor);
+
+	if (WAF::Framework::Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
+		*texture2,
+		Graphics::Rect<float>(50.0f, 50.0f, 50.0f + texture2->Width, 50.0f + texture2->Height),
+		Graphics::Rect<float>(0.0f, 0.0f, texture2->Width, texture2->Height),
+		1.0f, WAF::GraphicsBox::InterpolationMode::InterpolationModeNearestNeighbor);
+
+	//MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(100.0f, 50.0f));
+	MF->gfxBox->Gfx.DrawRoundedRectangle(Graphics::Point<float>(0.0f, 0.0f), Graphics::Point<float>(mouseX, mouseY), 50.0f, 50.0f, 10.0f);
+
+	std::wostringstream os;
+	os << L"Lorem ipsum dolor sit\t amet, consectetur adipiscing elit. Ut facilisis"
+		L"risus in neque ullamcorper finibus. Proin eu lectus dignissim enim porttitor"
+		L"ultricies vitae vel mauris. Vestibulum eleifend porta enim at vulputate. Nunc"
+		L"imperdiet quam vel eros mollis pellentesque sit amet eu leo. Sed at nisl vitae"
+		L"arcu maximus lobortis. Suspendisse sodales urna urna, eu venenatis enim faucibus et. "
+		L"Praesent gravida metus vel ipsum ullamcorper gravida. Ut pretium ex vitae cursus posuere."
+		L"Maecenas justo urna, iaculis ac pulvinar eleifend, vestibulum vel neque. Ut bibendum, "
+		L"sapien in pretium rhoncus, leo eros ullamcorper urna, quis vehicula leo neque sollicitudin "
+		L"nibh. Etiam convallis leo vitae nibh mattis, sit amet pretium nibh efficitur. Phasellus "
+		L"maximus, mauris eu finibus suscipit, ligula dui ultricies libero, at efficitur sem ligula sed sapien.";
+
+	MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0x00, 0x00, 0x00), 1.0f);
+	MF->gfxBox->Gfx.DrawString(os.str(), Graphics::Rect<float>(10.0f, 10.0f, mouseX - 10.0f, mouseY - 10.0f));
+
+	if (WAF::Framework::Mouse.LeftPressed) MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(20.0f, 20.0f));
+	MF->gfxBox->Gfx.EndDraw();
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, INT ncmd)
@@ -267,10 +456,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 
 	MF = new MainForm();
 
+	texture1 = GenerateTexture(200, 100, Graphics::Color::Red);
+	texture2 = GenerateTexture(200, 100, Graphics::Color::Green);
+
 	WAF::Framework::SetCallBackFunction(CallBackFunction);
 	WAF::Framework::ProcessMessages();
 
 	delete MF;
+
+	delete texture1;
+	delete texture2;
 
 	return 0;
 }

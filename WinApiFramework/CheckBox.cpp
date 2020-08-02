@@ -3,20 +3,17 @@
 
 namespace WinapiFramework
 {
-	CheckBox::CheckBox(ParentControl* parentControl, const ConStruct<CheckBox>& conStruct)
-		: ChildControl(parentControl, conStruct)
-		, State(m_boxState)
-		, Caption(m_caption)
-		, IsTripleState(m_isTripleState)
-		, Events(m_events)
+	CheckBox::CheckBox(ParentWindow* parent, const ConStruct<CheckBox>& conStruct)
+		: BaseWindow(parent)
 	{
+		m_rect = conStruct.rect;
 		m_caption = conStruct.caption;
 		m_isTripleState = conStruct.isTripleState;
 		m_boxState = conStruct.boxState;
 
-		if (!this->m_isTripleState && this->m_boxState == MiddleState)
+		if (this->m_boxState == BoxStateMiddle && !this->m_isTripleState)
 		{
-			this->m_boxState = UnCheck;
+			this->m_boxState = BoxStateUnCheck;
 		}
 
 		CreateWinapiWindow();
@@ -33,33 +30,30 @@ namespace WinapiFramework
 		{
 			case BN_CLICKED:
 			case BN_DBLCLK:
-				if (m_boxState == Check)
+				if (m_boxState == BoxStateCheck)
 				{
 					if (m_isTripleState)
 					{
 						SendMessage(m_hWindow, BM_SETCHECK, BST_INDETERMINATE, 0);
-						m_boxState = MiddleState;
-						m_events.PushEvent(CheckBox::Event(CheckBox::Event::Type::MiddleState));
+						m_boxState = BoxStateMiddle;
 					}
 					else
 					{
 						SendMessage(m_hWindow, BM_SETCHECK, BST_UNCHECKED, 0);
-						m_boxState = UnCheck;
-						m_events.PushEvent(CheckBox::Event(CheckBox::Event::Type::UnCheck));
+						m_boxState = BoxStateUnCheck;
 					}
 				}
-				else if (m_boxState == MiddleState)
+				else if (m_boxState == BoxStateMiddle)
 				{
 					SendMessage(m_hWindow, BM_SETCHECK, BST_UNCHECKED, 0);
-					m_boxState = UnCheck;
-					m_events.PushEvent(CheckBox::Event(CheckBox::Event::Type::UnCheck));
+					m_boxState = BoxStateUnCheck;
 				}
-				else if (m_boxState == UnCheck)
+				else if (m_boxState == BoxStateUnCheck)
 				{
 					SendMessage(m_hWindow, BM_SETCHECK, BST_CHECKED, 0);
-					m_boxState = Check;
-					m_events.PushEvent(CheckBox::Event(CheckBox::Event::Type::Check));
+					m_boxState = BoxStateCheck;
 				}
+				RaiseEventByHandler<Events::EventSetState>(m_boxState);
 				break;
 
 			default:
@@ -69,15 +63,16 @@ namespace WinapiFramework
 	}
 	bool CheckBox::CreateWinapiWindow()
 	{
-		m_controlStyle |= BS_NOTIFY | BS_CHECKBOX | BS_MULTILINE | BS_AUTO3STATE;
+		m_window_style |= WS_CHILD | WS_VISIBLE;
+		m_window_style |= BS_NOTIFY | BS_CHECKBOX | BS_MULTILINE | BS_AUTO3STATE;
 
 		// create window
 		m_hWindow = CreateWindow(L"BUTTON", m_caption.c_str(),
-			m_controlStyle,
-			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
-			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
+			m_window_style,
+			m_rect.position.x - mp_parent->GetCanvasPosition().x,
+			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			m_pParentControl->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+			mp_parent->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 		if (!m_hWindow)
 		{
@@ -87,7 +82,7 @@ namespace WinapiFramework
 
 		HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 		SendMessage(m_hWindow, WM_SETFONT, (WPARAM)hNormalFont, 0);
-		SetBoxState(m_boxState);
+		SetState(m_boxState);
 
 		return true;
 	}
@@ -96,50 +91,62 @@ namespace WinapiFramework
 		DestroyWindow(m_hWindow);
 	}
 
-	void CheckBox::SetCaption(std::wstring newCaption)
+	void CheckBox::SetCaption(const std::wstring& newCaption)
 	{
 		m_caption = newCaption;
 		SetWindowText(m_hWindow, m_caption.c_str());
+
+		RaiseEventByHandler<Events::EventSetCaption>();
 	}
-	void CheckBox::SetBoxState(CheckBox::BoxState newState)
+	void CheckBox::SetState(CheckBox::BoxState newState)
 	{
 		m_boxState = newState;
-		if (m_boxState == Check)
+		if (m_boxState == BoxStateCheck)
 		{
 			SendMessage(m_hWindow, BM_SETCHECK, BST_CHECKED, 0);
-			m_events.PushEvent(CheckBox::Event(CheckBox::Event::Type::Check));
+			RaiseEventByHandler<Events::EventSetState>(m_boxState);
 			return;
 		}
 
-		if (m_boxState == MiddleState && m_isTripleState)
+		if (m_boxState == BoxStateMiddle && m_isTripleState)
 		{
 			SendMessage(m_hWindow, BM_SETCHECK, BST_INDETERMINATE, 0);
-			m_events.PushEvent(CheckBox::Event(CheckBox::Event::Type::MiddleState));
+			RaiseEventByHandler<Events::EventSetState>(m_boxState);
 			return;
 		}
 
-		if (m_boxState == UnCheck)
+		if (m_boxState == BoxStateUnCheck)
 		{
 			SendMessage(m_hWindow, BM_SETCHECK, BST_UNCHECKED, 0);
-			m_events.PushEvent(CheckBox::Event(CheckBox::Event::Type::UnCheck));
+			RaiseEventByHandler<Events::EventSetState>(m_boxState);
 			return;
 		}
-	}
-	void CheckBox::SetBoxState(unsigned int newState)
-	{
-		if (newState == 0) { SetBoxState(CheckBox::BoxState::UnCheck); return; }
-		if (newState == 1) { SetBoxState(CheckBox::BoxState::Check); return; }
-		if (newState == 2 && m_isTripleState) { SetBoxState(CheckBox::BoxState::MiddleState); return; }
 	}
 	void CheckBox::EnableTripleState()
 	{
 		m_isTripleState = true;
+		RaiseEventByHandler<Events::EventEnableTripleState>();
 	}
 	void CheckBox::DisableTripleState()
 	{
 		m_isTripleState = false;
 
-		if (m_boxState == CheckBox::BoxState::MiddleState)
-			SetBoxState(CheckBox::BoxState::UnCheck);
+		if (m_boxState == CheckBox::BoxState::BoxStateMiddle)
+			SetState(CheckBox::BoxState::BoxStateUnCheck);
+
+		RaiseEventByHandler<Events::EventDisableTripleState>();
+	}
+
+	const std::wstring& CheckBox::GetCaption()
+	{
+		return m_caption;
+	}
+	CheckBox::BoxState CheckBox::GetState()
+	{
+		return m_boxState;
+	}
+	bool CheckBox::TripleStateEnabled()
+	{
+		return m_isTripleState;
 	}
 }

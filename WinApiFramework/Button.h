@@ -30,17 +30,28 @@ namespace WinapiFramework
 		std::wstring m_caption;
 		CaptionPosition m_caption_position;
 
+	public:
+		struct Events : public BaseWindowEvents
+		{
+			struct EventClick : public BaseEvent {};
+			struct EventDoubleClick : public BaseEvent {};
+			struct EventFocus : public BaseEvent {};
+			struct EventUnfocus : public BaseEvent {};
+			struct EventSetCaption : public BaseEvent {};
+			struct EventSetCaptionPosition : public BaseEvent {};
+		};
+
 
 	private:
-		Button(const Button &otherButton) = delete;
-		Button(Button &&otherButton) = delete;
+		Button(const Button &other) = delete;
+		Button(Button &&other) = delete;
 		Button(ParentWindow* parent, const ConStruct<Button>& conStruct);
 		~Button();
 
 
 	private:
-		Button& operator=(const Button &otherButton) = delete;
-		Button& operator=(Button &&otherButton) = delete;
+		Button& operator=(const Button &other) = delete;
+		Button& operator=(Button &&other) = delete;
 
 
 	private:
@@ -67,7 +78,7 @@ namespace WinapiFramework
 		std::wstring caption;
 		Button::CaptionPosition caption_position;
 
-		ConStruct(const Rect& rect,
+		ConStruct(const Rect& rect = Rect(50, 50, 100, 50),
 			std::wstring caption = L"text",
 			Button::CaptionPosition caption_position = Button::CaptionPosition::Center)
 			: rect(rect)

@@ -175,35 +175,21 @@
   <ItemGroup>
     <ClCompile Include="base_window.cpp" />
     <ClCompile Include="button.cpp" />
-    <ClCompile Include="checkbox.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="checkbox.cpp" />
     <ClCompile Include="data_types.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="edit.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="graphicsbox.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="groupbox.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="edit.cpp" />
+    <ClCompile Include="graphicsbox.cpp" />
+    <ClCompile Include="groupbox.cpp" />
     <ClCompile Include="keyboard.cpp" />
-    <ClCompile Include="label.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="label.cpp" />
     <ClCompile Include="mouse.cpp" />
     <ClCompile Include="panel.cpp" />
-    <ClCompile Include="progressbar.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="trackbar.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="progressbar.cpp" />
+    <ClCompile Include="trackbar.cpp" />
     <ClCompile Include="winapi_framework.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -228,9 +214,7 @@
     <ClInclude Include="trackbar.h" />
     <ClInclude Include="winapi_framework.h" />
     <ClInclude Include="window.h" />
-    <ClInclude Include="all_controls.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="all_controls.h" />
     <ClInclude Include="window_include.h" />
     <ClInclude Include="window_modules.h" />
   </ItemGroup>

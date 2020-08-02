@@ -33,12 +33,10 @@ namespace WinapiFramework
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-	typedef int event_type_t;
 
 	// ~~~~~~~~ event functions ~~~~~~~~
 	template <typename E, class C> using event_member_function_t = void(C::*)(E&);
 	template <typename E> using event_function_t = void(*)(E&);
-
 
 
 	// ~~~~~~~~ event functor ~~~~~~~~
@@ -97,7 +95,6 @@ namespace WinapiFramework
 	};
 
 
-
 	// ~~~~~~~~ event functor list ~~~~~~~~
 	struct BaseFunctorList
 	{
@@ -111,9 +108,9 @@ namespace WinapiFramework
 
 	public:
 		FunctorList() {}
-		~FunctorList() 
+		~FunctorList()
 		{
-			for (auto& eh : m_ehl) 
+			for (auto& eh : m_ehl)
 				delete eh;
 		}
 
@@ -193,13 +190,13 @@ namespace WinapiFramework
 
 			event.AfterHandling();
 		}
-	protected:
+	public:
 		template <typename E, typename C> void BindEventFunc(void(C::*function)(E&), C* object)
 		{
 			AddEventFunctorToList(new EventFunctor<E, C>(function, object));
 		}
 		template <typename E> void BindEventFunc(void(*function)(E&))
-		{			
+		{
 			AddEventFunctorToList(new EventFunctor<E, void>(function));
 		}
 
@@ -222,7 +219,7 @@ namespace WinapiFramework
 		template <typename E> FunctorList<E>* GetFunctorList()
 		{
 			auto search = m_functor_lists.find(typeid(E));
-			if (search == m_functor_lists.end()) 
+			if (search == m_functor_lists.end())
 				return nullptr;
 
 			return dynamic_cast<FunctorList<E>*>(search->second);

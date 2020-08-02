@@ -6,16 +6,18 @@
 
 namespace WinapiFramework
 {
-	TrackBar::TrackBar(ParentControl* parentControl, const ConStruct< TrackBar>& conStruct)
-		: ChildControl(parentControl, conStruct)
-		, Events(m_events)
+	TrackBar::TrackBar(ParentWindow* parent, const ConStruct< TrackBar>& conStruct)
+		: BaseWindow(parent)
 	{
+		m_rect = conStruct.rect;
+
 		m_trackRange = conStruct.trackRange;
 		m_ThumbPosition = conStruct.startPosition;
 		m_smallStep = conStruct.smallStep;
 		m_largeStep = conStruct.largeStep;
 		m_orientation = conStruct.orientation;
 		m_tickStyle = conStruct.tickStyle;
+		m_ticksFrequency = conStruct.tick_frequency;
 		m_selectRange = conStruct.selectRange;
 		m_selectRangeEnabled = conStruct.enableSelectRange;
 		m_toolTipsStyle = conStruct.toolTipsStyle;
@@ -34,43 +36,43 @@ namespace WinapiFramework
 		{
 			case TB_LINEUP:			// Left/Up arrow
 				m_ThumbPosition = SendMessage(m_hWindow, TBM_GETPOS, 0, 0);
-				m_events.PushEvent(Event(Event::Type::LinedUp));
+				RaiseEventByHandler<Events::EventLineUp>();
 				break;
 
 			case TB_LINEDOWN:		// Right/Down arrow
 				m_ThumbPosition = SendMessage(m_hWindow, TBM_GETPOS, 0, 0);
-				m_events.PushEvent(Event(Event::Type::LinedDown));
+				RaiseEventByHandler<Events::EventLineDown>();
 				break;
 
 			case TB_PAGEUP:			// PageUp
 				m_ThumbPosition = SendMessage(m_hWindow, TBM_GETPOS, 0, 0);
-				m_events.PushEvent(Event(Event::Type::PagedUp));
+				RaiseEventByHandler<Events::EventPageUp>();
 				break;
 
 			case TB_PAGEDOWN:		// PageDown
 				m_ThumbPosition = SendMessage(m_hWindow, TBM_GETPOS, 0, 0);
-				m_events.PushEvent(Event(Event::Type::PagedDown));
+				RaiseEventByHandler<Events::EventPageDown>();
 				break;
 
 			case TB_TOP:			// End
 				m_ThumbPosition = SendMessage(m_hWindow, TBM_GETPOS, 0, 0);
-				m_events.PushEvent(Event(Event::Type::MovedToTop));
+				RaiseEventByHandler<Events::EventMoveToMax>();
 				break;
 
 			case TB_BOTTOM:			// Home
 				m_ThumbPosition = SendMessage(m_hWindow, TBM_GETPOS, 0, 0);
-				m_events.PushEvent(Event(Event::Type::MovedToBottom));
+				RaiseEventByHandler<Events::EventMoveToMin>();
 				break;
 
 			case TB_THUMBTRACK:		// Mouse drag
 				m_ThumbPosition = SendMessage(m_hWindow, TBM_GETPOS, 0, 0);
-				m_events.PushEvent(TrackBar::Event::Type::ThumbDragged);
+				RaiseEventByHandler<Events::EventDragThumb>();
 				break;
 
 			//case TB_THUMBPOSITION:
 			case TB_ENDTRACK:	// dragged and released thumb
 				m_ThumbPosition = SendMessage(m_hWindow, TBM_GETPOS, 0, 0);
-				m_events.PushEvent(Event(Event::Type::DraggingFinnished));
+				RaiseEventByHandler<Events::EventFinishDrag>();
 				break;
 
 			default:
@@ -80,37 +82,39 @@ namespace WinapiFramework
 	}
 	bool TrackBar::CreateWinapiWindow()
 	{
+		m_window_style |= WS_CHILD | WS_VISIBLE;
+
 		// [>] Set TrackBar styles
 		// set orienttaion
-		if (m_orientation == TrackBar::Orientation::Horizontal)		m_controlStyle |= TBS_HORZ;
-		else if (m_orientation == TrackBar::Orientation::Vertical)	m_controlStyle |= TBS_VERT;
+		if (m_orientation == TrackBar::Orientation::Horizontal)		m_window_style |= TBS_HORZ;
+		else if (m_orientation == TrackBar::Orientation::Vertical)	m_window_style |= TBS_VERT;
 
 		// set selection style
-		if (m_selectRangeEnabled)	m_controlStyle |= TBS_ENABLESELRANGE;
+		if (m_selectRangeEnabled)	m_window_style |= TBS_ENABLESELRANGE;
 
 		// set tick style
 		switch (m_tickStyle)
 		{
 			
 			case WinapiFramework::TrackBar::Default:	break;
-			case WinapiFramework::TrackBar::Top:	m_controlStyle |= TBS_TOP;		break;
-			case WinapiFramework::TrackBar::Bottom:	m_controlStyle |= TBS_BOTTOM;	break;
-			case WinapiFramework::TrackBar::Both:	m_controlStyle |= TBS_BOTH;		break;
-			case WinapiFramework::TrackBar::NoTicks:m_controlStyle |= TBS_NOTICKS;	break;
+			case WinapiFramework::TrackBar::Top:	m_window_style |= TBS_TOP;		break;
+			case WinapiFramework::TrackBar::Bottom:	m_window_style |= TBS_BOTTOM;	break;
+			case WinapiFramework::TrackBar::Both:	m_window_style |= TBS_BOTH;		break;
+			case WinapiFramework::TrackBar::NoTicks:m_window_style |= TBS_NOTICKS;	break;
 		}
-		m_controlStyle |= TBS_AUTOTICKS;
+		m_window_style |= TBS_AUTOTICKS;
 
 		// set tool tips style
-		if (m_toolTipsStyle != ToolTipsStyle::ToolTipsStyleNone) m_controlStyle |= TBS_TOOLTIPS;
+		if (m_toolTipsStyle != ToolTipsStyle::ToolTipsStyleNone) m_window_style |= TBS_TOOLTIPS;
 
 
 		// [>] create window
 		m_hWindow = CreateWindow(TRACKBAR_CLASS, L"TrackBar",
-			m_controlStyle,
-			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
-			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
+			m_window_style,
+			m_rect.position.x - mp_parent->GetCanvasPosition().x,
+			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			m_pParentControl->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+			mp_parent->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 		if (!m_hWindow)
 		{
@@ -124,6 +128,7 @@ namespace WinapiFramework
 		SetThumbPosition(m_ThumbPosition);
 		SetSmallStep(m_smallStep);
 		SetLargeStep(m_largeStep);
+		SetTicksFrequency(m_ticksFrequency);
 
 		//// create and set side labels
 		//hLabel1 = CreateWindow(L"STATIC", labels.label1.c_str(), SS_CENTER | WS_CHILD | WS_VISIBLE,
@@ -149,9 +154,9 @@ namespace WinapiFramework
 		if (!m_selectRangeEnabled)
 		{
 			m_selectRangeEnabled = true;
-			m_controlStyle |= TBS_ENABLESELRANGE;
-			SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
-			m_events.PushEvent(Event(Event::Type::SelectRangeEnabled));
+			m_window_style |= TBS_ENABLESELRANGE;
+			SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
+			RaiseEventByHandler<Events::EventEnableSelectRange>();
 		}
 	}
 	void TrackBar::DisableSelectRange()
@@ -159,9 +164,9 @@ namespace WinapiFramework
 		if (m_selectRangeEnabled)
 		{
 			m_selectRangeEnabled = false;
-			m_controlStyle = m_controlStyle & (~TBS_ENABLESELRANGE);
-			SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
-			m_events.PushEvent(Event(Event::Type::SelectRangeDisabled));
+			m_window_style = m_window_style & (~TBS_ENABLESELRANGE);
+			SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
+			RaiseEventByHandler<Events::EventDisableSelectRange>();
 		}
 	}
 	bool TrackBar::IsThumbInSelectRange()
@@ -186,23 +191,21 @@ namespace WinapiFramework
 	{
 		m_ThumbPosition = std::min(std::max(newThumbPosition, m_trackRange.min), m_trackRange.max);
 		SendMessage(m_hWindow, TBM_SETPOS, TRUE, m_ThumbPosition);
-		m_events.PushEvent(Event(Event::Type::ThumbPositionChanged));
+		RaiseEventByHandler<Events::EventSetThumbPosition>();
 	}
 	void TrackBar::SetMinTrackValue(int value)
 	{
 		m_trackRange.min = std::min(value, m_trackRange.max);
 
 		SendMessage(m_hWindow, TBM_SETRANGEMIN, TRUE, value);
-
-		m_events.PushEvent(Event(Event::Type::MinTrackValueChanged));
+		RaiseEventByHandler<Events::EventSetMinTrackValue>();
 	}
 	void TrackBar::SetMaxTrackValue(int value)
 	{
 		m_trackRange.max = std::max(value, m_trackRange.min);
 
 		SendMessage(m_hWindow, TBM_SETRANGEMAX, TRUE, value);
-
-		m_events.PushEvent(Event(Event::Type::MinTrackValueChanged));
+		RaiseEventByHandler<Events::EventSetMaxTrackValue>();
 	}
 	void TrackBar::SetTrackRange(Range newRange)
 	{
@@ -216,24 +219,21 @@ namespace WinapiFramework
 		m_trackRange.max = maxValue;
 
 		SendMessage(m_hWindow, TBM_SETRANGE, TRUE, MAKELPARAM(minValue, maxValue));
-
-		m_events.PushEvent(Event(Event::Type::TrackRangeChanged));
+		RaiseEventByHandler<Events::EventSetTrackRange>();
 	}
 	void TrackBar::SetMinSelectValue(int value)
 	{
 		m_selectRange.min = std::clamp<int>(value, m_trackRange.min, m_selectRange.max);
 
 		SendMessage(m_hWindow, TBM_SETSELSTART, TRUE, m_selectRange.min);
-
-		m_events.PushEvent(Event(Event::Type::MinSelectValueChanged));
+		RaiseEventByHandler<Events::EventSetMinSelectValue>();
 	}
 	void TrackBar::SetMaxSelectValue(int value)
 	{
 		m_selectRange.max = std::clamp<int>(value, m_selectRange.min, m_trackRange.max);
 
 		SendMessage(m_hWindow, TBM_SETSELEND, TRUE, m_selectRange.max);
-
-		m_events.PushEvent(Event(Event::Type::MaxSelectValueChanged));
+		RaiseEventByHandler<Events::EventSetMaxSelectValue>();
 	}
 	void TrackBar::SetSelectRange(Range newRange)
 	{
@@ -251,7 +251,7 @@ namespace WinapiFramework
 		if (m_selectRangeEnabled)
 		{
 			SendMessage(m_hWindow, TBM_SETSEL, TRUE, MAKELPARAM(minValue, maxValue));
-			m_events.PushEvent(Event(Event::Type::SelectRangeChanged));
+			RaiseEventByHandler<Events::EventSetSelectRange>();
 		}
 	}
 	void TrackBar::SetToolTipsStyle(ToolTipsStyle toolTipsStyle)
@@ -260,13 +260,13 @@ namespace WinapiFramework
 
 		if (m_toolTipsStyle == ToolTipsStyle::ToolTipsStyleNone)
 		{
-			m_controlStyle = m_controlStyle & (~TBS_TOOLTIPS);
-			SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+			m_window_style = m_window_style & (~TBS_TOOLTIPS);
+			SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 		}
 		else
 		{
-			m_controlStyle |= TBS_TOOLTIPS;
-			SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+			m_window_style |= TBS_TOOLTIPS;
+			SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
 			switch (m_toolTipsStyle)
 			{
@@ -279,26 +279,25 @@ namespace WinapiFramework
 			}
 		}
 
-		m_events.PushEvent(Event(Event::Type::ToolTipsStyleChanged));
+		RaiseEventByHandler<Events::EventToolTipStyle>();
 	}
 	void TrackBar::SetSmallStep(unsigned int smallStep)
 	{
 		m_smallStep = smallStep;
 		SendMessage(m_hWindow, TBM_SETLINESIZE, 0, smallStep);
-		m_events.PushEvent(Event(Event::Type::SmallStepChanged));
+		RaiseEventByHandler<Events::EventSetSmallStep>();
 	}
 	void TrackBar::SetLargeStep(unsigned int largeStep)
 	{
 		m_largeStep = largeStep;
 		SendMessage(m_hWindow, TBM_SETPAGESIZE, 0, largeStep);
-		m_events.PushEvent(Event(Event::Type::LargeStepChanged));
+		RaiseEventByHandler<Events::EventSetLargeStep>();
 	}
 	void TrackBar::SetTicksFrequency(unsigned int frequency)
 	{
 		m_ticksFrequency = std::max(frequency, 1u);
 		SendMessage(m_hWindow, TBM_SETTICFREQ, m_ticksFrequency, 0);
-
-		m_events.PushEvent(Event(Event::Type::TicksFrequencyChanged));
+		RaiseEventByHandler<Events::EventSetTicksFrequency>();
 	}
 
 	int TrackBar::GetPosition()

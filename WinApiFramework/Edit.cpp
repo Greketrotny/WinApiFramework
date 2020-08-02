@@ -3,10 +3,10 @@
 
 namespace WinapiFramework
 {
-	Edit::Edit(ParentControl* parentControl, const ConStruct<Edit>& conStruct)
-		: ChildControl(parentControl, conStruct)
-		, Events(m_events)
+	Edit::Edit(ParentWindow* parent, const ConStruct<Edit>& conStruct)
+		: BaseWindow(parent)
 	{
+		m_rect = conStruct.rect;
 		m_text = conStruct.text;
 		m_cueText = conStruct.cueText;
 		m_textAlignment = conStruct.textAlignment;
@@ -33,27 +33,27 @@ namespace WinapiFramework
 		switch (event)
 		{
 			case EN_CHANGE:
-				m_events.PushEvent(Event(Event::Type::TextChanged));
+				RaiseEventByHandler<Events::EventSetText>();
 				break;
 
 			case EN_MAXTEXT:
-				m_events.PushEvent(Event(Event::Type::TextLimitReached));
+				RaiseEventByHandler<Events::EventReachTextLimit>();
 				break;
 
 			case EN_HSCROLL:
-				m_events.PushEvent(Event(Event::Type::HorizontalScroll));
+				RaiseEventByHandler<Events::EventHScroll>();
 				break;
 
 			case EN_VSCROLL:
-				m_events.PushEvent(Event(Event::Type::VerticalScroll));
+				RaiseEventByHandler<Events::EventVScroll>();
 				break;
 
 			case EN_SETFOCUS:
-				m_events.PushEvent(Event(Event::Type::FocusSet));
+				RaiseEventByHandler<Events::EventSetFocus>();
 				break;
 
 			case EN_KILLFOCUS:
-				m_events.PushEvent(Event(Event::Type::FocusKilled));
+				RaiseEventByHandler<Events::EventKillFocus>();
 				break;
 
 			default:
@@ -63,60 +63,60 @@ namespace WinapiFramework
 	}
 	bool Edit::CreateWinapiWindow()
 	{
+		m_window_style |= WS_CHILD | WS_VISIBLE | WS_BORDER | ES_NOHIDESEL;
+
 		// [>] Set edit styles
 		// set text alignment
 		if (m_textAlignment == Edit::TextAlignment::Left)
-			m_controlStyle |= ES_LEFT;
+			m_window_style |= ES_LEFT;
 		if (m_textAlignment == Edit::TextAlignment::Center)
-			m_controlStyle |= ES_CENTER;
+			m_window_style |= ES_CENTER;
 		if (m_textAlignment == Edit::TextAlignment::Right)
-			m_controlStyle |= ES_RIGHT;
+			m_window_style |= ES_RIGHT;
 
 		// set letters mode
 		if (m_lettersMode == Edit::LettersMode::LowerCase)
-			m_controlStyle |= ES_LOWERCASE;
+			m_window_style |= ES_LOWERCASE;
 		if (m_lettersMode == Edit::LettersMode::UpperCase)
-			m_controlStyle |= ES_UPPERCASE;
+			m_window_style |= ES_UPPERCASE;
 
 		// set password mode
 		if (m_passwordMode)
-			m_controlStyle |= ES_PASSWORD;
+			m_window_style |= ES_PASSWORD;
 
 		// set number only mode
 		if (m_numberOnly)
-			m_controlStyle |= ES_NUMBER;
+			m_window_style |= ES_NUMBER;
 
 		// set read only mode
 		if (m_readOnly)
-			m_controlStyle |= ES_READONLY;
+			m_window_style |= ES_READONLY;
 
 		// set multiline mode
 		if (m_multiline)
-			m_controlStyle |= ES_MULTILINE | ES_AUTOVSCROLL;
+			m_window_style |= ES_MULTILINE | ES_AUTOVSCROLL;
 
 		// set word wrap mode
 		if (!m_wordWrap)
-			m_controlStyle |= ES_AUTOHSCROLL;
+			m_window_style |= ES_AUTOHSCROLL;
 
 		// set scrolling style
 		switch (m_scrollingStyle)
 		{
-			case WinapiFramework::Edit::NoScrolling:	break;
-			case WinapiFramework::Edit::Horizontal:			m_controlStyle |= WS_HSCROLL;	break;
-			case WinapiFramework::Edit::Vertical:			m_controlStyle |= WS_VSCROLL;	break;
-			case WinapiFramework::Edit::HorizontalVertical:	m_controlStyle |= WS_HSCROLL | WS_VSCROLL;	break;
+			case WinapiFramework::Edit::NoScrolling:													break;
+			case WinapiFramework::Edit::Horizontal:			m_window_style |= WS_HSCROLL;				break;
+			case WinapiFramework::Edit::Vertical:			m_window_style |= WS_VSCROLL;				break;
+			case WinapiFramework::Edit::HorizontalVertical:	m_window_style |= WS_HSCROLL | WS_VSCROLL;	break;
 		}
-
-		m_controlStyle |= WS_BORDER | ES_NOHIDESEL;
 
 
 		// [>] Create window
 		m_hWindow = CreateWindow(L"EDIT", m_text.c_str(),
-			m_controlStyle,
-			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
-			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
+			m_window_style,
+			m_rect.position.x - mp_parent->GetCanvasPosition().x,
+			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			m_pParentControl->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+			mp_parent->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 		// check control creation
 		if (!m_hWindow)
@@ -144,29 +144,29 @@ namespace WinapiFramework
 		m_text = newText;
 		SetWindowText(m_hWindow, m_text.c_str());
 
-		m_events.PushEvent(Edit::Event(Edit::Event::Type::TextChanged));
+		RaiseEventByHandler<Events::EventSetText>();
 	}
 	void Edit::SetCueText(const std::wstring& cueText)
 	{	// must be wide string ^^^^^^^
 		m_cueText = cueText;
 		BOOL success = SendMessage(m_hWindow, EM_SETCUEBANNER, TRUE, (LPARAM)m_cueText.c_str());
-		m_events.PushEvent(Event(Event::Type::CueTextChanged));
+		RaiseEventByHandler<Events::EventSetCueText>();
 	}
 	void Edit::SetTextAlignment(Edit::TextAlignment newTextAlignment)
 	{
 		m_textAlignment = newTextAlignment;
 
-		m_controlStyle = (m_controlStyle & (~(ES_LEFT | ES_CENTER | ES_RIGHT)));
+		m_window_style = (m_window_style & (~(ES_LEFT | ES_CENTER | ES_RIGHT)));
 		switch (m_textAlignment)
 		{
-			case WinapiFramework::Edit::Left:	m_controlStyle |= ES_LEFT;		break;
-			case WinapiFramework::Edit::Center:	m_controlStyle |= ES_CENTER;	break;
-			case WinapiFramework::Edit::Right:	m_controlStyle |= ES_RIGHT;		break;
+			case WinapiFramework::Edit::Left:	m_window_style |= ES_LEFT;		break;
+			case WinapiFramework::Edit::Center:	m_window_style |= ES_CENTER;	break;
+			case WinapiFramework::Edit::Right:	m_window_style |= ES_RIGHT;		break;
 		}
-		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 		InvalidateRect(m_hWindow, NULL, TRUE);
 
-		m_events.PushEvent(Event(Event::Type::TextAlignmentSet));
+		RaiseEventByHandler<Events::EventSetTextAlignment>();
 	}
 	void Edit::SetLettersMode(Edit::LettersMode newLettersMode)
 	{
@@ -178,26 +178,25 @@ namespace WinapiFramework
 		if (newLettersMode == Edit::LettersMode::UpperCase)
 			newMode |= ES_UPPERCASE;
 
-		m_controlStyle = (m_controlStyle & ~(ES_LOWERCASE | ES_UPPERCASE) | newMode);
-		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+		m_window_style = (m_window_style & ~(ES_LOWERCASE | ES_UPPERCASE) | newMode);
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
-		m_events.PushEvent(Event(Event::Type::LettersModeSet));
+		RaiseEventByHandler<Events::EventSetLetterMode>();
 	}
 	void Edit::SetPasswordMode(bool newPasswordMode)
 	{
 		m_passwordMode = newPasswordMode;
 
-		m_controlStyle = (m_controlStyle & (~ES_PASSWORD));
-		if (m_passwordMode) m_controlStyle |= ES_PASSWORD;
+		m_window_style = (m_window_style & (~ES_PASSWORD));
+		if (m_passwordMode) m_window_style |= ES_PASSWORD;
 
-		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 		if (m_passwordMode) SendMessage(m_hWindow, EM_SETPASSWORDCHAR, m_passwordChar, 0);
 		else				SendMessage(m_hWindow, EM_SETPASSWORDCHAR, 0, 0);
 
 		InvalidateRect(m_hWindow, NULL, TRUE);
 
-		m_events.PushEvent(Event(Event::Type::PasswordModeSet));
-
+		RaiseEventByHandler<Events::EventSetPasswordMode>();
 	}
 	void Edit::SetNumberOnlyMode(bool numberOnlyMode)
 	{
@@ -206,25 +205,25 @@ namespace WinapiFramework
 			m_numberOnly = numberOnlyMode;
 
 			if (m_numberOnly)
-				m_controlStyle |= ES_NUMBER;
+				m_window_style |= ES_NUMBER;
 			else
-				m_controlStyle = (m_controlStyle & (~ES_NUMBER));
-			SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+				m_window_style = (m_window_style & (~ES_NUMBER));
+			SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
-			m_events.PushEvent(Edit::Event(Edit::Event::Type::NumberModeSet));
+			RaiseEventByHandler<Events::EventSetNumberMode>();
 		}
 	}
 	void Edit::SetReadOnlyMode(bool readOnlyMode)
 	{
 		m_readOnly = readOnlyMode;
 
-		if (m_readOnly)	m_controlStyle |= ES_READONLY;
-		else			m_controlStyle = (m_controlStyle & (~ES_READONLY));
+		if (m_readOnly)	m_window_style |= ES_READONLY;
+		else			m_window_style = (m_window_style & (~ES_READONLY));
 
-		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 		SendMessage(m_hWindow, EM_SETREADONLY, m_readOnly, 0);
 
-		m_events.PushEvent(Event(Event::Type::ReadOnlyModeSet));
+		RaiseEventByHandler<Events::EventSetReadOnlyMode>();
 	}
 	/*void Edit::SetMultilineMode(bool multilineMode)
 	{
@@ -232,10 +231,10 @@ namespace WinapiFramework
 		{
 			m_multiline = multilineMode;
 
-			if (m_multiline)	m_controlStyle |= ES_MULTILINE;
-			else				m_controlStyle = (m_controlStyle & (~ES_MULTILINE));
+			if (m_multiline)	m_window_style |= ES_MULTILINE;
+			else				m_window_style = (m_window_style & (~ES_MULTILINE));
 
-			SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+			SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
 			m_events.PushEvent(Event(Event::Type::MultilineModeSet));
 		}
@@ -246,10 +245,10 @@ namespace WinapiFramework
 		{
 			m_wordWrap = wordWrapMode;
 
-			if (!m_wordWrap)	m_controlStyle |= ES_AUTOHSCROLL;
-			else				m_controlStyle = (m_controlStyle & (~ES_AUTOHSCROLL));
+			if (!m_wordWrap)	m_window_style |= ES_AUTOHSCROLL;
+			else				m_window_style = (m_window_style & (~ES_AUTOHSCROLL));
 
-			SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+			SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
 
 			m_events.PushEvent(Event(Event::Type::WordWrapModeSet));
@@ -260,7 +259,7 @@ namespace WinapiFramework
 		m_textLengthLimit = lengthLimit;
 		SendMessage(m_hWindow, EM_LIMITTEXT, m_textLengthLimit, 0u);
 
-		m_events.PushEvent(Event(Event::Type::TextLengthLimitSet));
+		RaiseEventByHandler<Events::EventSetTextLengthLimit>();
 	}
 	void Edit::SetPasswordChar(wchar_t passwordChar)
 	{
@@ -273,10 +272,10 @@ namespace WinapiFramework
 			InvalidateRect(m_hWindow, NULL, TRUE);
 		}
 
-		m_events.PushEvent(Event(Event::Type::PasswordCharSet));
+		RaiseEventByHandler<Events::EventSetPasswordChar>();
 	}
 
-	const std::wstring& Edit::GetText()
+	const std::wstring& Edit::GetText() const
 	{
 		wchar_t* buffer = new wchar_t[m_textLengthLimit];
 		GetWindowText(m_hWindow, buffer, m_textLengthLimit);
@@ -332,7 +331,7 @@ namespace WinapiFramework
 
 		SendMessage(m_hWindow, EM_SETSEL, startIndex, endIndex);
 
-		m_events.PushEvent(Event(Event::Type::SelectionSet));
+		RaiseEventByHandler<Events::EventSetSelection>();
 	}
 	void Edit::SetSelection(Range selectionRange)
 	{
@@ -341,17 +340,17 @@ namespace WinapiFramework
 	void Edit::SelectAll()
 	{
 		SendMessage(m_hWindow, EM_SETSEL, 0, -1);
-		m_events.PushEvent(Event(Event::Type::AllSelected));
+		RaiseEventByHandler<Events::EventSelectAll>();
 	}
 	void Edit::RemoveSelection()
 	{
 		SendMessage(m_hWindow, EM_SETSEL, -1, -1);
-		m_events.PushEvent(Event(Event::Type::SelectionRemoved));
+		RaiseEventByHandler<Events::EventRemoveSelection>();
 	}
 	void Edit::ReplaceSelection(const std::wstring& text)
 	{
 		SendMessage(m_hWindow, EM_REPLACESEL, TRUE, (LPARAM)text.c_str());
-		m_events.PushEvent(Event(Event::Type::SelectionReplaced));
+		RaiseEventByHandler<Events::EventReplaceSelection>();
 	}
 
 	int Edit::GetLineCount() const

@@ -5,9 +5,9 @@
 //#include <sdkddkver.h>
 
 //#define WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
+//#define WIN32_LEAN_AND_MEAN
 #define NOGDICAPMASKS
-#define NOVIRTUALKEYCODES
+///#define NOVIRTUALKEYCODES
 //#define NOWINMESSAGES
 //#define NOWINSTYLES
 //#define NOSYSMETRICS
@@ -26,7 +26,7 @@
 //#define NOGDI
 //#define NOKERNEL
 //#define NOUSER
-#define NONLS
+//#define NONLS
 //#define NOMB
 #define NOMEMMGR
 #define NOMETAFILE

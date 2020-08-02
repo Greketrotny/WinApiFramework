@@ -6,7 +6,7 @@ namespace WinapiFramework
 	Button::Button(ParentWindow* parent, const ConStruct<Button>& conStruct)
 		: BaseWindow(parent)
 	{
-		m_window_rect = conStruct.rect;
+		m_rect = conStruct.rect;
 		m_caption = conStruct.caption;
 		m_caption_position = conStruct.caption_position;
 
@@ -23,19 +23,19 @@ namespace WinapiFramework
 		switch (event)
 		{
 			case BN_CLICKED:
-				//m_events.PushEvent(Button::Event(Button::Event::Type::Click, this));
+				RaiseEventByHandler<Events::EventClick>();
 				break;
 
 			case BN_DBLCLK:
-				//m_events.PushEvent(Button::Event(Button::Event::Type::DoubleClick, this));
+				RaiseEventByHandler<Events::EventDoubleClick>();
 				break;
 
 			case BN_SETFOCUS:
-				//m_events.PushEvent(Button::Event(Button::Event::Type::Focus, this));
+				RaiseEventByHandler<Events::EventFocus>();
 				break;
 
 			case BN_KILLFOCUS:
-				//m_events.PushEvent(Button::Event(Button::Event::Type::Unfocus, this));
+				RaiseEventByHandler<Events::EventUnfocus>();
 				break;
 
 			default:
@@ -67,9 +67,9 @@ namespace WinapiFramework
 		// [>] Create window
 		m_hWindow = CreateWindow(L"BUTTON", m_caption.c_str(),
 			m_window_style,
-			m_window_rect.position.x - mp_parent->GetCanvasPosition().x,
-			m_window_rect.position.y - mp_parent->GetCanvasPosition().y,
-			m_window_rect.size.width, m_window_rect.size.height,
+			m_rect.position.x - mp_parent->GetCanvasPosition().x,
+			m_rect.position.y - mp_parent->GetCanvasPosition().y,
+			m_rect.size.width, m_rect.size.height,
 			mp_parent->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 		if (!m_hWindow)
@@ -93,7 +93,7 @@ namespace WinapiFramework
 		m_caption = newCaption;
 		SetWindowText(m_hWindow, m_caption.c_str());
 
-		//m_events.PushEvent(Button::Event(Button::Event::Type::CaptionChanged, this));
+		RaiseEventByHandler<Events::EventSetCaption>();
 	}
 	void Button::SetCaptionPosition(Button::CaptionPosition captionPosition)
 	{
@@ -118,7 +118,7 @@ namespace WinapiFramework
 		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 		RedrawWindow(m_hWindow, NULL, NULL, RDW_INVALIDATE);
 
-		//m_events.PushEvent(Event(Event::Type::CaptionPositionChanged, this));
+		RaiseEventByHandler<Events::EventSetCaptionPosition>();
 	}
 
 	const std::wstring& Button::GetCaption() const

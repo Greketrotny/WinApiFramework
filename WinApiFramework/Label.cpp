@@ -3,12 +3,11 @@
 
 namespace WinapiFramework
 {
-	Label::Label(ParentControl* parentControl, const ConStruct<Label>& conStruct)
-		: ChildControl(parentControl, conStruct)
-		, Caption(m_caption)
-		, Alignment(m_textAlignment)
-		, Events(m_events)
+	Label::Label(ParentWindow* parent, const ConStruct<Label>& conStruct)
+		: BaseWindow(parent)
 	{
+		m_window_style |= WS_CHILD | WS_VISIBLE;
+
 		m_rect = conStruct.rect;
 		m_caption = conStruct.caption;
 		m_textAlignment = conStruct.textAlignment;
@@ -26,11 +25,11 @@ namespace WinapiFramework
 		switch (event)
 		{
 			case STN_CLICKED:
-				m_events.PushEvent(Event(Event::Type::Clicked));
+				RaiseEventByHandler<Events::EventClick>();
 				break;
 
 			case STN_DBLCLK:
-				m_events.PushEvent(Event(Event::Type::DoubleClicked));
+				RaiseEventByHandler<Events::EventDoubleClick>();
 				break;
 
 			case STN_ENABLE:
@@ -50,22 +49,22 @@ namespace WinapiFramework
 	{
 		// set text alignment
 		if (m_textAlignment == Label::Left)
-			m_controlStyle |= SS_LEFT;
+			m_window_style |= SS_LEFT;
 		if (m_textAlignment == Label::Center)
-			m_controlStyle |= SS_CENTER;
+			m_window_style |= SS_CENTER;
 		if (m_textAlignment == Label::Right)
-			m_controlStyle |= SS_RIGHT;
+			m_window_style |= SS_RIGHT;
 
 		// for notifications from parent control
-		m_controlStyle |= SS_NOTIFY;
+		m_window_style |= SS_NOTIFY;
 
 		// create window
 		m_hWindow = CreateWindow(L"STATIC", m_caption.c_str(),
-			m_controlStyle,
-			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
-			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
+			m_window_style,
+			m_rect.position.x - mp_parent->GetCanvasPosition().x,
+			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			m_pParentControl->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+			mp_parent->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 		// check control creation
 		if (!m_hWindow)
@@ -85,12 +84,12 @@ namespace WinapiFramework
 		DestroyWindow(m_hWindow);
 	}
 
-	void Label::SetCaption(std::wstring newCaption)
+	void Label::SetCaption(const std::wstring& newCaption)
 	{
 		m_caption = newCaption;
 		SetWindowText(m_hWindow, m_caption.c_str());
 
-		m_events.PushEvent(Label::Event(Label::Event::Type::CaptionChanged));
+		RaiseEventByHandler<Events::EventSetCaption>();
 	}
 	void Label::SetTextAligment(Label::TextAlignment textAlignment)
 	{
@@ -102,10 +101,10 @@ namespace WinapiFramework
 		if (textAlignment == Label::Right)
 			newStyle = SS_RIGHT;
 
-		m_controlStyle = (m_controlStyle & ~(SS_LEFT | SS_CENTER | SS_RIGHT | SS_LEFTNOWORDWRAP)) | newStyle;
-		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+		m_window_style = (m_window_style & ~(SS_LEFT | SS_CENTER | SS_RIGHT | SS_LEFTNOWORDWRAP)) | newStyle;
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 		InvalidateRect(m_hWindow, NULL, TRUE);
 
-		m_events.PushEvent(Label::Event(Label::Event::Type::TextAlignmentChanged));
+		RaiseEventByHandler<Events::EventSetTextAlignment>();
 	}
 }

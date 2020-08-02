@@ -3,9 +3,10 @@
 
 namespace WinapiFramework
 {
-	GroupBox::GroupBox(ParentControl* parentControl, const ConStruct<GroupBox>& conStruct)
-		: ChildControl(parentControl, conStruct)
+	GroupBox::GroupBox(ParentWindow* parent, const ConStruct<GroupBox>& conStruct)
+		: BaseWindow(parent)
 	{
+		m_rect = conStruct.rect;
 		m_caption = conStruct.caption;
 		m_caption_position = conStruct.caption_position;
 
@@ -28,26 +29,28 @@ namespace WinapiFramework
 	}
 	bool GroupBox::CreateWinapiWindow()
 	{
+		m_window_style |= WS_CHILD | WS_VISIBLE;
+
 		// [>] Set groupbox style
-		m_controlStyle |= (BS_NOTIFY | BS_GROUPBOX);
-		//m_controlStyle |= BS_HOLLOW;
+		m_window_style |= (BS_NOTIFY | BS_GROUPBOX);
+		//m_window_style |= BS_HOLLOW;
 
 		// set caption position
 		switch (m_caption_position)
 		{
-			case WinapiFramework::GroupBox::Left:	m_controlStyle |= BS_LEFT;		break;
-			case WinapiFramework::GroupBox::Center:	m_controlStyle |= BS_CENTER;	break;
-			case WinapiFramework::GroupBox::Right:	m_controlStyle |= BS_RIGHT;		break;
+			case WinapiFramework::GroupBox::Left:	m_window_style |= BS_LEFT;		break;
+			case WinapiFramework::GroupBox::Center:	m_window_style |= BS_CENTER;	break;
+			case WinapiFramework::GroupBox::Right:	m_window_style |= BS_RIGHT;		break;
 		}
 
 
 		// [>] Create window
 		m_hWindow = CreateWindow(L"BUTTON", m_caption.c_str(),
-			m_controlStyle,
-			m_rect.position.x - m_pParentControl->GetCanvasPosition().x,
-			m_rect.position.y - m_pParentControl->GetCanvasPosition().y,
+			m_window_style,
+			m_rect.position.x - mp_parent->GetCanvasPosition().x,
+			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			m_pParentControl->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+			mp_parent->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
 		if (!m_hWindow)
 		{
@@ -65,36 +68,41 @@ namespace WinapiFramework
 		::DestroyWindow(m_hWindow);
 	}
 	
-	void GroupBox::SetCaption(std::wstring newCaption)
+	void GroupBox::SetCaption(const std::wstring& newCaption)
 	{
 		m_caption = newCaption;
 		SetWindowText(m_hWindow, m_caption.c_str());
-		m_events.PushEvent(Event(Event::Type::CaptionChanged));
+		RaiseEventByHandler<Events::EventSetCaption>();
 	}
 	void GroupBox::SetCaptionPosition(GroupBox::CaptionPosition captionPosition)
 	{
 		m_caption_position = captionPosition;
 
-		m_controlStyle = GetWindowStyle(m_hWindow);
-		m_controlStyle = m_controlStyle & (~(BS_LEFT | BS_CENTER | BS_RIGHT));
+		m_window_style = GetWindowStyle(m_hWindow);
+		m_window_style = m_window_style & (~(BS_LEFT | BS_CENTER | BS_RIGHT));
 
 		switch (m_caption_position)
 		{
-			case WinapiFramework::GroupBox::Left:	m_controlStyle |= BS_LEFT;		break;
-			case WinapiFramework::GroupBox::Center:	m_controlStyle |= BS_CENTER;	break;
-			case WinapiFramework::GroupBox::Right:	m_controlStyle |= BS_RIGHT;		break;
+			case WinapiFramework::GroupBox::Left:	m_window_style |= BS_LEFT;		break;
+			case WinapiFramework::GroupBox::Center:	m_window_style |= BS_CENTER;	break;
+			case WinapiFramework::GroupBox::Right:	m_window_style |= BS_RIGHT;		break;
 		}
 
-		SetWindowLong(m_hWindow, GWL_STYLE, m_controlStyle);
+		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 
 		RECT r;
 		r.left = m_rect.position.x;
 		r.top = m_rect.position.y;
 		r.right = m_rect.position.x + m_rect.size.width;
 		r.bottom = m_rect.position.y + m_rect.size.height;
-		InvalidateRect(m_pParentControl->GetWindowHandle(), &r, TRUE);
+		InvalidateRect(mp_parent->GetWindowHandle(), &r, TRUE);
 
-		m_events.PushEvent(Event(Event::Type::CaptionPositionChanged));
+		RaiseEventByHandler<Events::EventSetCaptionPosition>();
+	}
+
+	const std::wstring& GroupBox::GetCaption()
+	{
+		return m_caption;
 	}
 	GroupBox::CaptionPosition GroupBox::GetCaptionPosition()
 	{

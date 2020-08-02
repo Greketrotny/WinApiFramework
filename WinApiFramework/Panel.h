@@ -13,8 +13,8 @@ namespace WinapiFramework
 		, public HasWindowProcedure<Panel>
 	{
 	private:
-		Panel(const Panel& panel) = delete;
-		Panel(Panel&& panel) = delete;
+		Panel(const Panel& other) = delete;
+		Panel(Panel&& other) = delete;
 		Panel(ParentWindow* parent, const ConStruct<Panel>& conStruct);
 		~Panel();
 
@@ -41,7 +41,7 @@ namespace WinapiFramework
 
 
 	public:
-		friend class ControlCreator;
+		friend class ObjectCreator;
 	};
 
 	template <> struct ConStruct<Panel>
