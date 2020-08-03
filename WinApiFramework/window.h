@@ -32,7 +32,7 @@ namespace WinapiFramework
 		bool mouseOnWindow = false;
 
 	public:
-		struct Events : public ParentEvents
+		struct Events : public ParentWindowEvents
 		{
 			struct EventActivate : public BaseEvent {};
 			struct EventDeactivate : public BaseEvent {};

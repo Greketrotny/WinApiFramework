@@ -12,6 +12,13 @@ namespace WinapiFramework
 		: public ParentWindow
 		, public HasWindowProcedure<Panel>
 	{
+	public:
+		struct Events : public ParentWindowEvents
+		{
+
+		};
+
+
 	private:
 		Panel(const Panel& other) = delete;
 		Panel(Panel&& other) = delete;

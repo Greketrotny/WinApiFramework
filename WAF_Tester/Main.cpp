@@ -159,6 +159,7 @@ public:
 		// panel
 		panel = MainWindow->CreateChild<WAF::Panel>(WAF::ConStruct<WAF::Panel>(
 			WAF::Rect(620, 400, 300, 200)));
+		panel->BindEventFunc<WAF::Panel::Events::EventResize>(&MainForm::Panel_OnResize, this);
 
 		// panel buttons
 		const int grid_x = 3;
@@ -334,6 +335,24 @@ public:
 		LogEvent(L"trackbar: finish drag");
 	}
 
+	// ~~ panel ~~
+	void Panel_OnResize(WAF::Panel::Events::EventResize& event)
+	{
+		const int grid_x = 3;
+		const int grid_y = 6;
+		const int b_width = panel->GetWindowRect().size.width / grid_x;
+		const int b_height = panel->GetWindowRect().size.height / grid_y;
+
+		for (int x = 0; x < grid_x; x++)
+		{
+			for (int y = 0; y < grid_y; y++)
+			{
+				WAF::BaseWindow* const panel_child = panel->GetChild(y * grid_x + x);
+				panel_child->Move(WAF::Point(x * b_width, y * b_height));
+				panel_child->Resize(WAF::Size(b_width, b_height));
+			}
+		}
+	}
 
 	// ~~ Framework::keyboard ~~
 	void FrameworkKeyboardEventHandler(WAF::Keyboard::KeyEvent event)

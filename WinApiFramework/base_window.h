@@ -94,7 +94,7 @@ namespace WinapiFramework
 		std::vector<BaseWindow*> m_children;
 
 	protected:
-		struct ParentEvents : public BaseWindowEvents
+		struct ParentWindowEvents : public BaseWindowEvents
 		{
 			struct EventCreateChild : public BaseEvent {};
 			struct EventDestroyChild : public BaseEvent {};
@@ -126,11 +126,15 @@ namespace WinapiFramework
 		}
 		bool DestroyChild(BaseWindow* child);
 		void DestroyAllChildren();
+		BaseWindow* GetChild(size_t index);
+		size_t GetChildrenCount();
 
 		virtual void AdjustCanvasRect();
 
 		virtual Point GetMousePosition() const;
 		virtual Point GetCanvasPosition() const;
+
+		const Rect& GetClientRect() const;
 	protected:
 		LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
 		const std::vector<BaseWindow*>& GetChildren();
@@ -143,8 +147,8 @@ namespace WinapiFramework
 	class ScrollableWindow : public ParentWindow
 	{
 	private:
-		BoundRect m_canvasRect;
-		Point m_canvasDrift;
+		BoundRect m_canvas_rect;
+		Point m_canvas_drift;
 
 
 	protected:
@@ -156,6 +160,7 @@ namespace WinapiFramework
 
 	public:
 		BoundRect GetCanvasRect() const;
+		Point GetCanvasDrift() const;
 		Point GetCanvasPosition() const override;
 	protected:
 		void AdjustCanvasRect() override;

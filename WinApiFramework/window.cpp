@@ -51,6 +51,7 @@ namespace WinapiFramework
 				// try to find and process message on child controls
 				if (!ProcessChildMessage(wParam, lParam)) return 0;
 
+				// process the message by itself
 				HandleVScroll(wParam, lParam);				
 
 				RaiseEvent<Events::EventVScrolled>();
@@ -62,6 +63,7 @@ namespace WinapiFramework
 				// try to find and process message on child controls
 				if (!ProcessChildMessage(wParam, lParam)) return 0;
 
+				// process the message by itself
 				HandleHScroll(wParam, lParam);				
 
 				RaiseEvent<Events::EventHScrolled>();
@@ -87,16 +89,12 @@ namespace WinapiFramework
 				if (LOWORD(wParam) == WA_ACTIVE || LOWORD(wParam) == WA_CLICKACTIVE)
 				{
 					isActivated = true;
-
-					Events::EventActivate e;
-					InvokeEvent(e);
+					RaiseEvent<Events::EventActivate>();
 				}
 				else
 				{
 					isActivated = false;
-
-					Events::EventDeactivate e;
-					InvokeEvent(e);
+					RaiseEvent<Events::EventDeactivate>();
 				}
 				break;
 			}
@@ -139,7 +137,7 @@ namespace WinapiFramework
 					m_rect.size.width = r.right - r.left;
 					m_rect.size.height = r.bottom - r.top;
 				}
-				if (GetClientRect(m_hWindow, &r))
+				if (::GetClientRect(m_hWindow, &r))
 				{
 					POINT p{ 0, 0 };
 					ClientToScreen(m_hWindow, &p);
@@ -166,7 +164,7 @@ namespace WinapiFramework
 				}
 
 				// set client rect
-				if (GetClientRect(m_hWindow, &r))
+				if (::GetClientRect(m_hWindow, &r))
 				{
 					POINT p{ 0, 0 };
 					ClientToScreen(m_hWindow, &p);
