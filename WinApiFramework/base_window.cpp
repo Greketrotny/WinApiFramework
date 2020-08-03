@@ -61,7 +61,7 @@ namespace WinapiFramework
 			m_rect.position.x - mp_parent->GetCanvasPosition().x,
 			m_rect.position.y - mp_parent->GetCanvasPosition().y);
 
-
+		mp_parent->AdjustCanvasRect();
 		RaiseEventByHandler<BaseWindowEvents::EventMove>();
 	}
 	void BaseWindow::Move(const Point& position)
@@ -86,6 +86,7 @@ namespace WinapiFramework
 
 		DoResize(m_rect.size.width, m_rect.size.height);
 
+		mp_parent->AdjustCanvasRect();
 		RaiseEventByHandler<BaseWindowEvents::EventResize>();
 	}
 	void BaseWindow::Resize(const Size& size)
@@ -170,6 +171,7 @@ namespace WinapiFramework
 			{
 				ObjectCreator::DestroyObject(child);
 				m_children.erase(m_children.begin() + i);
+				AdjustCanvasRect();
 				return true;
 			}
 		}
@@ -185,10 +187,21 @@ namespace WinapiFramework
 		m_children.clear();
 	}
 
+	void ParentWindow::AdjustCanvasRect()
+	{
+		return;
+		//DoAdjustCanvasRect(m_children);
+		//SendMessage(m_hWindow, WM_SIZE, 0, 0);
+	}
+
 	Point ParentWindow::GetMousePosition() const
 	{
 		assert(mp_parent);
 		return mp_parent->GetMousePosition() - m_rect.position;
+	}
+	Point ParentWindow::GetCanvasPosition() const
+	{
+		return Point(0, 0);
 	}
 
 	LRESULT ParentWindow::ProcessChildMessage(WPARAM wParam, LPARAM lParam)
@@ -203,5 +216,212 @@ namespace WinapiFramework
 		}
 		return 1;
 	}
+	const std::vector<BaseWindow*>& ParentWindow::GetChildren()
+	{
+		return m_children;
+	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ //
+
+
+
+	// ~~~~~~~~ [CLASS] ScrollableWindow ~~~~~~~~
+	ScrollableWindow::ScrollableWindow(ParentWindow* parent)
+		: ParentWindow(parent)
+		, m_canvasRect(0, 0, 800, 600)
+	{
+	}
+	ScrollableWindow::~ScrollableWindow()
+	{
+	}
+
+	BoundRect ScrollableWindow::GetCanvasRect() const
+	{
+		return m_canvasRect;
+	}
+	Point ScrollableWindow::GetCanvasPosition() const
+	{
+		return m_canvasDrift;
+	}
+
+	void ScrollableWindow::AdjustCanvasRect()
+	{
+		BoundRect boundRect(0, 0, 10, 10);
+
+		auto& children = GetChildren();
+		for (BaseWindow* child : children)
+		{
+			if (child == nullptr) continue;
+
+			// right
+			if (child->GetWindowRect().position.x + child->GetWindowRect().size.width > boundRect.right)
+				boundRect.right = child->GetWindowRect().position.x + child->GetWindowRect().size.width;
+
+			// bottom
+			if (child->GetWindowRect().position.y + child->GetWindowRect().size.height > boundRect.bottom)
+				boundRect.bottom = child->GetWindowRect().position.y + child->GetWindowRect().size.height;
+		}
+
+		m_canvasRect = boundRect;
+		UpdateScrollingInfo();
+		AdjustCanvasDrift();
+	}
+
+	void ScrollableWindow::HandleVScroll(WPARAM wParam, LPARAM lParam)
+	{
+		SCROLLINFO si;
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_POS | SIF_PAGE | SIF_TRACKPOS;
+		GetScrollInfo(m_hWindow, SB_VERT, &si);
+
+		int pos = si.nPos;
+
+		switch (LOWORD(wParam))
+		{
+			case SB_TOP:
+				pos = m_canvasRect.top;
+				break;
+			case SB_BOTTOM:
+				pos = m_canvasRect.bottom;
+				break;
+			case SB_LINEUP:
+				if (pos > m_canvasRect.top) pos--;
+				break;
+			case SB_LINEDOWN:
+				if (pos < (m_canvasRect.bottom) - m_client_rect.size.height) pos++;
+				break;
+			case SB_PAGEUP:
+				pos -= si.nPage;
+				if (pos < m_canvasRect.top) pos = m_canvasRect.top;
+				break;
+			case SB_PAGEDOWN:
+				pos += si.nPage;
+				if (pos > m_canvasRect.bottom) pos = m_canvasRect.bottom;
+				break;
+			case SB_THUMBPOSITION:
+				pos = si.nTrackPos;
+				break;
+			case SB_THUMBTRACK:
+				pos = si.nTrackPos;
+				break;
+		}
+
+		int dy = (pos - si.nPos);
+		m_canvasDrift.y += dy;
+		ScrollWindowEx(m_hWindow, 0, -dy,
+			(CONST RECT*)NULL,
+			(CONST RECT*)NULL,
+			(HRGN)NULL, (LPRECT)NULL,
+			SW_SCROLLCHILDREN | SW_INVALIDATE | SW_ERASE);
+		UpdateWindow(m_hWindow);
+
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_POS;
+		si.nPos = pos;
+
+		SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
+	}
+	void ScrollableWindow::HandleHScroll(WPARAM wParam, LPARAM lParam)
+	{
+		SCROLLINFO si;
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_POS | SIF_PAGE | SIF_TRACKPOS;
+		GetScrollInfo(m_hWindow, SB_HORZ, &si);
+
+		int pos = si.nPos;
+
+		switch (LOWORD(wParam))
+		{
+			case SB_LEFT:
+				pos = m_canvasRect.left;
+				break;
+			case SB_RIGHT:
+				pos = m_canvasRect.right;
+				break;
+			case SB_LINELEFT:
+				if (pos > m_canvasRect.left) pos--;
+				break;
+			case SB_LINERIGHT:
+				if (pos < (m_canvasRect.right) - m_client_rect.size.width) pos++;
+				break;
+			case SB_PAGELEFT:
+				pos -= si.nPage;
+				if (pos < m_canvasRect.left) pos = m_canvasRect.left;
+				break;
+			case SB_PAGERIGHT:
+				pos += si.nPage;
+				if (pos > m_canvasRect.right) pos = m_canvasRect.right;
+				break;
+			case SB_THUMBPOSITION:
+				pos = si.nTrackPos;
+				break;
+			case SB_THUMBTRACK:
+				pos = si.nTrackPos;
+				break;
+		}
+
+		int dx = (pos - si.nPos);
+		m_canvasDrift.x += dx;
+		ScrollWindowEx(m_hWindow, -dx, 0,
+			(CONST RECT*)NULL,
+			(CONST RECT*)NULL,
+			(HRGN)NULL, (LPRECT)NULL,
+			SW_SCROLLCHILDREN | SW_INVALIDATE | SW_ERASE);
+		UpdateWindow(m_hWindow);
+
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_POS;
+		si.nPos = pos;
+
+		SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
+	}
+	void ScrollableWindow::AdjustCanvasDrift()
+	{
+		Point deltaXY(0, 0);
+		if (m_canvasRect.right - m_canvasDrift.x < m_client_rect.size.width)
+		{
+			deltaXY.x = std::min(m_canvasDrift.x - m_canvasRect.left, m_client_rect.size.width - (m_canvasRect.right - m_canvasDrift.x));
+		}
+		if (m_canvasRect.bottom - m_canvasDrift.y < m_client_rect.size.height)
+		{
+			deltaXY.y = std::min(m_canvasDrift.y - m_canvasRect.top, m_client_rect.size.height - (m_canvasRect.bottom - m_canvasDrift.y));
+		}
+
+		if (deltaXY.y != 0 || deltaXY.x != 0)
+		{
+			m_canvasDrift -= deltaXY;
+			ScrollWindowEx(m_hWindow, deltaXY.x, deltaXY.y,
+				(CONST RECT*)NULL,
+				(CONST RECT*)NULL,
+				(HRGN)NULL, (LPRECT)NULL,
+				SW_SCROLLCHILDREN | SW_INVALIDATE | SW_ERASE);
+			UpdateWindow(m_hWindow);
+		}
+	}
+	void ScrollableWindow::UpdateScrollingInfo()
+	{
+		SCROLLINFO si;
+		ZeroMemory(&si, sizeof(si));
+		si.cbSize = sizeof(SCROLLINFO);
+
+		// vertical scroll
+		si.nMin = m_canvasRect.top;
+		si.nMax = m_canvasRect.bottom;
+		si.nPage = m_client_rect.size.height;
+		si.nPos = m_canvasDrift.y;
+		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+		SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
+
+		// horizontal scroll
+		si.nMin = m_canvasRect.left;
+		si.nMax = m_canvasRect.right;
+		si.nPage = m_client_rect.size.width;
+		si.nPos = m_canvasDrift.x;
+		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
+		SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
+	}
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }

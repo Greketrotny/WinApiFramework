@@ -19,7 +19,7 @@ namespace WinapiFramework
 
 	// ~~~~~~~~ [CLASS] Window ~~~~~~~~
 	class Window
-		: public ParentWindow
+		: public ScrollableWindow
 		, public HasWindowProcedure<Window>
 	{
 	private:
@@ -90,7 +90,6 @@ namespace WinapiFramework
 		};
 
 	private:
-		Rect m_client_rect;
 		Size m_min_size, m_max_size;
 
 

@@ -112,8 +112,12 @@ public:
 		// edit1
 		edit1 = MainWindow->CreateChild<WAF::Edit>(WAF::ConStruct<WAF::Edit>(
 			WAF::Rect(350, 400, 200, 200),
-			L"text",
-			L""));
+			L"text", L"",
+			WAF::Edit::TextAlignment::Left,
+			WAF::Edit::LettersMode::All,
+			false, false, false, true, false,
+			10000, L'\x25CF',
+			WAF::Edit::ScrollingStyle::HorizontalVertical));
 		edit1->BindEventFunc<WAF::Edit::Events::EventSetText>(&MainForm::Edit1_OnSetText, this);
 
 		// gfxBox1
@@ -331,7 +335,7 @@ public:
 	}
 
 
-	// FrameworkKeyboard
+	// ~~ Framework::keyboard ~~
 	void FrameworkKeyboardEventHandler(WAF::Keyboard::KeyEvent event)
 	{
 		switch (event.type)
@@ -352,18 +356,30 @@ public:
 				}
 		}
 	}
+	
+	// ~~ Framework::mouse ~~
 	void FrameworkMouse_EH(WAF::Mouse::Event event)
 	{
 		switch (event.type)
 		{
 			case WAF::Mouse::Event::Type::LeftPress:
-				if (WAF::Framework::Keyboard.KeyPressed(WAF::Keyboard::Key::Control))
+				break;
+			case WAF::Mouse::Event::Type::RightPress:
+				if (WAF::Framework::Keyboard.KeyPressed(WAF::Keyboard::Key::Control) || true)
 				{
-					panel->Move(MainWindow->GetCanvasMousePosition() - WAF::Point(panel->GetWindowRect().size.width / 2, panel->GetWindowRect().size.height / 2));
+					panel->Resize(
+						std::max(2 * panel->GetMousePosition().x, 100), 
+						std::max(2 * panel->GetMousePosition().y, 100));
 				}
 				break;
 			case WAF::Mouse::Event::Type::Move:
 			{
+				if (WAF::Framework::Keyboard.KeyPressed(WAF::Keyboard::Key::Control))
+				{
+					panel->Move(
+						MainWindow->GetCanvasMousePosition() - 
+						WAF::Point(panel->GetWindowRect().size.width / 2, panel->GetWindowRect().size.height / 2));
+				}
 				/*MainWindow->SetCaption(
 					L"WindowM: " +
 					std::to_wstring(MainWindow->GetWindowMousePosition().x) +

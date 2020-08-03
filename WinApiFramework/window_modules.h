@@ -12,28 +12,6 @@ namespace WinapiFramework
 	class BaseWindow;
 	class ParentWindow;
 
-	// ~~~~~~~~ [CLASS] Scrollable ~~~~~~~~
-	class Scrollable
-	{
-	protected:
-		BoundRect m_canvasRect;
-		Point m_canvasDrift;
-
-
-	public:
-		Scrollable();
-		~Scrollable();
-
-
-	public:
-		BoundRect GetCanvasRect() const;
-		Point GetCanvasPosition() const;
-	protected:
-		void AdjustCanvasRect(const std::vector<BaseWindow*> children);
-	};
-	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
 
 	// ~~~~~~~~ [CLASS] ObjectCreator ~~~~~~~~
 	/*

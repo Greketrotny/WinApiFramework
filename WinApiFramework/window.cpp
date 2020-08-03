@@ -7,7 +7,7 @@ namespace WinapiFramework
 {
 	// ~~~~~~~~ [CLASS] Window ~~~~~~~~ //
 	Window::Window()
-		: ParentWindow(nullptr)
+		: ScrollableWindow(nullptr)
 		, HasWindowProcedure(this, &Window::WindowProcedure)
 	{}
 	Window::Window(unsigned int id, const ConStruct<Window> &conStruct)
@@ -21,9 +21,6 @@ namespace WinapiFramework
 		m_caption = conStruct.caption;
 		m_min_size = conStruct.min_size;
 		m_max_size = conStruct.max_size;
-
-		m_canvasRect = BoundRect(0, 0, 1000, 500);	// TODO: take user input into consideration
-		m_canvasDrift = Point(0, 0);
 
 		// create window class
 		//CreateAndRegisterWindowClass();
@@ -54,60 +51,7 @@ namespace WinapiFramework
 				// try to find and process message on child controls
 				if (!ProcessChildMessage(wParam, lParam)) return 0;
 
-
-				SCROLLINFO si;
-				ZeroMemory(&si, sizeof(si));
-				si.cbSize = sizeof(SCROLLINFO);
-				si.fMask = SIF_POS | SIF_PAGE | SIF_TRACKPOS;
-				GetScrollInfo(m_hWindow, SB_VERT, &si);
-
-				int pos = si.nPos;
-
-				switch (LOWORD(wParam))
-				{
-					case SB_TOP:
-						pos = m_canvasRect.top;
-						break;
-					case SB_BOTTOM:
-						pos = m_canvasRect.bottom;
-						break;
-					case SB_LINEUP:
-						if (pos > m_canvasRect.top) pos--;
-						break;
-					case SB_LINEDOWN:
-						if (pos < (m_canvasRect.bottom) - m_client_rect.size.height) pos++;
-						break;
-					case SB_PAGEUP:
-						pos -= si.nPage;
-						if (pos < m_canvasRect.top) pos = m_canvasRect.top;
-						break;
-					case SB_PAGEDOWN:
-						pos += si.nPage;
-						if (pos > m_canvasRect.bottom) pos = m_canvasRect.bottom;
-						break;
-					case SB_THUMBPOSITION:
-						pos = si.nTrackPos;
-						break;
-					case SB_THUMBTRACK:
-						pos = si.nTrackPos;
-						break;
-				}
-
-				int dy = (pos - si.nPos);
-				m_canvasDrift.y += dy;
-				ScrollWindowEx(m_hWindow, 0, -dy,
-					(CONST RECT*)NULL,
-					(CONST RECT*)NULL,
-					(HRGN)NULL, (LPRECT)NULL,
-					SW_SCROLLCHILDREN | SW_INVALIDATE | SW_ERASE);
-				UpdateWindow(m_hWindow);
-
-				ZeroMemory(&si, sizeof(si));
-				si.cbSize = sizeof(SCROLLINFO);
-				si.fMask = SIF_POS;
-				si.nPos = pos;
-
-				SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
+				HandleVScroll(wParam, lParam);				
 
 				RaiseEvent<Events::EventVScrolled>();
 				return 0;
@@ -118,60 +62,7 @@ namespace WinapiFramework
 				// try to find and process message on child controls
 				if (!ProcessChildMessage(wParam, lParam)) return 0;
 
-
-				SCROLLINFO si;
-				ZeroMemory(&si, sizeof(si));
-				si.cbSize = sizeof(SCROLLINFO);
-				si.fMask = SIF_POS | SIF_PAGE | SIF_TRACKPOS;
-				GetScrollInfo(m_hWindow, SB_HORZ, &si);
-
-				int pos = si.nPos;
-
-				switch (LOWORD(wParam))
-				{
-					case SB_LEFT:
-						pos = m_canvasRect.left;
-						break;
-					case SB_RIGHT:
-						pos = m_canvasRect.right;
-						break;
-					case SB_LINELEFT:
-						if (pos > m_canvasRect.left) pos--;
-						break;
-					case SB_LINERIGHT:
-						if (pos < (m_canvasRect.right) - m_client_rect.size.width) pos++;
-						break;
-					case SB_PAGELEFT:
-						pos -= si.nPage;
-						if (pos < m_canvasRect.left) pos = m_canvasRect.left;
-						break;
-					case SB_PAGERIGHT:
-						pos += si.nPage;
-						if (pos > m_canvasRect.right) pos = m_canvasRect.right;
-						break;
-					case SB_THUMBPOSITION:
-						pos = si.nTrackPos;
-						break;
-					case SB_THUMBTRACK:
-						pos = si.nTrackPos;
-						break;
-				}
-
-				int dx = (pos - si.nPos);
-				m_canvasDrift.x += dx;
-				ScrollWindowEx(m_hWindow, -dx, 0,
-					(CONST RECT*)NULL,
-					(CONST RECT*)NULL,
-					(HRGN)NULL, (LPRECT)NULL,
-					SW_SCROLLCHILDREN | SW_INVALIDATE | SW_ERASE);
-				UpdateWindow(m_hWindow);
-
-				ZeroMemory(&si, sizeof(si));
-				si.cbSize = sizeof(SCROLLINFO);
-				si.fMask = SIF_POS;
-				si.nPos = pos;
-
-				SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
+				HandleHScroll(wParam, lParam);				
 
 				RaiseEvent<Events::EventHScrolled>();
 				return 0;
@@ -285,51 +176,8 @@ namespace WinapiFramework
 					m_client_rect.size.height = r.bottom - r.top;
 				}
 
-
-				// [>] Adjust canvas position
-				Point deltaXY(0, 0);
-				if (m_canvasRect.right - m_canvasDrift.x < m_client_rect.size.width)
-				{
-					deltaXY.x = std::min(m_canvasDrift.x - m_canvasRect.left, m_client_rect.size.width - (m_canvasRect.right - m_canvasDrift.x));
-				}
-				if (m_canvasRect.bottom - m_canvasDrift.y < m_client_rect.size.height)
-				{
-					deltaXY.y = std::min(m_canvasDrift.y - m_canvasRect.top, m_client_rect.size.height - (m_canvasRect.bottom - m_canvasDrift.y));
-				}
-
-				if (deltaXY.y != 0 || deltaXY.x != 0)
-				{
-					m_canvasDrift -= deltaXY;
-					ScrollWindowEx(m_hWindow, deltaXY.x, deltaXY.y,
-						(CONST RECT*)NULL,
-						(CONST RECT*)NULL,
-						(HRGN)NULL, (LPRECT)NULL,
-						SW_SCROLLCHILDREN | SW_INVALIDATE | SW_ERASE);
-					UpdateWindow(m_hWindow);
-				}
-
-
-
-				// [>] Set scroing info
-				SCROLLINFO si;
-				ZeroMemory(&si, sizeof(si));
-				si.cbSize = sizeof(SCROLLINFO);
-
-				// vertical scroll
-				si.nMin = m_canvasRect.top;
-				si.nMax = m_canvasRect.bottom;
-				si.nPage = m_client_rect.size.height;
-				si.nPos = m_canvasDrift.y;
-				si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
-				SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
-
-				// horizontal scroll
-				si.nMin = m_canvasRect.left;
-				si.nMax = m_canvasRect.right;
-				si.nPage = m_client_rect.size.width;
-				si.nPos = m_canvasDrift.x;
-				si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
-				SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
+				AdjustCanvasDrift();
+				UpdateScrollingInfo();
 
 				RaiseEvent<Events::EventResize>();
 				return 0;
@@ -467,29 +315,7 @@ namespace WinapiFramework
 		// set window scrolling
 		SetWindowLongPtr(m_hWindow, GWL_STYLE, m_window_style | WS_HSCROLL | WS_VSCROLL);
 		SetWindowPos(m_hWindow, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_DRAWFRAME);
-
-
-		// [>] Setup window scrolling
-		SCROLLINFO si;
-		ZeroMemory(&si, sizeof(si));
-		si.cbSize = sizeof(SCROLLINFO);
-
-		// vertical
-		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
-		si.nMin = m_canvasRect.top;
-		si.nMax = m_canvasRect.bottom;
-		si.nPage = m_client_rect.size.height;
-		si.nPos = m_canvasDrift.y;
-		SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
-
-		// horizontal
-		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
-		si.nMin = m_canvasRect.left;
-		si.nMax = m_canvasRect.right;
-		si.nPage = m_client_rect.size.width;
-		si.nPos = m_canvasDrift.x;
-		SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);
-
+		UpdateScrollingInfo();
 
 		SetCaption(GetCaption());
 

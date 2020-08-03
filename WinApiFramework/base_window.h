@@ -86,9 +86,10 @@ namespace WinapiFramework
 	// ~~~~~~~~ [CLASS] ParentWindow ~~~~~~~~
 	class ParentWindow
 		: public BaseWindow
-		, public Scrollable
 		, public ObjectCreator
 	{
+	protected:
+		Rect m_client_rect;
 	private:
 		std::vector<BaseWindow*> m_children;
 
@@ -118,7 +119,7 @@ namespace WinapiFramework
 			m_children.push_back(new_child);
 
 			// adjust canvas rect
-			//AdjustCanvasRect(m_children);
+			AdjustCanvasRect();
 			//SendMessage(m_hWindow, WM_SIZE, 0, 0);
 
 			return new_child;
@@ -126,11 +127,45 @@ namespace WinapiFramework
 		bool DestroyChild(BaseWindow* child);
 		void DestroyAllChildren();
 
+		virtual void AdjustCanvasRect();
+
 		virtual Point GetMousePosition() const;
+		virtual Point GetCanvasPosition() const;
 	protected:
 		LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
+		const std::vector<BaseWindow*>& GetChildren();
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+	// ~~~~~~~~ [CLASS] Scrollable ~~~~~~~~
+	class ScrollableWindow : public ParentWindow
+	{
+	private:
+		BoundRect m_canvasRect;
+		Point m_canvasDrift;
+
+
+	protected:
+		ScrollableWindow(const ScrollableWindow& other) = delete;
+		ScrollableWindow(ScrollableWindow&& other) = delete;
+		ScrollableWindow(ParentWindow* parent);
+		~ScrollableWindow();
+
+
+	public:
+		BoundRect GetCanvasRect() const;
+		Point GetCanvasPosition() const override;
+	protected:
+		void AdjustCanvasRect() override;
+
+		void HandleVScroll(WPARAM wParam, LPARAM lParam);
+		void HandleHScroll(WPARAM wParam, LPARAM lParam);
+		void AdjustCanvasDrift();
+		void UpdateScrollingInfo();
+	};
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
 
 #endif // !BASE_WINDOW_H
