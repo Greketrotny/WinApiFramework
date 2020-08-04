@@ -39,6 +39,8 @@ namespace WinapiFramework
 	// private:
 	LRESULT Window::WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+		if (HandleMouseEvent(msg, wParam, lParam) == 0) return 0;
+
 		switch (msg)
 		{
 			// on window controls events //
@@ -52,7 +54,7 @@ namespace WinapiFramework
 				if (!ProcessChildMessage(wParam, lParam)) return 0;
 
 				// process the message by itself
-				HandleVScroll(wParam, lParam);				
+				HandleVScroll(wParam, lParam);
 
 				RaiseEvent<Events::EventVScrolled>();
 				return 0;
@@ -64,7 +66,7 @@ namespace WinapiFramework
 				if (!ProcessChildMessage(wParam, lParam)) return 0;
 
 				// process the message by itself
-				HandleHScroll(wParam, lParam);				
+				HandleHScroll(wParam, lParam);
 
 				RaiseEvent<Events::EventHScrolled>();
 				return 0;
@@ -473,7 +475,7 @@ namespace WinapiFramework
 		return window_id;
 	}
 
-	MessBoxButtonPressed Window::ShowMessageBox(const std::wstring& caption, const std::wstring& text, 
+	MessBoxButtonPressed Window::ShowMessageBox(const std::wstring& caption, const std::wstring& text,
 		MessBoxButtonLayout buttons,
 		MessBoxIcon icon)
 	{
@@ -511,7 +513,7 @@ namespace WinapiFramework
 	{}
 	Window::DestroyAction::~DestroyAction()
 	{}
-	
+
 	void Window::DestroyAction::Invoke()
 	{
 		if (m_pWindow) Framework::DestroyWindow(m_pWindow);

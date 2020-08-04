@@ -9,7 +9,6 @@ namespace WinapiFramework
 {
 	class Mouse
 	{
-		// -- fields -- //
 	private:
 		int x = 0, y = 0;
 		bool isLeftPressed = false;
@@ -34,6 +33,12 @@ namespace WinapiFramework
 			SizeALL,
 			Hand,
 			Help
+		};
+		enum MouseButton
+		{
+			MouseButtonLeft,
+			MouseButtonRight,
+			MouseButtonMiddle
 		};
 		struct Event
 		{
@@ -139,7 +144,6 @@ namespace WinapiFramework
 		Events events;
 
 
-		// -- constructor -- //
 	public:
 		Mouse();
 		Mouse(const Mouse& mouse) = delete;
@@ -148,13 +152,11 @@ namespace WinapiFramework
 		~Mouse();
 
 
-		// -- operators -- //
 	public:
 		Mouse& operator=(const Mouse& mouse) = delete;
 		Mouse& operator=(const Mouse&& mouse) = delete;
 
 
-		// -- methods -- //
 	private:
 		void Move(int x, int y);
 	public:
@@ -164,7 +166,6 @@ namespace WinapiFramework
 		void SetCursorType(Mouse::Cursor cursorType);
 
 
-		// -- property fields -- //
 	public:
 		const int& X;
 		const int& Y;
@@ -173,7 +174,7 @@ namespace WinapiFramework
 		const bool& MiddlePressed;
 		Mouse::Events& Events;
 
-		// -- friend statements -- //
+
 		friend class Window;
 		friend class Framework;
 	};

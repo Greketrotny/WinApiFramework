@@ -10,7 +10,8 @@ namespace WinapiFramework
 	template <> struct ConStruct<Button>;
 
 	// ~~~~~~~~ [CLASS] Button ~~~~~~~~ //
-	class Button : public BaseWindow
+	class Button 
+		: public BaseWindow
 	{
 	public:
 		enum CaptionPosition

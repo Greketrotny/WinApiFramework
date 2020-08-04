@@ -5,6 +5,7 @@
 #include "window_modules.h"
 #include "data_types.h"
 #include "event.h"
+#include "mouse.h"
 
 #include <queue>
 #include <vector>
@@ -24,7 +25,6 @@ namespace WinapiFramework
 		DWORD m_window_style;
 		std::wstring m_window_class_name;
 		Rect m_rect;
-
 	protected:
 		struct BaseWindowEvents
 		{
@@ -32,7 +32,61 @@ namespace WinapiFramework
 			struct EventDisable : public BaseEvent {};
 			struct EventMove : public BaseEvent {};
 			struct EventResize : public BaseEvent {};
+
+			struct EventMouseLButtonPress : public BaseEvent {};
+			struct EventMouseLButtonRelease : public BaseEvent {};
+			struct EventMouseLButtonDPress : public BaseEvent {};
+			struct EventMouseRButtonPress : public BaseEvent {};
+			struct EventMouseRButtonRelease : public BaseEvent {};
+			struct EventMouseRButtonDPress : public BaseEvent {};
+			struct EventMouseMButtonPress : public BaseEvent {};
+			struct EventMouseMButtonRelease : public BaseEvent {};
+			struct EventMouseMButtonDPress : public BaseEvent {};
+			struct EventMouseMove : public BaseEvent 
+			{
+				Point mouse_pos;
+
+				EventMouseMove(const Point& pos)
+					: mouse_pos(pos)
+				{}
+			};
 		};
+
+		struct MouseCaptor
+		{
+		private:
+			bool is_capturing_mouse;
+			Mouse::MouseButton capturing_button;
+
+		public:
+			MouseCaptor()
+				: is_capturing_mouse(false)
+				, capturing_button(Mouse::MouseButtonLeft)
+			{}
+			~MouseCaptor()
+			{
+				StopMouseCapture(capturing_button);
+			}
+
+		public:
+			void StartMouseCapture(HWND hwnd, Mouse::MouseButton mbutton)
+			{
+				if (!is_capturing_mouse)
+				{
+					SetCapture(hwnd);
+					capturing_button = mbutton;
+					is_capturing_mouse = true;
+				}
+			}
+			void StopMouseCapture(Mouse::MouseButton mbutton)
+			{
+				if (is_capturing_mouse && mbutton == capturing_button)
+				{
+					ReleaseCapture();
+					is_capturing_mouse = false;
+				}
+			}
+		} m_mouse_captor;
 
 
 	protected:
@@ -62,6 +116,8 @@ namespace WinapiFramework
 		void DoDisable();
 		void DoMove(int x, int y);
 		void DoResize(int width, int height);
+
+		LRESULT HandleMouseEvent(UINT msg, WPARAM wParam, LPARAM lParam);
 
 	public:
 		virtual Point GetMousePosition() const;

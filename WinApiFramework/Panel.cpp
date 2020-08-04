@@ -20,6 +20,8 @@ namespace WinapiFramework
 
 	LRESULT Panel::WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+		if (HandleMouseEvent(msg, wParam, lParam) == 0) return 0;
+
 		switch (msg)
 		{
 			// on window controls events //
@@ -27,9 +29,8 @@ namespace WinapiFramework
 			case WM_NOTIFY:
 				return ProcessChildMessage(wParam, lParam);
 
-			case WM_SIZE:
-				//m_events.PushEvent(Event(Event::Type::Resize));
-				return 1;
+			case WM_LBUTTONDOWN:
+
 
 			default: return 1;
 		}
@@ -44,7 +45,6 @@ namespace WinapiFramework
 		// [>] Create WindowClassEx
 		WNDCLASSEX wc;
 		ZeroMemory(&wc, sizeof(WNDCLASSEX));
-
 
 		wc.hInstance = Framework::GetProgramInstance();
 		wc.lpfnWndProc = GetFrameworkProcedure();

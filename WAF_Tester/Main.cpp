@@ -83,6 +83,8 @@ public:
 
 		MainWindow->BindEventFunc<WAF::Window::Events::EventClose>(&MainForm::MainWindow_OnClose, this);
 
+		MainWindow->BindEventFunc<WAF::Window::Events::EventMouseMove>(&MainForm::MainWindow_OnMouseMove, this);
+
 
 		// lbEventLog
 		lbEventLog = MainWindow->CreateChild<WAF::Label>(WAF::ConStruct<WAF::Label>(
@@ -160,6 +162,7 @@ public:
 		panel = MainWindow->CreateChild<WAF::Panel>(WAF::ConStruct<WAF::Panel>(
 			WAF::Rect(620, 400, 300, 200)));
 		panel->BindEventFunc<WAF::Panel::Events::EventResize>(&MainForm::Panel_OnResize, this);
+		panel->BindEventFunc<WAF::Panel::Events::EventMouseMove>(&MainForm::Panel_OnMouseMove, this);
 
 		// panel buttons
 		const int grid_x = 3;
@@ -168,7 +171,7 @@ public:
 		const int b_height = panel->GetWindowRect().size.height / grid_y;
 		for (int x = 0; x < grid_x; x++)
 		{
-			for (int y = 0; y < grid_y; y++)
+			for (int y = 0; y < grid_y - 3; y++)
 			{
 				WAF::Button* panel_button = panel->CreateChild<WAF::Button>(WAF::ConStruct<WAF::Button>(
 					WAF::Rect(WAF::Point(x * b_width, y * b_height), WAF::Size(b_width, b_height))));
@@ -229,6 +232,14 @@ public:
 
 			//MainWindow = nullptr;
 		}
+	}
+	void MainWindow_OnMouseMove(WAF::Window::Events::EventMouseMove& event)
+	{
+		LogEvent(
+			L"MainWindow: mouse move [" +
+			std::to_wstring(event.mouse_pos.x) +
+			L":" + std::to_wstring(event.mouse_pos.y) +
+			L"]");
 	}
 
 	// ~~ lbEventLog ~~
@@ -345,13 +356,21 @@ public:
 
 		for (int x = 0; x < grid_x; x++)
 		{
-			for (int y = 0; y < grid_y; y++)
+			for (int y = 0; y < grid_y - 3; y++)
 			{
 				WAF::BaseWindow* const panel_child = panel->GetChild(y * grid_x + x);
 				panel_child->Move(WAF::Point(x * b_width, y * b_height));
 				panel_child->Resize(WAF::Size(b_width, b_height));
 			}
 		}
+	}
+	void Panel_OnMouseMove(WAF::Panel::Events::EventMouseMove& event)
+	{
+		LogEvent(
+			L"panel: mouse move [" + 
+			std::to_wstring(event.mouse_pos.x) + 
+			L":" + std::to_wstring(event.mouse_pos.y) + 
+			L"]");
 	}
 
 	// ~~ Framework::keyboard ~~
@@ -362,6 +381,7 @@ public:
 			case WAF::Keyboard::KeyEvent::Type::Press:
 				if (event.key == WAF::Keyboard::Key::Esc)
 				{
+					lbEventLog = nullptr;
 					WAF::Framework::Exit(0);
 				}
 

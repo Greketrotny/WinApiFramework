@@ -15,41 +15,25 @@ namespace WinapiFramework
 	{
 	}
 
-
 	LRESULT BaseWindow::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
 		return LRESULT(TRUE);
 	}
+	
 	void BaseWindow::Destroy()
 	{
 		DoDestroy();
 	}
-	void BaseWindow::DoDestroy()
-	{
-		assert(mp_parent);
-		mp_parent->DestroyChild(this);
-	}
-
 	void BaseWindow::Enable()
 	{
 		DoEnable();
 		RaiseEventByHandler<BaseWindowEvents::EventEnable>();
 	}
-	void BaseWindow::DoEnable()
-	{
-		::EnableWindow(m_hWindow, TRUE);
-	}
-
 	void BaseWindow::Disable()
 	{
 		DoDisable();
 		RaiseEventByHandler<BaseWindowEvents::EventDisable>();
 	}
-	void BaseWindow::DoDisable()
-	{
-		::EnableWindow(m_hWindow, FALSE);
-	}
-
 	void BaseWindow::Move(int x, int y)
 	{
 		assert(mp_parent);
@@ -68,14 +52,6 @@ namespace WinapiFramework
 	{
 		Move(position.x, position.y);
 	}
-	void BaseWindow::DoMove(int x, int y)
-	{
-		SetWindowPos(m_hWindow, nullptr,
-			x, y,
-			0, 0,
-			SWP_NOSIZE);
-	}
-
 	void BaseWindow::Resize(int width, int height)
 	{
 		m_rect.size.width = width;
@@ -93,6 +69,32 @@ namespace WinapiFramework
 	{
 		Resize(size.width, size.height);
 	}
+	void BaseWindow::SetRect(const Rect& rect)
+	{
+		Move(rect.position);
+		Resize(rect.size);
+	}
+
+	void BaseWindow::DoDestroy()
+	{
+		assert(mp_parent);
+		mp_parent->DestroyChild(this);
+	}	
+	void BaseWindow::DoEnable()
+	{
+		::EnableWindow(m_hWindow, TRUE);
+	}
+	void BaseWindow::DoDisable()
+	{
+		::EnableWindow(m_hWindow, FALSE);
+	}	
+	void BaseWindow::DoMove(int x, int y)
+	{
+		SetWindowPos(m_hWindow, nullptr,
+			x, y,
+			0, 0,
+			SWP_NOSIZE);
+	}
 	void BaseWindow::DoResize(int width, int height)
 	{
 		SetWindowPos(m_hWindow, nullptr,
@@ -100,11 +102,76 @@ namespace WinapiFramework
 			width, height,
 			SWP_NOMOVE);
 	}
-
-	void BaseWindow::SetRect(const Rect& rect)
+	
+	LRESULT BaseWindow::HandleMouseEvent(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		Move(rect.position);
-		Resize(rect.size);
+		switch (msg)
+		{
+			case WM_LBUTTONDOWN:
+			{
+				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButtonLeft);
+				RaiseEventByHandler<BaseWindowEvents::EventMouseLButtonPress>();
+				break;
+			}
+			case WM_LBUTTONUP:
+			{
+				m_mouse_captor.StopMouseCapture(Mouse::MouseButtonLeft);
+				RaiseEventByHandler<BaseWindowEvents::EventMouseLButtonRelease>();				
+				break;
+			}
+			case WM_LBUTTONDBLCLK:
+			{
+				RaiseEventByHandler<BaseWindowEvents::EventMouseLButtonDPress>();
+				break;
+			}
+
+			case WM_RBUTTONDOWN:
+			{
+				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButtonRight);
+				RaiseEventByHandler<BaseWindowEvents::EventMouseRButtonPress>();
+				break;
+			}
+			case WM_RBUTTONUP:
+			{
+				m_mouse_captor.StopMouseCapture(Mouse::MouseButtonRight);
+				RaiseEventByHandler<BaseWindowEvents::EventMouseRButtonRelease>();
+				break;
+			}
+			case WM_RBUTTONDBLCLK:
+			{
+				RaiseEventByHandler<BaseWindowEvents::EventMouseRButtonDPress>();
+				break;
+			}
+
+			case WM_MBUTTONDOWN:
+			{
+				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButtonMiddle);
+				RaiseEventByHandler<BaseWindowEvents::EventMouseMButtonPress>();
+				break;
+			}
+			case WM_MBUTTONUP:
+			{
+				m_mouse_captor.StopMouseCapture(Mouse::MouseButtonMiddle);
+				RaiseEventByHandler<BaseWindowEvents::EventMouseMButtonRelease>();
+				break;
+			}
+			case WM_MBUTTONDBLCLK:
+			{
+				RaiseEventByHandler<BaseWindowEvents::EventMouseMButtonDPress>();
+				break;
+			}
+
+			case WM_MOUSEMOVE:
+			{
+				Point pos(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				RaiseEventByHandler<BaseWindowEvents::EventMouseMove>(pos);
+				break;
+			}
+
+			default: return 1;
+		}
+
+		return 0;
 	}
 
 	Point BaseWindow::GetMousePosition() const
