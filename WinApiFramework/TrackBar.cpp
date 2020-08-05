@@ -96,16 +96,16 @@ namespace WinapiFramework
 		switch (m_tickStyle)
 		{
 			
-			case WinapiFramework::TrackBar::Default:	break;
-			case WinapiFramework::TrackBar::Top:	m_window_style |= TBS_TOP;		break;
-			case WinapiFramework::TrackBar::Bottom:	m_window_style |= TBS_BOTTOM;	break;
-			case WinapiFramework::TrackBar::Both:	m_window_style |= TBS_BOTH;		break;
-			case WinapiFramework::TrackBar::NoTicks:m_window_style |= TBS_NOTICKS;	break;
+			case WinapiFramework::TrackBar::TickStyle::Default:	break;
+			case WinapiFramework::TrackBar::TickStyle::Top:		m_window_style |= TBS_TOP;		break;
+			case WinapiFramework::TrackBar::TickStyle::Bottom:	m_window_style |= TBS_BOTTOM;	break;
+			case WinapiFramework::TrackBar::TickStyle::Both:	m_window_style |= TBS_BOTH;		break;
+			case WinapiFramework::TrackBar::TickStyle::NoTicks:	m_window_style |= TBS_NOTICKS;	break;
 		}
 		m_window_style |= TBS_AUTOTICKS;
 
 		// set tool tips style
-		if (m_toolTipsStyle != ToolTipsStyle::ToolTipsStyleNone) m_window_style |= TBS_TOOLTIPS;
+		if (m_toolTipsStyle != ToolTipsStyle::None) m_window_style |= TBS_TOOLTIPS;
 
 
 		// [>] create window
@@ -258,7 +258,7 @@ namespace WinapiFramework
 	{
 		m_toolTipsStyle = toolTipsStyle;
 
-		if (m_toolTipsStyle == ToolTipsStyle::ToolTipsStyleNone)
+		if (m_toolTipsStyle == ToolTipsStyle::None)
 		{
 			m_window_style = m_window_style & (~TBS_TOOLTIPS);
 			SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
@@ -270,10 +270,10 @@ namespace WinapiFramework
 
 			switch (m_toolTipsStyle)
 			{
-				case WinapiFramework::TrackBar::ToolTipsStyleTop:	
+				case WinapiFramework::TrackBar::ToolTipsStyle::Top:	
 					SendMessage(m_hWindow, TBM_SETTIPSIDE, TBTS_TOP, 0);
 					break;
-				case WinapiFramework::TrackBar::ToolTipsStyleBottom:
+				case WinapiFramework::TrackBar::ToolTipsStyle::Bottom:
 					SendMessage(m_hWindow, TBM_SETTIPSIDE, TBTS_BOTTOM, 0);
 					break;
 			}

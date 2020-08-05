@@ -11,19 +11,19 @@ namespace WinapiFramework
 	class Edit : public BaseWindow
 	{
 	public:
-		enum TextAlignment
+		enum class TextAlignment
 		{
 			Left,
 			Center,
 			Right
 		};
-		enum LettersMode
+		enum class LettersMode
 		{
 			UpperCase,
 			LowerCase,
 			All
 		};
-		enum ScrollingStyle
+		enum class ScrollingStyle
 		{
 			NoScrolling,
 			Horizontal,

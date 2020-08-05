@@ -11,11 +11,11 @@ namespace WinapiFramework
 	class CheckBox : public BaseWindow
 	{
 	public:
-		enum BoxState
+		enum class BoxState
 		{
-			BoxStateUnCheck,
-			BoxStateCheck,
-			BoxStateMiddle
+			Uncheck,
+			Check,
+			Middle
 		};
 	private:
 		std::wstring m_caption;
@@ -80,7 +80,7 @@ namespace WinapiFramework
 		ConStruct(const Rect& rect,
 				  const std::wstring& caption = L"caption",
 				  bool isTripleState = false,
-				  CheckBox::BoxState boxState = CheckBox::BoxStateUnCheck)
+				  CheckBox::BoxState boxState = CheckBox::BoxState::Uncheck)
 			: rect(rect)
 			, caption(caption)
 			, isTripleState(isTripleState)

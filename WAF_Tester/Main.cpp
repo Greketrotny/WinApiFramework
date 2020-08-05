@@ -59,8 +59,12 @@ public:
 public:
 	MainForm()
 	{
-		WAF::Framework::Keyboard.KeyEvents.AddEventHandler<MainForm>(this, &MainForm::FrameworkKeyboardEventHandler);
-		WAF::Framework::Mouse.Events.AddEventHandler<MainForm>(this, &MainForm::FrameworkMouse_EH);
+		WAF::Framework::Keyboard.BindEventFunc<WAF::Keyboard::Events::EventKeyPress>(&MainForm::Keyboard_OnKeyPress, this);
+
+		WAF::Framework::Mouse.BindEventFunc<WAF::Mouse::Events::EventLeftPress>(&MainForm::Mouse_OnLeftPress, this);
+		WAF::Framework::Mouse.BindEventFunc<WAF::Mouse::Events::EventRightPress>(&MainForm::Mouse_OnRightPress, this);
+		WAF::Framework::Mouse.BindEventFunc<WAF::Mouse::Events::EventMove>(&MainForm::Mouse_OnMove, this);
+		WAF::Framework::Mouse.BindEventFunc<WAF::Mouse::Events::EventWheel>(&MainForm::Mouse_OnWheel, this);
 
 
 		// MainWindow
@@ -107,7 +111,7 @@ public:
 			WAF::Rect(WAF::Point(20, 480), WAF::Size(100, 20)),
 			L"checkBox1",
 			true,
-			WAF::CheckBox::BoxStateCheck));
+			WAF::CheckBox::BoxState::Check));
 		checkBox1->BindEventFunc<WAF::CheckBox::Events::EventSetCaption>(&MainForm::CheckBox1_OnSetCaption, this);
 		checkBox1->BindEventFunc<WAF::CheckBox::Events::EventSetState>(&MainForm::CheckBox1_OnSetState, this);
 
@@ -125,6 +129,7 @@ public:
 		// gfxBox1
 		gfxBox = MainWindow->CreateChild<WAF::GraphicsBox>(WAF::ConStruct<WAF::GraphicsBox>(
 			WAF::Rect(10, 10, 600, 380)));
+		gfxBox->BindEventFunc<WAF::GraphicsBox::Events::EventMouseMove>(&MainForm::GfxBox_OnMouseMove, this);
 
 		// progressBar
 		progressBar = MainWindow->CreateChild<WAF::ProgressBar>(WAF::ConStruct < WAF::ProgressBar>(
@@ -132,7 +137,7 @@ public:
 			WAF::Range(-100, 100),
 			50, WAF::ProgressBar::BarState::Normal,
 			WAF::ProgressBar::BarOrientation::Horizontal,
-			WAF::ProgressBar::BarDisplayStyle::Marquee));
+			WAF::ProgressBar::BarDisplayStyle::SmoothReversed));
 
 		// trackbar
 		trackBar = MainWindow->CreateChild<WAF::TrackBar>(WAF::ConStruct<WAF::TrackBar>(
@@ -142,7 +147,7 @@ public:
 			WAF::TrackBar::Orientation::Horizontal,
 			WAF::TrackBar::TickStyle::Bottom,	10,
 			true, WAF::Range(20, 80),
-			WAF::TrackBar::ToolTipsStyle::ToolTipsStyleTop));
+			WAF::TrackBar::ToolTipsStyle::Top));
 		trackBar->BindEventFunc<WAF::TrackBar::Events::EventLineUp>(&MainForm::TrackBar_OnLineUp, this);
 		trackBar->BindEventFunc<WAF::TrackBar::Events::EventLineDown>(&MainForm::TrackBar_OnLineDown, this);
 		trackBar->BindEventFunc<WAF::TrackBar::Events::EventPageUp>(&MainForm::TrackBar_OnPageUp, this);
@@ -219,9 +224,9 @@ public:
 			L"Exit application", 
 			L"Are you sure you want to exit the application right now?",
 			WAF::MessBoxButtonLayout::YesNo,
-			WAF::MessBoxIcon::IconQuestion);
+			WAF::MessBoxIcon::Question);
 
-		if (mbp == WAF::MessBoxButtonPressed::ButtonNo)
+		if (mbp == WAF::MessBoxButtonPressed::No)
 			event.AbortClosing();
 		else
 		{
@@ -291,15 +296,15 @@ public:
 	{
 		switch (event.new_state)
 		{
-			case WAF::CheckBox::BoxStateCheck:
+			case WAF::CheckBox::BoxState::Check:
 				LogEvent(L"checkBox1: box state check");
 				checkBox1->SetCaption(L"checked");
 				break;
-			case WAF::CheckBox::BoxStateMiddle:
+			case WAF::CheckBox::BoxState::Middle:
 				LogEvent(L"checkBox1: box state middle");
 				checkBox1->SetCaption(L"middle");
 				break;
-			case WAF::CheckBox::BoxStateUnCheck:
+			case WAF::CheckBox::BoxState::Uncheck:
 				LogEvent(L"checkBox1: box state uncheck");
 				checkBox1->SetCaption(L"uncheck");
 				break;
@@ -312,6 +317,16 @@ public:
 		LogEvent(L"edit1: set text");
 	}
 	
+	// ~~ gfxBox ~~
+	void GfxBox_OnMouseMove(WAF::GraphicsBox::Events::EventMouseMove& event)
+	{
+		LogEvent(
+			L"gfxBox: mouse move [" +
+			std::to_wstring(event.mouse_pos.x) +
+			L":" + std::to_wstring(event.mouse_pos.y) +
+			L"]");
+	}
+
 	// ~~ trackbar ~~ 
 	void TrackBar_OnLineUp(WAF::TrackBar::Events::EventLineUp& event)
 	{
@@ -374,70 +389,71 @@ public:
 	}
 
 	// ~~ Framework::keyboard ~~
-	void FrameworkKeyboardEventHandler(WAF::Keyboard::KeyEvent event)
+	void Keyboard_OnKeyPress(WAF::Keyboard::Events::EventKeyPress& event)
 	{
-		switch (event.type)
+		switch (event.key)
 		{
-			case WAF::Keyboard::KeyEvent::Type::Press:
-				if (event.key == WAF::Keyboard::Key::Esc)
-				{
-					lbEventLog = nullptr;
-					WAF::Framework::Exit(0);
-				}
+			case WAF::Keyboard::Key::Esc:
+				lbEventLog = nullptr;
+				WAF::Framework::Exit(0);
+				break;
 
-				if (event.key == WAF::Keyboard::Key::Comma)
-				{
-					if (progressBar) progressBar->StepIt(-10);
-				}
-				if (event.key == WAF::Keyboard::Key::Dot)
-				{
-					if (progressBar) progressBar->StepIt(10);
-				}
+			case WAF::Keyboard::Key::Comma:
+				if (progressBar) progressBar->StepIt(-10);
+				break;
+
+			case WAF::Keyboard::Key::Dot:
+				if (progressBar) progressBar->StepIt(10);
+				break;
 		}
 	}
 	
 	// ~~ Framework::mouse ~~
-	void FrameworkMouse_EH(WAF::Mouse::Event event)
+	void Mouse_OnLeftPress(WAF::Mouse::Events::EventLeftPress& event)
 	{
-		switch (event.type)
-		{
-			case WAF::Mouse::Event::Type::LeftPress:
-				break;
-			case WAF::Mouse::Event::Type::RightPress:
-				if (WAF::Framework::Keyboard.KeyPressed(WAF::Keyboard::Key::Control) || true)
-				{
-					panel->Resize(
-						std::max(2 * panel->GetMousePosition().x, 100), 
-						std::max(2 * panel->GetMousePosition().y, 100));
-				}
-				break;
-			case WAF::Mouse::Event::Type::Move:
-			{
-				if (WAF::Framework::Keyboard.KeyPressed(WAF::Keyboard::Key::Control))
-				{
-					panel->Move(
-						MainWindow->GetCanvasMousePosition() - 
-						WAF::Point(panel->GetWindowRect().size.width / 2, panel->GetWindowRect().size.height / 2));
-				}
-				/*MainWindow->SetCaption(
-					L"WindowM: " +
-					std::to_wstring(MainWindow->GetWindowMousePosition().x) +
-					L" : " +
-					std::to_wstring(MainWindow->GetWindowMousePosition().y) +
-					L" ClientM: " +
-					std::to_wstring(MainWindow->GetClientMousePosition().x) +
-					L" : " +
-					std::to_wstring(MainWindow->GetClientMousePosition().y) +
-					L" CanvasM: " +
-					std::to_wstring(MainWindow->GetCanvasMousePosition().x) +
-					L" : " +
-					std::to_wstring(MainWindow->GetCanvasMousePosition().y));*/
 
-				//panel->Move(MainWindow->GetCanvasMousePosition() - WAF::Point(panel->GetRect().size.width / 2, panel->GetRect().size.height));
-				break;
-			}
+	}
+	void Mouse_OnRightPress(WAF::Mouse::Events::EventRightPress& event)
+	{
+		if (WAF::Framework::Keyboard.KeyPressed(WAF::Keyboard::Key::Control) || true)
+		{
+			panel->Resize(
+				std::max(2 * panel->GetMousePosition().x, 100),
+				std::max(2 * panel->GetMousePosition().y, 100));
 		}
 	}
+	void Mouse_OnMove(WAF::Mouse::Events::EventMove& event)
+	{
+		if (WAF::Framework::Keyboard.KeyPressed(WAF::Keyboard::Key::Control))
+		{
+			panel->Move(
+				MainWindow->GetCanvasMousePosition() -
+				WAF::Point(panel->GetWindowRect().size.width / 2, panel->GetWindowRect().size.height / 2));
+		}
+		/*MainWindow->SetCaption(
+			L"WindowM: " +
+			std::to_wstring(MainWindow->GetWindowMousePosition().x) +
+			L" : " +
+			std::to_wstring(MainWindow->GetWindowMousePosition().y) +
+			L" ClientM: " +
+			std::to_wstring(MainWindow->GetClientMousePosition().x) +
+			L" : " +
+			std::to_wstring(MainWindow->GetClientMousePosition().y) +
+			L" CanvasM: " +
+			std::to_wstring(MainWindow->GetCanvasMousePosition().x) +
+			L" : " +
+			std::to_wstring(MainWindow->GetCanvasMousePosition().y));*/
+
+		//panel->Move(MainWindow->GetCanvasMousePosition() - WAF::Point(panel->GetRect().size.width / 2, panel->GetRect().size.height));
+	}
+	void Mouse_OnWheel(WAF::Mouse::Events::EventWheel& event)
+	{
+		LogEvent(
+			L"mouse: wheel [" +
+			std::to_wstring(event.delta) +
+			L"]");
+	}
+	
 
 	// -- MainForm::methods -- //
 	void DisplayMainWindowProps()
@@ -474,13 +490,13 @@ void CallBackFunction()
 		*texture1,
 		Graphics::Rect<float>(mouseX, mouseY, mouseX + texture1->Width, mouseY + texture1->Height),
 		Graphics::Rect<float>(0.0f, 0.0f, texture1->Width, texture1->Height),
-		1.0f, WAF::GraphicsBox::InterpolationMode::InterpolationModeNearestNeighbor);
+		1.0f, WAF::GraphicsBox::InterpolationMode::NearestNeighbor);
 
 	if (WAF::Framework::Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
 		*texture2,
 		Graphics::Rect<float>(50.0f, 50.0f, 50.0f + texture2->Width, 50.0f + texture2->Height),
 		Graphics::Rect<float>(0.0f, 0.0f, texture2->Width, texture2->Height),
-		1.0f, WAF::GraphicsBox::InterpolationMode::InterpolationModeNearestNeighbor);
+		1.0f, WAF::GraphicsBox::InterpolationMode::NearestNeighbor);
 
 	//MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(100.0f, 50.0f));
 	MF->gfxBox->Gfx.DrawRoundedRectangle(Graphics::Point<float>(0.0f, 0.0f), Graphics::Point<float>(mouseX, mouseY), 50.0f, 50.0f, 10.0f);

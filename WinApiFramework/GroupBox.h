@@ -13,7 +13,7 @@ namespace WinapiFramework
 	class GroupBox : public BaseWindow
 	{
 	public:
-		enum CaptionPosition
+		enum class CaptionPosition
 		{
 			Left,
 			Center,

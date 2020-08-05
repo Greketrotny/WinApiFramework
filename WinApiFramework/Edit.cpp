@@ -103,10 +103,10 @@ namespace WinapiFramework
 		// set scrolling style
 		switch (m_scrollingStyle)
 		{
-			case WinapiFramework::Edit::NoScrolling:													break;
-			case WinapiFramework::Edit::Horizontal:			m_window_style |= WS_HSCROLL;				break;
-			case WinapiFramework::Edit::Vertical:			m_window_style |= WS_VSCROLL;				break;
-			case WinapiFramework::Edit::HorizontalVertical:	m_window_style |= WS_HSCROLL | WS_VSCROLL;	break;
+			case WinapiFramework::Edit::ScrollingStyle::NoScrolling:													break;
+			case WinapiFramework::Edit::ScrollingStyle::Horizontal:			m_window_style |= WS_HSCROLL;				break;
+			case WinapiFramework::Edit::ScrollingStyle::Vertical:			m_window_style |= WS_VSCROLL;				break;
+			case WinapiFramework::Edit::ScrollingStyle::HorizontalVertical:	m_window_style |= WS_HSCROLL | WS_VSCROLL;	break;
 		}
 
 
@@ -159,9 +159,9 @@ namespace WinapiFramework
 		m_window_style = (m_window_style & (~(ES_LEFT | ES_CENTER | ES_RIGHT)));
 		switch (m_textAlignment)
 		{
-			case WinapiFramework::Edit::Left:	m_window_style |= ES_LEFT;		break;
-			case WinapiFramework::Edit::Center:	m_window_style |= ES_CENTER;	break;
-			case WinapiFramework::Edit::Right:	m_window_style |= ES_RIGHT;		break;
+			case WinapiFramework::Edit::TextAlignment::Left:	m_window_style |= ES_LEFT;		break;
+			case WinapiFramework::Edit::TextAlignment::Center:	m_window_style |= ES_CENTER;	break;
+			case WinapiFramework::Edit::TextAlignment::Right:	m_window_style |= ES_RIGHT;		break;
 		}
 		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 		InvalidateRect(m_hWindow, NULL, TRUE);

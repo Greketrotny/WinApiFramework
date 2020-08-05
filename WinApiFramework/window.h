@@ -94,7 +94,6 @@ namespace WinapiFramework
 
 
 	private:
-		Window();
 		Window(const Window &wnd) = delete;
 		Window(const Window &&wnd) = delete;
 		Window(unsigned int id, const ConStruct<Window> &conStruct);
@@ -149,7 +148,7 @@ namespace WinapiFramework
 			const std::wstring& caption = L"default caption",
 			const std::wstring& text = L"default text",
 			MessBoxButtonLayout buttons = MessBoxButtonLayout::Ok,
-			MessBoxIcon icon = MessBoxIcon::IconInformation);
+			MessBoxIcon icon = MessBoxIcon::Information);
 
 		const std::wstring& GetCaption() const;
 	private:

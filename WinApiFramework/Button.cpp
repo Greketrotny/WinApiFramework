@@ -52,16 +52,16 @@ namespace WinapiFramework
 		// set caption position
 		switch (m_caption_position)
 		{
-			case WinapiFramework::Button::Center:		m_window_style |= BS_CENTER;			break;
-			case WinapiFramework::Button::TopLeft:		m_window_style |= BS_TOP | BS_LEFT;		break;
-			case WinapiFramework::Button::TopCenter:	m_window_style |= BS_TOP | BS_CENTER;	break;
-			case WinapiFramework::Button::TopRight:		m_window_style |= BS_TOP | BS_RIGHT;	break;
-			case WinapiFramework::Button::MiddleLeft:	m_window_style |= BS_LEFT;				break;
-			case WinapiFramework::Button::MiddleCenter:	m_window_style |= BS_CENTER;			break;
-			case WinapiFramework::Button::MiddleRight:	m_window_style |= BS_RIGHT;				break;
-			case WinapiFramework::Button::BottomLeft:	m_window_style |= BS_BOTTOM | BS_LEFT;	break;
-			case WinapiFramework::Button::BottomCenter:	m_window_style |= BS_BOTTOM;			break;
-			case WinapiFramework::Button::BottomRight:	m_window_style |= BS_BOTTOM | BS_RIGHT;	break;
+			case WinapiFramework::Button::CaptionPosition::Center:		m_window_style |= BS_CENTER;			break;
+			case WinapiFramework::Button::CaptionPosition::TopLeft:		m_window_style |= BS_TOP | BS_LEFT;		break;
+			case WinapiFramework::Button::CaptionPosition::TopCenter:	m_window_style |= BS_TOP | BS_CENTER;	break;
+			case WinapiFramework::Button::CaptionPosition::TopRight:	m_window_style |= BS_TOP | BS_RIGHT;	break;
+			case WinapiFramework::Button::CaptionPosition::MiddleLeft:	m_window_style |= BS_LEFT;				break;
+			case WinapiFramework::Button::CaptionPosition::MiddleCenter:m_window_style |= BS_CENTER;			break;
+			case WinapiFramework::Button::CaptionPosition::MiddleRight:	m_window_style |= BS_RIGHT;				break;
+			case WinapiFramework::Button::CaptionPosition::BottomLeft:	m_window_style |= BS_BOTTOM | BS_LEFT;	break;
+			case WinapiFramework::Button::CaptionPosition::BottomCenter:m_window_style |= BS_BOTTOM;			break;
+			case WinapiFramework::Button::CaptionPosition::BottomRight:	m_window_style |= BS_BOTTOM | BS_RIGHT;	break;
 		}
 
 		// [>] Create window
@@ -103,16 +103,16 @@ namespace WinapiFramework
 		m_window_style = m_window_style & (~(BS_TOP | BS_BOTTOM | BS_LEFT | BS_CENTER | BS_RIGHT));
 		switch (m_caption_position)
 		{
-			case WinapiFramework::Button::Center:
-			case WinapiFramework::Button::MiddleCenter:	m_window_style |= BS_CENTER;			break;
-			case WinapiFramework::Button::TopLeft:		m_window_style |= BS_TOP | BS_LEFT;		break;
-			case WinapiFramework::Button::TopCenter:	m_window_style |= BS_TOP | BS_CENTER;	break;
-			case WinapiFramework::Button::TopRight:		m_window_style |= BS_TOP | BS_RIGHT;	break;
-			case WinapiFramework::Button::MiddleLeft:	m_window_style |= BS_LEFT;				break;
-			case WinapiFramework::Button::MiddleRight:	m_window_style |= BS_RIGHT;				break;
-			case WinapiFramework::Button::BottomLeft:	m_window_style |= BS_BOTTOM | BS_LEFT;	break;
-			case WinapiFramework::Button::BottomCenter:	m_window_style |= BS_BOTTOM;			break;
-			case WinapiFramework::Button::BottomRight:	m_window_style |= BS_BOTTOM | BS_RIGHT;	break;
+			case WinapiFramework::Button::CaptionPosition::Center:
+			case WinapiFramework::Button::CaptionPosition::MiddleCenter:m_window_style |= BS_CENTER;			break;
+			case WinapiFramework::Button::CaptionPosition::TopLeft:		m_window_style |= BS_TOP | BS_LEFT;		break;
+			case WinapiFramework::Button::CaptionPosition::TopCenter:	m_window_style |= BS_TOP | BS_CENTER;	break;
+			case WinapiFramework::Button::CaptionPosition::TopRight:	m_window_style |= BS_TOP | BS_RIGHT;	break;
+			case WinapiFramework::Button::CaptionPosition::MiddleLeft:	m_window_style |= BS_LEFT;				break;
+			case WinapiFramework::Button::CaptionPosition::MiddleRight:	m_window_style |= BS_RIGHT;				break;
+			case WinapiFramework::Button::CaptionPosition::BottomLeft:	m_window_style |= BS_BOTTOM | BS_LEFT;	break;
+			case WinapiFramework::Button::CaptionPosition::BottomCenter:m_window_style |= BS_BOTTOM;			break;
+			case WinapiFramework::Button::CaptionPosition::BottomRight:	m_window_style |= BS_BOTTOM | BS_RIGHT;	break;
 		}
 
 		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);

@@ -13,18 +13,18 @@ namespace WinapiFramework
 	class ProgressBar : public BaseWindow
 	{
 	public:
-		enum BarState
+		enum class BarState
 		{
 			Normal,
 			Pause,
 			Error
 		};
-		enum BarOrientation
+		enum class BarOrientation
 		{
 			Horizontal,
 			Vertical
 		};
-		enum BarDisplayStyle
+		enum class BarDisplayStyle
 		{
 			Default,
 			Marquee,

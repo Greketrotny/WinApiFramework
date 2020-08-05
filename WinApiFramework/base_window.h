@@ -61,7 +61,7 @@ namespace WinapiFramework
 		public:
 			MouseCaptor()
 				: is_capturing_mouse(false)
-				, capturing_button(Mouse::MouseButtonLeft)
+				, capturing_button(Mouse::MouseButton::Left)
 			{}
 			~MouseCaptor()
 			{

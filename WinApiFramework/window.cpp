@@ -6,14 +6,11 @@
 namespace WinapiFramework
 {
 	// ~~~~~~~~ [CLASS] Window ~~~~~~~~ //
-	Window::Window()
+	Window::Window(unsigned int id, const ConStruct<Window> &conStruct)
 		: ScrollableWindow(nullptr)
 		, HasWindowProcedure(this, &Window::WindowProcedure)
-	{}
-	Window::Window(unsigned int id, const ConStruct<Window> &conStruct)
-		: Window()
+		, window_id(id)
 	{
-		window_id = id;
 		m_window_style = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_BORDER | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SIZEBOX;
 		m_window_class_name = L"WindowClass" + std::to_wstring((window_id));
 
@@ -43,14 +40,13 @@ namespace WinapiFramework
 
 		switch (msg)
 		{
-			// on window controls events //
 			case WM_COMMAND:
 			case WM_NOTIFY:
 				return ProcessChildMessage(wParam, lParam);
 
 			case WM_VSCROLL:
 			{
-				// try to find and process message on child controls
+				// try to find and process message by child controls
 				if (!ProcessChildMessage(wParam, lParam)) return 0;
 
 				// process the message by itself
@@ -62,7 +58,7 @@ namespace WinapiFramework
 
 			case WM_HSCROLL:
 			{
-				// try to find and process message on child controls
+				// try to find and process message by child controls
 				if (!ProcessChildMessage(wParam, lParam)) return 0;
 
 				// process the message by itself
@@ -479,7 +475,8 @@ namespace WinapiFramework
 		MessBoxButtonLayout buttons,
 		MessBoxIcon icon)
 	{
-		return (MessBoxButtonPressed)MessageBoxW(m_hWindow, text.c_str(), caption.c_str(), buttons | icon);
+		return (MessBoxButtonPressed)MessageBoxW(m_hWindow, text.c_str(), caption.c_str(), 
+			static_cast<UINT>(buttons) | static_cast<UINT>(icon));
 	}
 
 	const std::wstring& Window::GetCaption() const

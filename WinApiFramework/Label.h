@@ -13,7 +13,7 @@ namespace WinapiFramework
 	private:
 		std::wstring m_caption;
 	public:
-		enum TextAlignment
+		enum class TextAlignment
 		{
 			Left,
 			Center,

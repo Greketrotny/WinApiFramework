@@ -24,13 +24,10 @@ namespace WinapiFramework
 
 		switch (msg)
 		{
-			// on window controls events //
 			case WM_COMMAND:
 			case WM_NOTIFY:
+				// try to find and process message by child controls
 				return ProcessChildMessage(wParam, lParam);
-
-			case WM_LBUTTONDOWN:
-
 
 			default: return 1;
 		}
@@ -88,6 +85,7 @@ namespace WinapiFramework
 	}
 	void Panel::DestroyWinapiWindow()
 	{
-		DestroyWindow(m_hWindow);
+		::DestroyWindow(m_hWindow);
+		UnregisterClass(m_window_class_name.c_str(), Framework::GetProgramInstance());
 	}
 }

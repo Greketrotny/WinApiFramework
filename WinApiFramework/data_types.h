@@ -69,7 +69,7 @@ namespace WinapiFramework
 
 
 	// ~~~~~~~~ MessageBox enums ~~~~~~~~
-	enum MessBoxButtonLayout
+	enum class MessBoxButtonLayout
 	{
 		AbortRetryIgnore = 0x00000002L,
 		CancelTryContinue = 0x00000006L,
@@ -80,24 +80,24 @@ namespace WinapiFramework
 		YesNo = 0x00000004L,
 		YesNoCancel = 0x00000003L
 	};
-	enum MessBoxIcon
+	enum class MessBoxIcon
 	{
-		IconWarning = 0x00000030L,
-		IconInformation = 0x00000040L,
-		IconQuestion = 0x00000020L,
-		IconError = 0x00000010L
+		Warning = 0x00000030L,
+		Information = 0x00000040L,
+		Question = 0x00000020L,
+		Error = 0x00000010L
 	};
-	enum MessBoxButtonPressed
+	enum class MessBoxButtonPressed
 	{
-		ButtonOk = 1,
-		ButtonCancel = 2,
-		ButtonAbort = 3,
-		ButtonRetry = 4,
-		ButtonIgnore = 5,
-		ButtonYes = 6,
-		ButtonNo = 7,
-		ButtonTryAgain = 10,
-		ButtonContinue = 11
+		Ok = 1,
+		Cancel = 2,
+		Abort = 3,
+		Retry = 4,
+		Ignore = 5,
+		Yes = 6,
+		No = 7,
+		TryAgain = 10,
+		Continue = 11
 	};
 }
 

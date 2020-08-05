@@ -32,115 +32,117 @@ namespace WinapiFramework
 	class GraphicsBox;
 	template <> struct ConStruct<GraphicsBox>;
 
-	class GraphicsBox : public BaseWindow
+	class GraphicsBox 
+		: public BaseWindow
+		, public HasWindowProcedure<GraphicsBox>
 	{
 	public:
 		class GBGraphics;
 	public:
-		enum FontWeight
+		enum class FontWeight
 		{
-			FontWeightThin = DWRITE_FONT_WEIGHT_THIN,
-			FontWeightExtraLight = DWRITE_FONT_WEIGHT_LIGHT,
-			FontWeightUltraLight = DWRITE_FONT_WEIGHT_ULTRA_LIGHT,
-			FontWeightLight = DWRITE_FONT_WEIGHT_LIGHT,
-			FontWeightSemiLight = DWRITE_FONT_WEIGHT_SEMI_LIGHT,
-			FontWeightNormal = DWRITE_FONT_WEIGHT_NORMAL,
-			FontWeightMedium = DWRITE_FONT_WEIGHT_MEDIUM,
-			FontWeightSemiBold = DWRITE_FONT_WEIGHT_SEMI_BOLD,
-			FontWeightBold = DWRITE_FONT_WEIGHT_BOLD,
-			FontWeightExtraBold = DWRITE_FONT_WEIGHT_EXTRA_BOLD,
-			FontWeightUltraBold = DWRITE_FONT_WEIGHT_ULTRA_BOLD,
-			FontWeightHeavy = DWRITE_FONT_WEIGHT_HEAVY,
-			FontWeightUltraHeavy = DWRITE_FONT_WEIGHT_ULTRA_BLACK
+			Thin = DWRITE_FONT_WEIGHT_THIN,
+			ExtraLight = DWRITE_FONT_WEIGHT_LIGHT,
+			UltraLight = DWRITE_FONT_WEIGHT_ULTRA_LIGHT,
+			Light = DWRITE_FONT_WEIGHT_LIGHT,
+			SemiLight = DWRITE_FONT_WEIGHT_SEMI_LIGHT,
+			Normal = DWRITE_FONT_WEIGHT_NORMAL,
+			Medium = DWRITE_FONT_WEIGHT_MEDIUM,
+			SemiBold = DWRITE_FONT_WEIGHT_SEMI_BOLD,
+			Bold = DWRITE_FONT_WEIGHT_BOLD,
+			ExtraBold = DWRITE_FONT_WEIGHT_EXTRA_BOLD,
+			UltraBold = DWRITE_FONT_WEIGHT_ULTRA_BOLD,
+			Heavy = DWRITE_FONT_WEIGHT_HEAVY,
+			UltraHeavy = DWRITE_FONT_WEIGHT_ULTRA_BLACK
 		};
-		enum FontStyle
+		enum class FontStyle
 		{
-			FontStyleNormal = DWRITE_FONT_STYLE_NORMAL,
-			FontStyleItalic = DWRITE_FONT_STYLE_ITALIC,
-			FontStyleOblique = DWRITE_FONT_STYLE_OBLIQUE
+			Normal = DWRITE_FONT_STYLE_NORMAL,
+			Italic = DWRITE_FONT_STYLE_ITALIC,
+			Oblique = DWRITE_FONT_STYLE_OBLIQUE
 		};
-		enum FontStretch
+		enum class FontStretch
 		{
-			FontStretchUltraCondensed = DWRITE_FONT_STRETCH_ULTRA_CONDENSED,
-			FontStretchExtraCondensed = DWRITE_FONT_STRETCH_EXTRA_CONDENSED,
-			FontStretchCondensed = DWRITE_FONT_STRETCH_CONDENSED,
-			FontStretchSemiCondensed = DWRITE_FONT_STRETCH_SEMI_CONDENSED,
-			FontStretchNormal = DWRITE_FONT_STRETCH_NORMAL,
-			FontStretchSemiExpanded = DWRITE_FONT_STRETCH_SEMI_EXPANDED,
-			FontStretchExpanded = DWRITE_FONT_STRETCH_EXPANDED,
-			FontStretchExtraExpanded = DWRITE_FONT_STRETCH_EXTRA_EXPANDED,
-			FontStretchUltraExpanded = DWRITE_FONT_STRETCH_ULTRA_EXPANDED
+			UltraCondensed = DWRITE_FONT_STRETCH_ULTRA_CONDENSED,
+			ExtraCondensed = DWRITE_FONT_STRETCH_EXTRA_CONDENSED,
+			Condensed = DWRITE_FONT_STRETCH_CONDENSED,
+			SemiCondensed = DWRITE_FONT_STRETCH_SEMI_CONDENSED,
+			Normal = DWRITE_FONT_STRETCH_NORMAL,
+			SemiExpanded = DWRITE_FONT_STRETCH_SEMI_EXPANDED,
+			Expanded = DWRITE_FONT_STRETCH_EXPANDED,
+			ExtraExpanded = DWRITE_FONT_STRETCH_EXTRA_EXPANDED,
+			UltraExpanded = DWRITE_FONT_STRETCH_ULTRA_EXPANDED
 		};
-		enum TextAlignment
+		enum class TextAlignment
 		{
-			TextAlignmentLeft = DWRITE_TEXT_ALIGNMENT_LEADING,
-			TextAlignmentRight = DWRITE_TEXT_ALIGNMENT_TRAILING,
-			TextAlignmentCenter = DWRITE_TEXT_ALIGNMENT_CENTER,
-			TextAlignmentJustified = DWRITE_TEXT_ALIGNMENT_JUSTIFIED
+			Left = DWRITE_TEXT_ALIGNMENT_LEADING,
+			Right = DWRITE_TEXT_ALIGNMENT_TRAILING,
+			Center = DWRITE_TEXT_ALIGNMENT_CENTER,
+			Justified = DWRITE_TEXT_ALIGNMENT_JUSTIFIED
 		};
-		enum ParagraphAlignment
+		enum class ParagraphAlignment
 		{
-			ParagraphAlignmentTop = DWRITE_PARAGRAPH_ALIGNMENT_NEAR,
-			ParagraphAlignmentBottom = DWRITE_PARAGRAPH_ALIGNMENT_FAR,
-			ParagraphAlignmentCenter = DWRITE_PARAGRAPH_ALIGNMENT_CENTER
+			Top = DWRITE_PARAGRAPH_ALIGNMENT_NEAR,
+			Bottom = DWRITE_PARAGRAPH_ALIGNMENT_FAR,
+			Center = DWRITE_PARAGRAPH_ALIGNMENT_CENTER
 		};
-		enum WrapMode
+		enum class WrapMode
 		{
-			WrapModeWrap = DWRITE_WORD_WRAPPING_WRAP,
-			WrapModeNoWrap = DWRITE_WORD_WRAPPING_NO_WRAP,
-			WrapModeWholeWorld = DWRITE_WORD_WRAPPING_WHOLE_WORD
+			Wrap = DWRITE_WORD_WRAPPING_WRAP,
+			NoWrap = DWRITE_WORD_WRAPPING_NO_WRAP,
+			WholeWorld = DWRITE_WORD_WRAPPING_WHOLE_WORD
 		};
-		enum FlowDirection
+		enum class FlowDirection
 		{
-			FlowDirectionTopToBottom = DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM,
-			FlowDirectionBottomToTop = DWRITE_FLOW_DIRECTION_BOTTOM_TO_TOP
+			TopToBottom = DWRITE_FLOW_DIRECTION_TOP_TO_BOTTOM,
+			BottomToTop = DWRITE_FLOW_DIRECTION_BOTTOM_TO_TOP
 		};
-		enum ReadingDirection
+		enum class ReadingDirection
 		{
-			ReadingDirectionLeftToRight = DWRITE_READING_DIRECTION_LEFT_TO_RIGHT,
-			ReadingDirectionRightToLeft = DWRITE_READING_DIRECTION_RIGHT_TO_LEFT
+			LeftToRight = DWRITE_READING_DIRECTION_LEFT_TO_RIGHT,
+			RightToLeft = DWRITE_READING_DIRECTION_RIGHT_TO_LEFT
 		};
-		enum LineSpacingMethod
+		enum class LineSpacingMethod
 		{
-			LineSpacingMethodProportional = DWRITE_LINE_SPACING_METHOD_PROPORTIONAL,
-			LineSpacingMethodUniform = DWRITE_LINE_SPACING_METHOD_UNIFORM
+			Proportional = DWRITE_LINE_SPACING_METHOD_PROPORTIONAL,
+			Uniform = DWRITE_LINE_SPACING_METHOD_UNIFORM
 		};
 
-		enum RenderType
+		enum class RenderType
 		{
-			RenderTypeDefault = 0,
-			RenderTypeSoftware = 1,
-			RenderTypeHardware = 2
+			Default = 0,
+			Software = 1,
+			Hardware = 2
 		};
-		enum PresentOption
+		enum class PresentOption
 		{
-			PresentOptionWaitForDisplay = 0,
-			PresentOptionRenderImmediately = 1,
-			PresentOptionRetainContents = 2
+			WaitForDisplay = 0,
+			RenderImmediately = 1,
+			RetainContents = 2
 		};
-		enum InterpolationMode
+		enum class InterpolationMode
 		{
-			InterpolationModeLinear = 0,
-			InterpolationModeNearestNeighbor = 1
+			Linear = 0,
+			NearestNeighbor = 1
 		};
-		enum BrushType
+		enum class BrushType
 		{
-			BrushTypeSolid = 0,
-			BrushTypeLinearGradient = 1,
-			BrushTypeRadialGradient = 2
+			Solid = 0,
+			LinearGradient = 1,
+			RadialGradient = 2
 		};
 
 		struct TextFormatDescription
 		{
-			FontWeight fontWeight = FontWeight::FontWeightNormal;
-			FontStyle fontStyle = FontStyle::FontStyleNormal;
-			FontStretch fontStretch = FontStretch::FontStretchNormal;
-			TextAlignment textAlignment = TextAlignment::TextAlignmentLeft;
-			ParagraphAlignment paragraphAlignment = ParagraphAlignment::ParagraphAlignmentTop;
-			WrapMode wrapMode = WrapMode::WrapModeWrap;
-			FlowDirection flowDirection = FlowDirection::FlowDirectionTopToBottom;
-			ReadingDirection readingDirection = ReadingDirection::ReadingDirectionLeftToRight;
-			LineSpacingMethod lineSpacingMethod = LineSpacingMethod::LineSpacingMethodProportional;
+			FontWeight fontWeight = FontWeight::Normal;
+			FontStyle fontStyle = FontStyle::Normal;
+			FontStretch fontStretch = FontStretch::Normal;
+			TextAlignment textAlignment = TextAlignment::Left;
+			ParagraphAlignment paragraphAlignment = ParagraphAlignment::Top;
+			WrapMode wrapMode = WrapMode::Wrap;
+			FlowDirection flowDirection = FlowDirection::TopToBottom;
+			ReadingDirection readingDirection = ReadingDirection::LeftToRight;
+			LineSpacingMethod lineSpacingMethod = LineSpacingMethod::Proportional;
 
 			std::wstring fontName = L"Arial";
 			float fontSize = 15.0f;
@@ -151,15 +153,15 @@ namespace WinapiFramework
 			TextFormatDescription(
 				const std::wstring& fontName = L"Arial",
 				float fontSize = 15.0f,
-				FontWeight fontWeight = FontWeight::FontWeightNormal,
-				FontStyle fontStyle = FontStyle::FontStyleNormal,
-				FontStretch fontStretch = FontStretch::FontStretchNormal,
-				TextAlignment textAlignment = TextAlignment::TextAlignmentLeft,
-				ParagraphAlignment paragraphAlignment = ParagraphAlignment::ParagraphAlignmentTop,
-				WrapMode wrapMode = WrapMode::WrapModeWrap,
-				FlowDirection flowDirection = FlowDirection::FlowDirectionTopToBottom,
-				ReadingDirection readingDirection = ReadingDirection::ReadingDirectionLeftToRight,
-				LineSpacingMethod lineSpacingMethod = LineSpacingMethod::LineSpacingMethodProportional,
+				FontWeight fontWeight = FontWeight::Normal,
+				FontStyle fontStyle = FontStyle::Normal,
+				FontStretch fontStretch = FontStretch::Normal,
+				TextAlignment textAlignment = TextAlignment::Left,
+				ParagraphAlignment paragraphAlignment = ParagraphAlignment::Top,
+				WrapMode wrapMode = WrapMode::Wrap,
+				FlowDirection flowDirection = FlowDirection::TopToBottom,
+				ReadingDirection readingDirection = ReadingDirection::LeftToRight,
+				LineSpacingMethod lineSpacingMethod = LineSpacingMethod::Proportional,
 				float lineSpacing = 1.0f,
 				float baseLine = 1.0f,
 				float tabStopWidth = 20.0f)
@@ -264,9 +266,9 @@ namespace WinapiFramework
 				TextFormatDescription defaultTextFormatDesc;
 
 				ConStruct(
-					RenderType renderType = RenderType::RenderTypeDefault,
-					PresentOption presentOption = PresentOption::PresentOptionWaitForDisplay,
-					InterpolationMode interpolationMode = InterpolationMode::InterpolationModeLinear,
+					RenderType renderType = RenderType::Default,
+					PresentOption presentOption = PresentOption::WaitForDisplay,
+					InterpolationMode interpolationMode = InterpolationMode::Linear,
 					TextFormatDescription defaultTextFormatDesc = TextFormatDescription())
 					: renderType(renderType)
 					, presentOption(presentOption)
@@ -320,11 +322,11 @@ namespace WinapiFramework
 				const G::Rect<float>& destinationRect,
 				const G::Rect<float>& sourceRect,
 				const float opacity = 1.0f,
-				InterpolationMode interpolationMode = InterpolationMode::InterpolationModeLinear);
+				InterpolationMode interpolationMode = InterpolationMode::Linear);
 			void DrawBitmap(
 				const G::Bitmap& bitmap,
 				const float opacity = 1.0f,
-				InterpolationMode interpolationMode = InterpolationMode::InterpolationModeLinear);
+				InterpolationMode interpolationMode = InterpolationMode::Linear);
 			void DrawLine(
 				const G::Point<float>& point1,
 				const G::Point<float>& point2,
@@ -372,6 +374,7 @@ namespace WinapiFramework
 
 
 	private:
+		LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 		LRESULT ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateWinapiWindow() override;
 		void DestroyWinapiWindow() override;

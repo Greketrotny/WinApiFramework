@@ -58,74 +58,12 @@ namespace WinapiFramework
 		{
 			MSG *msg = (MSG*)lParam;
 
-			switch (msg->message)
-			{
-				// Keyboard events //
-				case WM_KEYDOWN:
-				case WM_SYSKEYDOWN:
-					if (!(msg->lParam & 0x40000000) || keyboard.autorepeat)
-					{
-						keyboard.KeyPress((Keyboard::Key)msg->wParam);
-					}
-					break;
+			if (Mouse.HandleMessage(msg->message, wParam, lParam) == 0)
+				return CallNextHookEx(InputHook, code, wParam, lParam);
 
-				case WM_KEYUP:
-				case WM_SYSKEYUP:
-					keyboard.KeyRelase((Keyboard::Key)(msg->wParam));
-					break;
+			if (Keyboard.HandleMessage(wParam, lParam) == 0)
+				return CallNextHookEx(InputHook, code, wParam, lParam);
 
-				case WM_CHAR:
-					if (!(msg->lParam & 0x40000000) || keyboard.autorepeat)
-					{
-						keyboard.CharInput((wchar_t)msg->wParam);
-					}
-					break;
-
-
-					// Mouse events //
-				case WM_MOUSEMOVE:
-				{
-					//const POINTS pt = MAKEPOINTS(msg->lParam);
-					POINT pt;
-					GetCursorPos(&pt);
-					mouse.Move(pt.x, pt.y);
-					break;
-				}
-				case WM_LBUTTONDOWN:
-					mouse.isLeftPressed = true;
-					mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::LeftPress));
-					break;
-				case WM_RBUTTONDOWN:
-					mouse.isRightPressed = true;
-					mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::RightPress));
-					break;
-				case WM_LBUTTONUP:
-					mouse.isLeftPressed = false;
-					mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::LeftRelase));
-					break;
-				case WM_RBUTTONUP:
-					mouse.isRightPressed = false;
-					mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::RightRelase));
-					break;
-				case WM_MBUTTONDOWN:
-					mouse.isMiddlePressed = true;
-					mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::MiddlePress));
-					break;
-				case WM_MBUTTONUP:
-					mouse.isMiddlePressed = false;
-					mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::MiddleRelase));
-					break;
-				case WM_MOUSEWHEEL:
-					if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
-					{
-						mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::WheelUp));
-					}
-					else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
-					{
-						mouse.Events.PushEvent(Mouse::Event(Mouse::Event::Type::WheelDown));
-					}
-					break;
-			}
 		}
 		return CallNextHookEx(InputHook, code, wParam, lParam);
 	}
@@ -162,6 +100,11 @@ namespace WinapiFramework
 	bool Framework::DestroyWindow(Window* const window)
 	{
 		if (window == nullptr) return false;
+		if (window == m_pRootWindow)
+		{
+			Framework::Exit(0);
+			return true;
+		}
 
 		for (size_t i = 0; i < m_windows.size(); ++i)
 		{
@@ -169,10 +112,6 @@ namespace WinapiFramework
 			{
 				delete window;
 				m_windows.erase(m_windows.begin() + i);
-
-				if (window == m_pRootWindow)
-					Framework::Exit(0);
-
 				return true;
 			}
 		}
@@ -268,11 +207,11 @@ namespace WinapiFramework
 		PostQuitMessage(return_value);
 	}
 
-	MessBoxButtonPressed Framework::ShowGlobalMessageBox(std::wstring text, std::wstring caption,
+	MessBoxButtonPressed Framework::ShowGlobalMessageBox(const std::wstring& text, const std::wstring& caption,
 		MessBoxButtonLayout buttons, MessBoxIcon icon)
 	{
-		return (MessBoxButtonPressed)MessageBox(NULL, caption.c_str(), text.c_str(),
-			buttons | icon);
+		return (MessBoxButtonPressed)MessageBox(NULL, caption.c_str(), text.c_str(), 
+			static_cast<UINT>(buttons) | static_cast<UINT>(icon));
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }

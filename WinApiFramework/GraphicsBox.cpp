@@ -6,10 +6,12 @@ namespace WinapiFramework
 	// ~~~~~~~~ [CLASS] GraphicsBox ~~~~~~~~
 	GraphicsBox::GraphicsBox(ParentWindow* parent, const ConStruct<GraphicsBox>& conStruct)
 		: BaseWindow(parent)
+		, HasWindowProcedure(this, &GraphicsBox::WindowProcedure)
 		, m_graphics(this, conStruct.graphics)
 		, Gfx(m_graphics)
 	{
 		m_rect = conStruct.rect;
+		m_window_class_name = mp_parent->GetWindowClassName() + L"GraphicsBoxClass" + std::to_wstring(int(this));
 
 		CreateWinapiWindow();
 
@@ -20,6 +22,17 @@ namespace WinapiFramework
 		DestroyWinapiWindow();
 	}
 
+	LRESULT GraphicsBox::WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		if (HandleMouseEvent(msg, wParam, lParam) == 0) return 0;
+
+		switch (msg)
+		{
+			default: return 1;
+		}
+
+		return 0;
+	}
 	LRESULT GraphicsBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
 		UINT msg = HIWORD(wParam);
@@ -32,10 +45,34 @@ namespace WinapiFramework
 	}
 	bool GraphicsBox::CreateWinapiWindow()
 	{
+		// [>] Create WindowClassEx
+		WNDCLASSEX wc;
+		ZeroMemory(&wc, sizeof(WNDCLASSEX));
+
+		wc.hInstance = Framework::GetProgramInstance();
+		wc.lpfnWndProc = GetFrameworkProcedure();
+		wc.lpszClassName = m_window_class_name.c_str();
+		wc.lpszMenuName = nullptr;
+		wc.cbSize = (sizeof(WNDCLASSEX));
+		wc.cbClsExtra = 0;
+		wc.cbWndExtra = 0;
+		wc.style = 0;
+		wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+		wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+		wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+		wc.hbrBackground = (HBRUSH)(COLOR_DESKTOP);
+
+		// register class
+		if (!RegisterClassEx(&wc))
+		{
+			MessageBox(NULL, L"Register graphics box class failed.", L"Register error", MB_OK | MB_ICONERROR);
+			return false;
+		}
+
 		m_window_style |= WS_CHILD | WS_VISIBLE | WS_BORDER;
 
 		// create window
-		m_hWindow = CreateWindowW(L"STATIC", NULL,
+		m_hWindow = CreateWindowW((LPCWSTR)m_window_class_name.c_str(), NULL,
 			m_window_style,
 			m_rect.position.x - mp_parent->GetCanvasPosition().x,
 			m_rect.position.y - mp_parent->GetCanvasPosition().y,
@@ -49,11 +86,15 @@ namespace WinapiFramework
 			return false;
 		}
 
+		// set pointer to Window class to receive messages
+		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_window_procedure);
+
 		return true;
 	}
 	void GraphicsBox::DestroyWinapiWindow()
 	{
 		::DestroyWindow(m_hWindow);
+		UnregisterClass(m_window_class_name.c_str(), Framework::GetProgramInstance());
 	}
 
 	void GraphicsBox::Resize(int newWidth, int newHeight)
@@ -98,13 +139,13 @@ namespace WinapiFramework
 		D2D1_RENDER_TARGET_TYPE renderTargetType;
 		switch (m_renderType)
 		{
-			case WinapiFramework::GraphicsBox::RenderTypeDefault:
+			case WinapiFramework::GraphicsBox::RenderType::Default:
 				renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_DEFAULT;
 				break;
-			case WinapiFramework::GraphicsBox::RenderTypeSoftware:
+			case WinapiFramework::GraphicsBox::RenderType::Software:
 				renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_SOFTWARE;
 				break;
-			case WinapiFramework::GraphicsBox::RenderTypeHardware:
+			case WinapiFramework::GraphicsBox::RenderType::Hardware:
 				renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_HARDWARE;
 				break;
 		}
@@ -113,13 +154,13 @@ namespace WinapiFramework
 		D2D1_PRESENT_OPTIONS presentOptions;
 		switch (m_presentOption)
 		{
-			case WinapiFramework::GraphicsBox::PresentOptionWaitForDisplay:
+			case WinapiFramework::GraphicsBox::PresentOption::WaitForDisplay:
 				presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_NONE;
 				break;
-			case WinapiFramework::GraphicsBox::PresentOptionRenderImmediately:
+			case WinapiFramework::GraphicsBox::PresentOption::RenderImmediately:
 				presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_IMMEDIATELY;
 				break;
-			case WinapiFramework::GraphicsBox::PresentOptionRetainContents:
+			case WinapiFramework::GraphicsBox::PresentOption::RetainContents:
 				presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS;
 				break;
 		}
@@ -205,13 +246,13 @@ namespace WinapiFramework
 	{
 		switch (newBrushType)
 		{
-			case GraphicsBox::BrushTypeSolid:
+			case GraphicsBox::BrushType::Solid:
 				m_ppBrush = (ID2D1Brush**)&(*m_pSolidBrush);
 				break;
-			case GraphicsBox::BrushTypeLinearGradient:
+			case GraphicsBox::BrushType::LinearGradient:
 				m_ppBrush = (ID2D1Brush**)&(*m_pLinearGradientBrush);
 				break;
-			case GraphicsBox::BrushTypeRadialGradient:
+			case GraphicsBox::BrushType::RadialGradient:
 				m_ppBrush = (ID2D1Brush**)&(*m_pRadialGradientBrush);
 				break;
 			default:
@@ -289,10 +330,10 @@ namespace WinapiFramework
 		D2D1_BITMAP_INTERPOLATION_MODE interpMode;
 		switch (interpolationMode)
 		{
-			case GraphicsBox::InterpolationModeLinear:
+			case GraphicsBox::InterpolationMode::Linear:
 				interpMode = D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
 				break;
-			case GraphicsBox::InterpolationModeNearestNeighbor:
+			case GraphicsBox::InterpolationMode::NearestNeighbor:
 				interpMode = D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
 				break;
 		}

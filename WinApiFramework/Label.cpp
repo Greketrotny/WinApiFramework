@@ -48,11 +48,11 @@ namespace WinapiFramework
 	bool Label::CreateWinapiWindow()
 	{
 		// set text alignment
-		if (m_textAlignment == Label::Left)
+		if (m_textAlignment == Label::TextAlignment::Left)
 			m_window_style |= SS_LEFT;
-		if (m_textAlignment == Label::Center)
+		if (m_textAlignment == Label::TextAlignment::Center)
 			m_window_style |= SS_CENTER;
-		if (m_textAlignment == Label::Right)
+		if (m_textAlignment == Label::TextAlignment::Right)
 			m_window_style |= SS_RIGHT;
 
 		// for notifications from parent control
@@ -94,11 +94,11 @@ namespace WinapiFramework
 	void Label::SetTextAligment(Label::TextAlignment textAlignment)
 	{
 		unsigned int newStyle = 0u;
-		if (textAlignment == Label::Left)
+		if (textAlignment == Label::TextAlignment::Left)
 			newStyle = SS_LEFT;
-		if (textAlignment == Label::Center)
+		if (textAlignment == Label::TextAlignment::Center)
 			newStyle = SS_CENTER;
-		if (textAlignment == Label::Right)
+		if (textAlignment == Label::TextAlignment::Right)
 			newStyle = SS_RIGHT;
 
 		m_window_style = (m_window_style & ~(SS_LEFT | SS_CENTER | SS_RIGHT | SS_LEFTNOWORDWRAP)) | newStyle;
@@ -106,5 +106,14 @@ namespace WinapiFramework
 		InvalidateRect(m_hWindow, NULL, TRUE);
 
 		RaiseEventByHandler<Events::EventSetTextAlignment>();
+	}
+
+	const std::wstring& Label::GetCaption()
+	{
+		return m_caption;
+	}
+	Label::TextAlignment Label::GetTextAlignment()
+	{
+		return m_textAlignment;
 	}
 }

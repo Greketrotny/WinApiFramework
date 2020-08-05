@@ -108,60 +108,70 @@ namespace WinapiFramework
 		switch (msg)
 		{
 			case WM_LBUTTONDOWN:
+			//case WM_NCLBUTTONDOWN:
 			{
-				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButtonLeft);
+				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButton::Left);
 				RaiseEventByHandler<BaseWindowEvents::EventMouseLButtonPress>();
 				break;
 			}
 			case WM_LBUTTONUP:
+			//case WM_NCLBUTTONUP:
 			{
-				m_mouse_captor.StopMouseCapture(Mouse::MouseButtonLeft);
+				m_mouse_captor.StopMouseCapture(Mouse::MouseButton::Left);
 				RaiseEventByHandler<BaseWindowEvents::EventMouseLButtonRelease>();				
 				break;
 			}
 			case WM_LBUTTONDBLCLK:
+			//case WM_NCLBUTTONDBLCLK:
 			{
 				RaiseEventByHandler<BaseWindowEvents::EventMouseLButtonDPress>();
 				break;
 			}
 
 			case WM_RBUTTONDOWN:
+			//case WM_NCRBUTTONDOWN:
 			{
-				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButtonRight);
+				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButton::Right);
 				RaiseEventByHandler<BaseWindowEvents::EventMouseRButtonPress>();
 				break;
 			}
 			case WM_RBUTTONUP:
+			//case WM_NCRBUTTONUP:
 			{
-				m_mouse_captor.StopMouseCapture(Mouse::MouseButtonRight);
+				m_mouse_captor.StopMouseCapture(Mouse::MouseButton::Right);
 				RaiseEventByHandler<BaseWindowEvents::EventMouseRButtonRelease>();
 				break;
 			}
 			case WM_RBUTTONDBLCLK:
+			//case WM_NCRBUTTONDBLCLK:
 			{
 				RaiseEventByHandler<BaseWindowEvents::EventMouseRButtonDPress>();
 				break;
 			}
 
 			case WM_MBUTTONDOWN:
+			//case WM_NCMBUTTONDOWN:
 			{
-				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButtonMiddle);
+				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButton::Middle);
 				RaiseEventByHandler<BaseWindowEvents::EventMouseMButtonPress>();
 				break;
 			}
 			case WM_MBUTTONUP:
+			//case WM_NCMBUTTONUP:
 			{
-				m_mouse_captor.StopMouseCapture(Mouse::MouseButtonMiddle);
+				m_mouse_captor.StopMouseCapture(Mouse::MouseButton::Middle);
 				RaiseEventByHandler<BaseWindowEvents::EventMouseMButtonRelease>();
 				break;
 			}
 			case WM_MBUTTONDBLCLK:
+			//case WM_NCMBUTTONDBLCLK:
 			{
 				RaiseEventByHandler<BaseWindowEvents::EventMouseMButtonDPress>();
 				break;
 			}
 
 			case WM_MOUSEMOVE:
+			//case WM_NCMOUSEMOVE:
 			{
 				Point pos(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				RaiseEventByHandler<BaseWindowEvents::EventMouseMove>(pos);

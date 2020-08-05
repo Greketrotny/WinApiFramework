@@ -38,9 +38,9 @@ namespace WinapiFramework
 		// set caption position
 		switch (m_caption_position)
 		{
-			case WinapiFramework::GroupBox::Left:	m_window_style |= BS_LEFT;		break;
-			case WinapiFramework::GroupBox::Center:	m_window_style |= BS_CENTER;	break;
-			case WinapiFramework::GroupBox::Right:	m_window_style |= BS_RIGHT;		break;
+			case WinapiFramework::GroupBox::CaptionPosition::Left:		m_window_style |= BS_LEFT;		break;
+			case WinapiFramework::GroupBox::CaptionPosition::Center:	m_window_style |= BS_CENTER;	break;
+			case WinapiFramework::GroupBox::CaptionPosition::Right:		m_window_style |= BS_RIGHT;		break;
 		}
 
 
@@ -83,9 +83,9 @@ namespace WinapiFramework
 
 		switch (m_caption_position)
 		{
-			case WinapiFramework::GroupBox::Left:	m_window_style |= BS_LEFT;		break;
-			case WinapiFramework::GroupBox::Center:	m_window_style |= BS_CENTER;	break;
-			case WinapiFramework::GroupBox::Right:	m_window_style |= BS_RIGHT;		break;
+			case WinapiFramework::GroupBox::CaptionPosition::Left:	m_window_style |= BS_LEFT;		break;
+			case WinapiFramework::GroupBox::CaptionPosition::Center:m_window_style |= BS_CENTER;	break;
+			case WinapiFramework::GroupBox::CaptionPosition::Right:	m_window_style |= BS_RIGHT;		break;
 		}
 
 		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);

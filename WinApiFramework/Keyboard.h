@@ -2,6 +2,7 @@
 #define KEYBOARD_H
 
 #include "window_include.h"
+#include "event.h"
 
 #include <queue>
 #include <vector>
@@ -9,14 +10,13 @@
 
 namespace WinapiFramework
 {
-	class Keyboard
+	class Keyboard : public EventHandler
 	{
-		// -- fields -- //
 	private:
 		struct Keys
 		{
 		private:
-			unsigned int keys_number;
+			const unsigned int keys_number;
 			bool *keys;
 
 		public:
@@ -33,29 +33,7 @@ namespace WinapiFramework
 		Keys keys;
 
 	public:
-		struct CharEvent
-		{
-			enum Type
-			{
-				CharInput,
-				Invalid
-			};
-			Type type;
-			wchar_t character;
-
-			CharEvent()
-			{
-				type = Type::Invalid;
-				character = 0u;
-			}
-			CharEvent(Type type, wchar_t character)
-			{
-				this->type = type;
-				this->character = character;
-			}
-		};
-
-		enum Key
+		enum class Key
 		{
 			Backspace = 0x08,
 			Tab = 0x09,
@@ -174,7 +152,29 @@ namespace WinapiFramework
 			RightMenu = 0xA5,
 			Invalid
 		};
-		struct KeyEvent
+
+		/*struct CharEvent
+		{
+			enum Type
+			{
+				CharInput,
+				Invalid
+			};
+			Type type;
+			wchar_t character;
+
+			CharEvent()
+			{
+				type = Type::Invalid;
+				character = 0u;
+			}
+			CharEvent(Type type, wchar_t character)
+			{
+				this->type = type;
+				this->character = character;
+			}
+		};*/
+		/*struct KeyEvent
 		{
 			enum Type
 			{
@@ -195,82 +195,39 @@ namespace WinapiFramework
 				this->type = type;
 				this->key = key;
 			}
+		};*/
+
+		struct Events
+		{
+			struct EventKeyPress : public BaseEvent
+			{
+				const Key key;
+
+				EventKeyPress(const Key& k)
+					: key(k)
+				{}
+			};
+			struct EventKeyRelease : public BaseEvent
+			{
+				const Key key;
+
+				EventKeyRelease(const Key& k)
+					: key(k)
+				{}
+			};
+			struct EventCharInput : public BaseEvent
+			{
+				wchar_t character;
+
+				EventCharInput(const wchar_t& c)
+					:character(c)
+				{}
+			};
 		};
 	private:
-		template <class T> struct EventsManager
-		{
-		private:
-			std::queue<T> events;
-			const unsigned short buffSize = 32u;
-			std::vector<std::function<void(T)>> eventHandlers;
-			bool eventHandlersEnabled = true;
-
-		public:
-			// -- constructor -- //
-			EventsManager() {}
-			~EventsManager() {}
-
-		public:
-			// -- methods -- //
-			void PushEvent(T newEvent)
-			{
-				// push event to buffer
-				events.push(newEvent);
-				if (events.size() > buffSize)
-					events.pop();
-
-				// call handler function
-				if (eventHandlersEnabled)
-				{
-					for (unsigned int i = 0u; i < eventHandlers.size(); ++i)
-					{
-						eventHandlers[i](newEvent);
-					}
-				}
-			}
-			T GetEvent()
-			{
-				if (events.size() > 0u)
-				{
-					T e = events.front();
-					events.pop();
-					return e;
-				}
-				else
-				{
-					return T();
-				}
-			}
-			void ClearBuffer()
-			{
-				events = std::queue<T>();
-			}
-			template <class EventReceiver> void AddEventHandler(EventReceiver* receiverObject, void(EventReceiver::*eventFunction)(T))
-			{
-				using std::placeholders::_1;
-				std::function<void(T)> f;
-				f = std::bind(eventFunction, receiverObject, _1);
-				eventHandlers.push_back(f);
-			}
-			void RemoveAllEventHandlers()
-			{
-				eventHandlers.clear();
-			}
-			void EnableEventHandlers()
-			{
-				eventHandlersEnabled = true;
-			}
-			void DisableEventHandlers()
-			{
-				eventHandlersEnabled = false;
-			}
-		};
-		EventsManager<KeyEvent> keyEvents;
-		EventsManager<CharEvent> charEvents;
 		bool autorepeat = true;
 
 
-		// -- constructors -- //
 	public:
 		Keyboard();
 		Keyboard(const Keyboard &keyboard) = delete;
@@ -278,14 +235,13 @@ namespace WinapiFramework
 		~Keyboard();
 
 
-		// -- operators -- //
 	public:
 		Keyboard& operator=(const Keyboard &keyboard) = delete;
 		Keyboard& operator=(const Keyboard &&keyboard) = delete;
 
 
-		// -- methods -- //
 	private:
+		LRESULT HandleMessage(WPARAM wParam, LPARAM lParam);
 		void KeyPress(Keyboard::Key key);
 		void KeyRelase(Keyboard::Key key);
 		void CharInput(const wchar_t &newChar);
@@ -297,14 +253,11 @@ namespace WinapiFramework
 		bool KeyRelased(unsigned char key) const;
 
 
-		// -- property fields -- //
 	public:
 		const Keys& Keys;
 		bool& Autorepeat;
-		EventsManager<KeyEvent>& KeyEvents;
-		EventsManager<CharEvent>& CharEvents;
 
-		// -- friend statements -- //
+
 		friend class Window;
 		friend class Framework;
 	};

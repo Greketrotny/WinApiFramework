@@ -11,9 +11,9 @@ namespace WinapiFramework
 		m_isTripleState = conStruct.isTripleState;
 		m_boxState = conStruct.boxState;
 
-		if (this->m_boxState == BoxStateMiddle && !this->m_isTripleState)
+		if (this->m_boxState == BoxState::Middle && !this->m_isTripleState)
 		{
-			this->m_boxState = BoxStateUnCheck;
+			this->m_boxState = BoxState::Uncheck;
 		}
 
 		CreateWinapiWindow();
@@ -30,28 +30,28 @@ namespace WinapiFramework
 		{
 			case BN_CLICKED:
 			case BN_DBLCLK:
-				if (m_boxState == BoxStateCheck)
+				if (m_boxState == BoxState::Check)
 				{
 					if (m_isTripleState)
 					{
 						SendMessage(m_hWindow, BM_SETCHECK, BST_INDETERMINATE, 0);
-						m_boxState = BoxStateMiddle;
+						m_boxState = BoxState::Middle;
 					}
 					else
 					{
 						SendMessage(m_hWindow, BM_SETCHECK, BST_UNCHECKED, 0);
-						m_boxState = BoxStateUnCheck;
+						m_boxState = BoxState::Uncheck;
 					}
 				}
-				else if (m_boxState == BoxStateMiddle)
+				else if (m_boxState == BoxState::Middle)
 				{
 					SendMessage(m_hWindow, BM_SETCHECK, BST_UNCHECKED, 0);
-					m_boxState = BoxStateUnCheck;
+					m_boxState = BoxState::Uncheck;
 				}
-				else if (m_boxState == BoxStateUnCheck)
+				else if (m_boxState == BoxState::Uncheck)
 				{
 					SendMessage(m_hWindow, BM_SETCHECK, BST_CHECKED, 0);
-					m_boxState = BoxStateCheck;
+					m_boxState = BoxState::Check;
 				}
 				RaiseEventByHandler<Events::EventSetState>(m_boxState);
 				break;
@@ -101,21 +101,21 @@ namespace WinapiFramework
 	void CheckBox::SetState(CheckBox::BoxState newState)
 	{
 		m_boxState = newState;
-		if (m_boxState == BoxStateCheck)
+		if (m_boxState == BoxState::Check)
 		{
 			SendMessage(m_hWindow, BM_SETCHECK, BST_CHECKED, 0);
 			RaiseEventByHandler<Events::EventSetState>(m_boxState);
 			return;
 		}
 
-		if (m_boxState == BoxStateMiddle && m_isTripleState)
+		if (m_boxState == BoxState::Middle && m_isTripleState)
 		{
 			SendMessage(m_hWindow, BM_SETCHECK, BST_INDETERMINATE, 0);
 			RaiseEventByHandler<Events::EventSetState>(m_boxState);
 			return;
 		}
 
-		if (m_boxState == BoxStateUnCheck)
+		if (m_boxState == BoxState::Uncheck)
 		{
 			SendMessage(m_hWindow, BM_SETCHECK, BST_UNCHECKED, 0);
 			RaiseEventByHandler<Events::EventSetState>(m_boxState);
@@ -131,8 +131,8 @@ namespace WinapiFramework
 	{
 		m_isTripleState = false;
 
-		if (m_boxState == CheckBox::BoxState::BoxStateMiddle)
-			SetState(CheckBox::BoxState::BoxStateUnCheck);
+		if (m_boxState == CheckBox::BoxState::Middle)
+			SetState(CheckBox::BoxState::Uncheck);
 
 		RaiseEventByHandler<Events::EventDisableTripleState>();
 	}

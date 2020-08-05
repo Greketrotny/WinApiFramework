@@ -86,10 +86,10 @@ namespace WinapiFramework
 		static UINT ProcessMessages();
 		static void Exit(int return_value);
 		static MessBoxButtonPressed ShowGlobalMessageBox(
-			std::wstring caption = L"default caption",
-			std::wstring text = L"default text",
+			const std::wstring& caption = L"default caption",
+			const std::wstring& text = L"default text",
 			MessBoxButtonLayout buttons = MessBoxButtonLayout::Ok,
-			MessBoxIcon icon = MessBoxIcon::IconInformation);
+			MessBoxIcon icon = MessBoxIcon::Information);
 
 		static void SetCallBackFunction(void(*callBackFunction)())
 		{

@@ -1,13 +1,17 @@
 #ifndef MOUSE_H
 #define MOUSE_H
 
+#include "window_include.h"
+#include "data_types.h"
+#include "event.h"
+
 #include <vector>
 #include <queue>
 #include <functional>
 
 namespace WinapiFramework
 {
-	class Mouse
+	class Mouse : public EventHandler
 	{
 	private:
 		int x = 0, y = 0;
@@ -17,7 +21,7 @@ namespace WinapiFramework
 		bool isVisible = true;
 
 	public:
-		enum Cursor
+		enum class Cursor
 		{
 			Arrow,
 			IBeam,
@@ -34,114 +38,42 @@ namespace WinapiFramework
 			Hand,
 			Help
 		};
-		enum MouseButton
+		enum class MouseButton
 		{
-			MouseButtonLeft,
-			MouseButtonRight,
-			MouseButtonMiddle
+			Left,
+			Right,
+			Middle
 		};
-		struct Event
-		{
-		public:
-			enum Type
-			{
-				LeftPress,
-				LeftRelase,
-				RightPress,
-				RightRelase,
-				MiddlePress,
-				MiddleRelase,
-				WheelUp,
-				WheelDown,
-				Move,
-				CursorChanged,
-				Invalid
-			};
-			Type type;
-			int x = 0, y = 0;
 
-			Event()
-			{
-				type = Invalid;
-				x = 0;
-				y = 0;
-			}
-			Event(Type type)
-			{
-				this->type = type;
-			}
-			Event(Type type, int x, int y)
-			{
-				this->type = type;
-				this->x = x;
-				this->y = y;
-			}
-		};
 		struct Events
 		{
-			// -- fields -- //
-		private:
-			std::queue<Mouse::Event> events;
-			std::vector<std::function<void(Mouse::Event)>> eventHandlers;
-		public:
-			const unsigned short buffLength = 16u;
-			bool eventHandlersEnabled = true;
-
-
-			// -- constructor -- //
-		public:
-			Events() {}
-			~Events() {}
-
-
-			// -- methods -- //
-		public:
-			void PushEvent(Mouse::Event newEvent)
+			struct EventLeftPress : public BaseEvent {};
+			struct EventLeftRelease : public BaseEvent {};
+			struct EventLeftDPress: public BaseEvent {};
+			struct EventRightPress : public BaseEvent {};
+			struct EventRightRelease : public BaseEvent {};
+			struct EventRightDPress : public BaseEvent {};
+			struct EventMiddlePress : public BaseEvent {};
+			struct EventMiddleRelease : public BaseEvent {};
+			struct EventMiddleDPress : public BaseEvent {};
+			struct EventWheel : public BaseEvent
 			{
-				events.push(newEvent);
-				if (events.size() > buffLength)
-					events.pop();
+				const int delta;
 
-				// handle event
-				if (eventHandlersEnabled)
-				{
-					for (unsigned int i = 0; i < eventHandlers.size(); ++i)
-					{
-						eventHandlers[i](newEvent);
-					}
-				}
-			}
-			Mouse::Event GetEvent()
+				EventWheel(int d)
+					: delta(d)
+				{}
+			};
+			struct EventMove : public BaseEvent
 			{
-				if (events.size() > 0u)
-				{
-					Event e = events.front();
-					events.pop();
-					return e;
-				}
-				else
-				{
-					return Event();
-				}
-			}
-			void ClearBuffer()
-			{
-				events = std::queue<Mouse::Event>();
-			}
-			template <class EventReceiver> void AddEventHandler(EventReceiver* receiverObject, void(EventReceiver::*eventFunction)(Mouse::Event))
-			{
-				using std::placeholders::_1;
-				std::function<void(Mouse::Event)> f;
-				f = std::bind(eventFunction, receiverObject, _1);
-				eventHandlers.push_back(f);
-			}
-			void RemoveAllEventHandlers()
-			{
-				eventHandlers.clear();
-			}
+				const Point position;
+
+				EventMove(const Point& pos)
+					: position(pos)
+				{}
+			};
+			struct EventCursorChange : public BaseEvent {};
 		};
-	private:
-		Events events;
 
 
 	public:
@@ -158,7 +90,7 @@ namespace WinapiFramework
 
 
 	private:
-		void Move(int x, int y);
+		LRESULT HandleMessage(UINT msg, WPARAM wParam, LPARAM lParam);
 	public:
 		void SetCursorPosition(int x, int y);
 		void ShowCursor();
@@ -172,7 +104,6 @@ namespace WinapiFramework
 		const bool& LeftPressed;
 		const bool& RightPressed;
 		const bool& MiddlePressed;
-		Mouse::Events& Events;
 
 
 		friend class Window;

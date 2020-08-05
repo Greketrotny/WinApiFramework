@@ -14,7 +14,7 @@ namespace WinapiFramework
 		: public BaseWindow
 	{
 	public:
-		enum CaptionPosition
+		enum class CaptionPosition
 		{
 			Center,
 			TopLeft,

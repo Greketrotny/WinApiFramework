@@ -42,17 +42,17 @@ namespace WinapiFramework
 		// set bar orientation
 		switch (m_barOrientation)
 		{
-			case WinapiFramework::ProgressBar::Horizontal:	break;
-			case WinapiFramework::ProgressBar::Vertical: m_window_style |= PBS_VERTICAL;
+			case WinapiFramework::ProgressBar::BarOrientation::Horizontal:	break;
+			case WinapiFramework::ProgressBar::BarOrientation::Vertical: m_window_style |= PBS_VERTICAL;
 		}
 
 		// set bar display style
 		switch (m_barDisplayStyle)
 		{
-			case WinapiFramework::ProgressBar::Default:	break;
-			case WinapiFramework::ProgressBar::Marquee:			m_window_style |= PBS_MARQUEE;			break;
-			case WinapiFramework::ProgressBar::Smooth:			m_window_style |= PBS_SMOOTH;			break;
-			case WinapiFramework::ProgressBar::SmoothReversed:	m_window_style |= PBS_SMOOTHREVERSE;	break;
+			case WinapiFramework::ProgressBar::BarDisplayStyle::Default:	break;
+			case WinapiFramework::ProgressBar::BarDisplayStyle::Marquee:		m_window_style |= PBS_MARQUEE;			break;
+			case WinapiFramework::ProgressBar::BarDisplayStyle::Smooth:			m_window_style |= PBS_SMOOTH;			break;
+			case WinapiFramework::ProgressBar::BarDisplayStyle::SmoothReversed:	m_window_style |= PBS_SMOOTHREVERSE;	break;
 		}
 
 
@@ -161,10 +161,10 @@ namespace WinapiFramework
 		m_barDisplayStyle = barDisplayStyle;
 		switch (m_barDisplayStyle)
 		{
-			case WinapiFramework::ProgressBar::Default:	break;
-			case WinapiFramework::ProgressBar::Marquee:			m_window_style |= PBS_MARQUEE;			break;
-			case WinapiFramework::ProgressBar::Smooth:			m_window_style |= PBS_SMOOTH;			break;
-			case WinapiFramework::ProgressBar::SmoothReversed:	m_window_style |= PBS_SMOOTHREVERSE;	break;
+			case WinapiFramework::ProgressBar::BarDisplayStyle::Default:	break;
+			case WinapiFramework::ProgressBar::BarDisplayStyle::Marquee:		m_window_style |= PBS_MARQUEE;			break;
+			case WinapiFramework::ProgressBar::BarDisplayStyle::Smooth:			m_window_style |= PBS_SMOOTH;			break;
+			case WinapiFramework::ProgressBar::BarDisplayStyle::SmoothReversed:	m_window_style |= PBS_SMOOTHREVERSE;	break;
 		}
 		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
 

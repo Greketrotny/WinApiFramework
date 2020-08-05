@@ -11,12 +11,12 @@ namespace WinapiFramework
 	class TrackBar : public BaseWindow
 	{
 	public:
-		enum Orientation
+		enum class Orientation
 		{
 			Horizontal,
 			Vertical
 		};
-		enum TickStyle
+		enum class TickStyle
 		{
 			Default,
 			Top,
@@ -24,11 +24,11 @@ namespace WinapiFramework
 			Both,
 			NoTicks
 		};
-		enum ToolTipsStyle
+		enum class ToolTipsStyle
 		{
-			ToolTipsStyleTop,
-			ToolTipsStyleBottom,
-			ToolTipsStyleNone
+			Top,
+			Bottom,
+			None
 		};
 	private:
 		int m_ThumbPosition;
@@ -146,7 +146,7 @@ namespace WinapiFramework
 			unsigned int tick_frequency = 1u,
 			bool enableSelectRange = false,
 			const Range& selectRange = Range(0, 100),
-			TrackBar::ToolTipsStyle toolTipsStyle = TrackBar::ToolTipsStyle::ToolTipsStyleNone)
+			TrackBar::ToolTipsStyle toolTipsStyle = TrackBar::ToolTipsStyle::None)
 			: rect(rect)
 			, trackRange(trackRange)
 			, startPosition(startPosition)
