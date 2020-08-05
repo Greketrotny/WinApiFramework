@@ -5,6 +5,7 @@ namespace WinapiFramework
 {
 	Label::Label(ParentWindow* parent, const ConStruct<Label>& conStruct)
 		: BaseWindow(parent)
+		, HasSubclassProcedure(this, &Label::SubclassProcedure)
 	{
 		m_window_style |= WS_CHILD | WS_VISIBLE;
 
@@ -19,31 +20,19 @@ namespace WinapiFramework
 		DestroyWinapiWindow();
 	}
 
+	LRESULT Label::SubclassProcedure(
+		HWND hWnd,
+		UINT msg,
+		WPARAM wParam, LPARAM lParam,
+		UINT_PTR uIDSubClass, DWORD_PTR dwRefData)
+	{
+		if (HandleMouseEvent(msg, wParam, lParam) == 0) return 0;
+
+		return 1;
+	}
 	LRESULT Label::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
-		UINT event = HIWORD(wParam);
-		switch (event)
-		{
-			case STN_CLICKED:
-				RaiseEventByHandler<Events::EventClick>();
-				break;
-
-			case STN_DBLCLK:
-				RaiseEventByHandler<Events::EventDoubleClick>();
-				break;
-
-			case STN_ENABLE:
-				// Handled by base class ChildControl
-				break;
-
-			case STN_DISABLE:
-				// Handled by base class ChildControl
-				break;
-
-			default:
-				return 1;
-		}
-		return 0;
+		return 1;
 	}
 	bool Label::CreateWinapiWindow()
 	{
@@ -66,12 +55,18 @@ namespace WinapiFramework
 			m_rect.size.width, m_rect.size.height,
 			mp_parent->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
 
+
 		// check control creation
 		if (!m_hWindow)
 		{
 			MessageBox(nullptr, L"Label window creation failed.", L"Label create error", MB_OK | MB_ICONERROR);
 			return false;
 		}
+
+		SetWindowSubclass(m_hWindow, GetSubclassProcedure(), 0, 0);
+
+		// set pointer to non-static std::function to receive WM_ messages
+		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_subclass_procedure);
 
 		// set visual font
 		HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
@@ -81,6 +76,7 @@ namespace WinapiFramework
 	}
 	void Label::DestroyWinapiWindow()
 	{
+		RemoveWindowSubclass(m_hWindow, GetSubclassProcedure(), 0);
 		DestroyWindow(m_hWindow);
 	}
 

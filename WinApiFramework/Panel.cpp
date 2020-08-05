@@ -78,7 +78,7 @@ namespace WinapiFramework
 			return false;
 		}
 
-		// set pointer to Window class to receive messages
+		// set pointer to non-static std::function to receive WM_ messages
 		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_window_procedure);
 
 		return true;

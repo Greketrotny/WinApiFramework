@@ -87,7 +87,7 @@
       <AdditionalDependencies>Graphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>Graphics.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Graphics.lib;comctl32.lib%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>D:\Users\Greketrotny\Programming\Projects\C++\Graphics\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <ProjectReference>

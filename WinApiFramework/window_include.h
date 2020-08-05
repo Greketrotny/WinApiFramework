@@ -54,7 +54,7 @@
 #pragma comment(linker,"\"/manifestdependency:type='win32' \
 name='Microsoft.Windows.Common-controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
-#include <CommCtrl.h>
 
+#include <CommCtrl.h>
 
 #endif // !WINDOW_INCLUDE_H

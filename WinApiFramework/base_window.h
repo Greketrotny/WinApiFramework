@@ -130,6 +130,7 @@ namespace WinapiFramework
 	protected:
 		ParentWindow* const GetParent() const;
 		WNDPROC GetFrameworkProcedure() const;
+		SUBCLASSPROC GetSubclassProcedure() const;
 		void AppendAction(BaseAction* action) const;
 
 

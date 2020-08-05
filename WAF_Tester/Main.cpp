@@ -54,6 +54,8 @@ public:
 	WAF::GroupBox* groupBox = nullptr;
 	WAF::Panel* panel = nullptr;
 
+	WAF::Label* label2 = nullptr;
+
 	std::vector<WAF::Button*> panel_buttons;
 
 public:
@@ -95,8 +97,9 @@ public:
 			WAF::Rect(WAF::Point(620, 10), WAF::Size(280, 380)),
 			L"event log",
 			WAF::Label::TextAlignment::Left));
-		lbEventLog->BindEventFunc<WAF::Label::Events::EventClick>(&MainForm::lbEventLog_OnClicked, this);
-		lbEventLog->BindEventFunc<WAF::Label::Events::EventDoubleClick>(&MainForm::lbEventLog_OnDoubleClicked, this);
+		lbEventLog->BindEventFunc<WAF::Label::Events::EventMouseLButtonPress>(&MainForm::lbEventLog_OnClicked, this);
+		lbEventLog->BindEventFunc<WAF::Label::Events::EventMouseLButtonDPress>(&MainForm::lbEventLog_OnDoubleClicked, this);
+		lbEventLog->BindEventFunc<WAF::Label::Events::EventMouseMove>(&MainForm::lbEventLog_OnMouseMove, this);
 
 		// button1
 		button1 = MainWindow->CreateChild<WAF::Button>(WAF::ConStruct<WAF::Button>(
@@ -185,6 +188,13 @@ public:
 			}
 		}
 
+		// label2
+		label2 = MainWindow->CreateChild<WAF::Label>(WAF::ConStruct<WAF::Label>(
+			WAF::Rect(WAF::Point(950, 10), WAF::Size(100, 50)),
+			L"label2",
+			WAF::Label::TextAlignment::Left));
+		label2->BindEventFunc<WAF::Label::Events::EventMouseMove>(&MainForm::Label2_OnMouseMove, this);
+
 	}
 	~MainForm()
 	{
@@ -248,13 +258,21 @@ public:
 	}
 
 	// ~~ lbEventLog ~~
-	void lbEventLog_OnClicked(WAF::Label::Events::EventClick& event)
+	void lbEventLog_OnClicked(WAF::Label::Events::EventMouseLButtonPress& event)
 	{
 		LogEvent(L"lbEventLog: clicked");
 	}
-	void lbEventLog_OnDoubleClicked(WAF::Label::Events::EventDoubleClick& event)
+	void lbEventLog_OnDoubleClicked(WAF::Label::Events::EventMouseLButtonDPress& event)
 	{
 		LogEvent(L"lbEventLog: double clicked");
+	}
+	void lbEventLog_OnMouseMove(WAF::Label::Events::EventMouseMove& event)
+	{
+		LogEvent(
+			L"lbEventLog: mouse move [" +
+			std::to_wstring(event.mouse_pos.x) +
+			L":" + std::to_wstring(event.mouse_pos.y) +
+			L"]");
 	}
 	void LogEvent(const std::wstring& log)
 	{
@@ -387,6 +405,17 @@ public:
 			L":" + std::to_wstring(event.mouse_pos.y) + 
 			L"]");
 	}
+
+	// ~~ label2 ~~
+	void Label2_OnMouseMove(WAF::Label::Events::EventMouseMove& event)
+	{
+	LogEvent(
+		L"label2: mouse move [" +
+		std::to_wstring(event.mouse_pos.x) +
+		L":" + std::to_wstring(event.mouse_pos.y) +
+		L"]");
+	}
+
 
 	// ~~ Framework::keyboard ~~
 	void Keyboard_OnKeyPress(WAF::Keyboard::Events::EventKeyPress& event)
@@ -524,6 +553,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+
+
+	INITCOMMONCONTROLSEX icc;
+	icc.dwSize = sizeof(INITCOMMONCONTROLSEX);
+	icc.dwICC = ICC_STANDARD_CLASSES | ICC_WIN95_CLASSES | ICC_PROGRESS_CLASS | ICC_COOL_CLASSES;
+	InitCommonControlsEx(&icc);
+	//InitCommonControls();
 
 	MF = new MainForm();
 

@@ -52,6 +52,59 @@ namespace WinapiFramework
 	Mouse& Framework::Mouse(Framework::mouse);
 	Keyboard& Framework::Keyboard(Framework::keyboard);
 
+	LRESULT WINAPI Framework::WinApiProcedure(
+		HWND hWnd, 
+		UINT msg, 
+		WPARAM wParam, LPARAM lParam)
+	{
+		std::function<LRESULT(
+				HWND hWnd, 
+				UINT msg, 
+				WPARAM wParam, LPARAM lParam)>* windProc =
+		(std::function<LRESULT(
+				HWND hWnd, 
+				UINT msg, 
+				WPARAM wParam, LPARAM lParam)>*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+
+		if (windProc)
+		{
+			if (!(*windProc)(hWnd, msg, wParam, lParam))
+			{
+				m_pending_actions.InvokeActions();
+				return 0;
+			}
+		}
+		m_pending_actions.InvokeActions();
+		return DefWindowProc(hWnd, msg, wParam, lParam);
+	}
+	LRESULT WINAPI Framework::SubclassProcedure(
+		HWND hWnd, 
+		UINT msg, WPARAM wParam, 
+		LPARAM lParam, UINT_PTR idSubClass, DWORD_PTR refData)
+	{
+		std::function<LRESULT(
+			HWND hWnd, 
+			UINT msg, 
+			WPARAM wParam, LPARAM lParam, 
+			UINT_PTR idSubClass, DWORD_PTR refData)>* sub_proc = 
+		reinterpret_cast<std::function<LRESULT(
+			HWND hWnd, 
+			UINT msg, 
+			WPARAM wParam, LPARAM lParam, 
+			UINT_PTR idSubClass, DWORD_PTR refData)>*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+		if (sub_proc)
+		{
+			if (!(*sub_proc)(hWnd, msg, wParam, lParam, idSubClass, refData))
+			{
+				m_pending_actions.InvokeActions();
+				return 0;
+			}
+		}
+		m_pending_actions.InvokeActions();
+
+		return DefSubclassProc(hWnd, msg, wParam, lParam);
+	}
 	LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
 	{
 		if (code >= 0 && code == HC_ACTION)

@@ -220,6 +220,10 @@ namespace WinapiFramework
 	{
 		return (WNDPROC)Framework::WinApiProcedure;
 	}
+	SUBCLASSPROC BaseWindow::GetSubclassProcedure() const
+	{
+		return (SUBCLASSPROC)Framework::SubclassProcedure;
+	}
 	void BaseWindow::AppendAction(BaseAction* action) const
 	{
 		Framework::AppendAction(action);

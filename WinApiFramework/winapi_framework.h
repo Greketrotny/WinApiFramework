@@ -56,22 +56,17 @@ namespace WinapiFramework
 
 
 	private:
-		static LRESULT WINAPI WinApiProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-		{
-			std::function<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)>* windProc =
-				(std::function<LRESULT(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)>*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-			if (windProc)
-			{
-				if (!(*windProc)(hWnd, msg, wParam, lParam))
-				{
-					m_pending_actions.InvokeActions();
-					return 0;
-				}
-			}
-			m_pending_actions.InvokeActions();
-			return DefWindowProc(hWnd, msg, wParam, lParam);
-		}
-		static LRESULT WINAPI InputProcedure(int code, WPARAM wParam, LPARAM lParam);
+		static LRESULT WINAPI WinApiProcedure(
+			HWND hWnd, 
+			UINT msg, 
+			WPARAM wParam, LPARAM lParam);
+		static LRESULT WINAPI SubclassProcedure(
+			HWND hWnd, 
+			UINT msg, WPARAM wParam, LPARAM lParam, 
+			UINT_PTR idSubClass, DWORD_PTR refData);
+		static LRESULT WINAPI InputProcedure(
+			int code, 
+			WPARAM wParam, LPARAM lParam);
 	public:
 		static HINSTANCE GetProgramInstance();
 		static Window* CreateNewWindow(const ConStruct<Window>& conStruct);

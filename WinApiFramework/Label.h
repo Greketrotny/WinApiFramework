@@ -8,7 +8,9 @@ namespace WinapiFramework
 	class Label;
 	template <> struct ConStruct<Label>;
 
-	class Label : public BaseWindow
+	class Label 
+		: public BaseWindow
+		, public HasSubclassProcedure<Label>
 	{
 	private:
 		std::wstring m_caption;
@@ -25,8 +27,6 @@ namespace WinapiFramework
 	public:
 		struct Events : public BaseWindowEvents
 		{
-			struct EventClick : public BaseEvent {};
-			struct EventDoubleClick : public BaseEvent {};
 			struct EventSetCaption : public BaseEvent {};
 			struct EventSetTextAlignment : public BaseEvent {};
 		};
@@ -45,7 +45,13 @@ namespace WinapiFramework
 
 
 	private:
+		LRESULT SubclassProcedure(
+			HWND hWnd,
+			UINT msg, 
+			WPARAM wParam, LPARAM lParam, 
+			UINT_PTR uIDSubClass, DWORD_PTR dwRefData) override;
 		LRESULT ControlProcedure(WPARAM wParam, LPARAM lParam) override;
+
 		bool CreateWinapiWindow() override;
 		void DestroyWinapiWindow() override;
 	public:
