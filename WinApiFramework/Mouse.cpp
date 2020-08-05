@@ -46,13 +46,13 @@ namespace WinapiFramework
 			// right button
 			case WM_RBUTTONDOWN:
 			case WM_NCRBUTTONDOWN:
-				isLeftPressed = true;
+				isRightPressed = true;
 				RaiseEventByHandler<Events::EventRightPress>();
 				break;
 
 			case WM_RBUTTONUP:
 			case WM_NCRBUTTONUP:
-				isLeftPressed = false;
+				isRightPressed = false;
 				RaiseEventByHandler<Events::EventRightRelease>();
 				break;
 
@@ -64,13 +64,13 @@ namespace WinapiFramework
 			// middle button
 			case WM_MBUTTONDOWN:
 			case WM_NCMBUTTONDOWN:
-				isLeftPressed = true;
+				isMiddlePressed = true;
 				RaiseEventByHandler<Events::EventMiddlePress>();
 				break;
 
 			case WM_MBUTTONUP:
 			case WM_NCMBUTTONUP:
-				isLeftPressed = false;
+				isMiddlePressed = false;
 				RaiseEventByHandler<Events::EventMiddleRelease>();
 				break;
 

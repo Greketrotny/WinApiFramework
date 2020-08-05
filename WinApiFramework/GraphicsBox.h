@@ -110,20 +110,20 @@ namespace WinapiFramework
 
 		enum class RenderType
 		{
-			Default = 0,
-			Software = 1,
-			Hardware = 2
+			Default = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_DEFAULT,
+			Software = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_SOFTWARE,
+			Hardware = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_HARDWARE
 		};
 		enum class PresentOption
 		{
-			WaitForDisplay = 0,
-			RenderImmediately = 1,
-			RetainContents = 2
+			WaitForDisplay = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_NONE,
+			RenderImmediately = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_IMMEDIATELY,
+			RetainContents = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS
 		};
 		enum class InterpolationMode
 		{
-			Linear = 0,
-			NearestNeighbor = 1
+			Linear = D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
+			NearestNeighbor = D2D1_BITMAP_INTERPOLATION_MODE::D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR
 		};
 		enum class BrushType
 		{

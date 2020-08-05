@@ -135,40 +135,9 @@ namespace WinapiFramework
 
 
 		// [>] Create render target
-		// set render target type
-		D2D1_RENDER_TARGET_TYPE renderTargetType;
-		switch (m_renderType)
-		{
-			case WinapiFramework::GraphicsBox::RenderType::Default:
-				renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_DEFAULT;
-				break;
-			case WinapiFramework::GraphicsBox::RenderType::Software:
-				renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_SOFTWARE;
-				break;
-			case WinapiFramework::GraphicsBox::RenderType::Hardware:
-				renderTargetType = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_HARDWARE;
-				break;
-		}
-
-		// set presentation options
-		D2D1_PRESENT_OPTIONS presentOptions;
-		switch (m_presentOption)
-		{
-			case WinapiFramework::GraphicsBox::PresentOption::WaitForDisplay:
-				presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_NONE;
-				break;
-			case WinapiFramework::GraphicsBox::PresentOption::RenderImmediately:
-				presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_IMMEDIATELY;
-				break;
-			case WinapiFramework::GraphicsBox::PresentOption::RetainContents:
-				presentOptions = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS;
-				break;
-		}
-
-		// create render target object
 		m_pD2DFactory->CreateHwndRenderTarget(
 			D2D1::RenderTargetProperties(
-				renderTargetType,
+				static_cast<D2D1_RENDER_TARGET_TYPE>(m_renderType),
 				D2D1::PixelFormat(
 					DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM,
 					D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_PREMULTIPLIED),
@@ -178,7 +147,7 @@ namespace WinapiFramework
 			D2D1::HwndRenderTargetProperties(
 				mp_control->m_hWindow,
 				D2D1::SizeU(m_width, m_height),
-				presentOptions),
+				static_cast<D2D1_PRESENT_OPTIONS>(m_presentOption)),
 			&m_pHwndRenderTarget);
 
 
@@ -344,7 +313,7 @@ namespace WinapiFramework
 			pBitmap,
 			D2D1::RectF(destinationRect.left, destinationRect.top, destinationRect.right, destinationRect.bottom),
 			opacity,
-			interpMode,
+			static_cast<D2D1_BITMAP_INTERPOLATION_MODE>(interpolationMode),
 			D2D1::RectF(sourceRect.left, sourceRect.top, sourceRect.right, sourceRect.bottom));
 	}
 	void GraphicsBox::GBGraphics::DrawBitmap(
