@@ -12,6 +12,7 @@ namespace WinapiFramework
 	// ~~~~~~~~ [CLASS] Button ~~~~~~~~ //
 	class Button 
 		: public BaseWindow
+		, public HasSubclassProcedure<Button>
 	{
 	public:
 		enum class CaptionPosition
@@ -56,6 +57,11 @@ namespace WinapiFramework
 
 
 	private:
+		LRESULT SubclassProcedure(
+			HWND hWnd,
+			UINT msg,
+			WPARAM wParam, LPARAM lParam,
+			UINT_PTR uIDSubClass, DWORD_PTR dwRefData) override;
 		LRESULT ControlProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateWinapiWindow() override;
 		void DestroyWinapiWindow() override;

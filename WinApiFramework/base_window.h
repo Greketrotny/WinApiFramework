@@ -50,17 +50,24 @@ namespace WinapiFramework
 					: mouse_pos(pos)
 				{}
 			};
+			struct EventMouseHover : public BaseEvent {};
+			struct EventMouseLeave : public BaseEvent {};
+
 		};
 
 		struct MouseCaptor
 		{
 		private:
+			bool is_tracking_mouse;
 			bool is_capturing_mouse;
+			bool want_capturing;
 			Mouse::MouseButton capturing_button;
 
 		public:
 			MouseCaptor()
-				: is_capturing_mouse(false)
+				: is_tracking_mouse(false)
+				, is_capturing_mouse(false)
+				, want_capturing(false)
 				, capturing_button(Mouse::MouseButton::Left)
 			{}
 			~MouseCaptor()
@@ -69,22 +76,54 @@ namespace WinapiFramework
 			}
 
 		public:
-			void StartMouseCapture(HWND hwnd, Mouse::MouseButton mbutton)
+			void StartMouseCapture(Mouse::MouseButton mbutton)
 			{
 				if (!is_capturing_mouse)
 				{
-					SetCapture(hwnd);
+					want_capturing = true;
 					capturing_button = mbutton;
-					is_capturing_mouse = true;
 				}
 			}
 			void StopMouseCapture(Mouse::MouseButton mbutton)
 			{
+				want_capturing = false;
+
 				if (is_capturing_mouse && mbutton == capturing_button)
 				{
 					ReleaseCapture();
 					is_capturing_mouse = false;
 				}
+			}
+			void CheckCaptureOnLeave(HWND hwnd)
+			{
+				if (want_capturing)
+				{
+					SetCapture(hwnd);
+					is_capturing_mouse = true;
+				}
+			}
+
+			void StartTrackingMouse(HWND hwnd)
+			{
+				if (!is_tracking_mouse)
+				{
+					TRACKMOUSEEVENT tme;
+					tme.cbSize = sizeof(tme);
+					tme.hwndTrack = hwnd;
+					tme.dwHoverTime = 1000;
+					tme.dwFlags = TME_LEAVE;
+					TrackMouseEvent(&tme);
+
+					is_tracking_mouse = true;
+				}
+			}
+			void StopTrackingMouse()
+			{
+				is_tracking_mouse = false;
+			}
+			bool IsTrackingMouse()
+			{
+				return is_tracking_mouse;
 			}
 		} m_mouse_captor;
 
@@ -117,7 +156,7 @@ namespace WinapiFramework
 		void DoMove(int x, int y);
 		void DoResize(int width, int height);
 
-		LRESULT HandleMouseEvent(UINT msg, WPARAM wParam, LPARAM lParam);
+		LRESULT	HandleMouseEvent(UINT msg, WPARAM wParam, LPARAM lParam);
 
 	public:
 		virtual Point GetMousePosition() const;
@@ -167,6 +206,7 @@ namespace WinapiFramework
 
 
 	public:
+		virtual LRESULT WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) = 0;
 		template <class T> T* CreateChild(const ConStruct<T>& conStruct)
 		{
 			// create child
@@ -188,9 +228,7 @@ namespace WinapiFramework
 
 		virtual void AdjustCanvasRect();
 
-		virtual Point GetMousePosition() const;
 		virtual Point GetCanvasPosition() const;
-
 		const Rect& GetClientRect() const;
 	protected:
 		LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);

@@ -36,7 +36,7 @@ namespace WinapiFramework
 	// private:
 	LRESULT Window::WindowProcedure(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		if (HandleMouseEvent(msg, wParam, lParam) == 0) return 0;
+		HandleMouseEvent(msg, wParam, lParam);
 
 		switch (msg)
 		{
@@ -172,10 +172,10 @@ namespace WinapiFramework
 					m_client_rect.size.height = r.bottom - r.top;
 				}
 
+				RaiseEvent<Events::EventResize>();
+
 				AdjustCanvasDrift();
 				UpdateScrollingInfo();
-
-				RaiseEvent<Events::EventResize>();
 				return 0;
 			}
 
@@ -189,40 +189,6 @@ namespace WinapiFramework
 
 				return 0;
 			}
-
-
-			//	// Mouse events //
-			//case WM_MOUSEMOVE:
-			//{
-			//	const POINTS pt = MAKEPOINTS(lParam);
-			//	if (pt.x > 2 && pt.x < (int)rect.width - 2 && pt.y > 2 && pt.y < (int)rect.height - 2)
-			//	{
-			//		if (!mouseOnWindow)
-			//		{
-			//			SetCapture(m_hWindow);
-			//			mouseOnWindow = true;
-			//		}
-			//	}
-			//	else
-			//	{
-			//		if (wParam & (MK_LBUTTON | MK_RBUTTON))
-			//		{
-			//			/*pt.x = (0 > pt.x) ? 0 : pt.x;
-			//			pt.x = ((int)m_window_rect.width < pt.x) ? (int)m_window_rect.width : pt.x;
-			//			pt.y = (0 > pt.y) ? 0 : pt.y;
-			//			pt.y = ((int)m_window_rect.height < y) ? (int)m_window_rect.height : y;*/
-			//		}
-			//		else
-			//		{
-			//			ReleaseCapture();
-			//			mouseOnWindow = false;
-			//			Framework::Mouse.isLeftPressed = false;
-			//			Framework::Mouse.isRightPressed = false;
-			//			Framework::Mouse.isMiddlePressed = false;
-			//		}
-			//	}
-			//	break;
-			//}
 		}
 		return 1;
 	}
@@ -400,17 +366,17 @@ namespace WinapiFramework
 
 	void Window::EnableResize()
 	{
-		m_window_style = GetWindowLong(m_hWindow, GWL_STYLE);
+		m_window_style = GetWindowLongPtr(m_hWindow, GWL_STYLE);
 		m_window_style = m_window_style | WS_SIZEBOX;
-		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
+		SetWindowLongPtr(m_hWindow, GWL_STYLE, m_window_style);
 
 		RaiseEvent<Events::EventResizeEnable>();
 	}
 	void Window::DisableResize()
 	{
-		m_window_style = GetWindowLong(m_hWindow, GWL_STYLE);
+		m_window_style = GetWindowLongPtr(m_hWindow, GWL_STYLE);
 		m_window_style = m_window_style & (~WS_SIZEBOX);
-		SetWindowLong(m_hWindow, GWL_STYLE, m_window_style);
+		SetWindowLongPtr(m_hWindow, GWL_STYLE, m_window_style);
 
 		RaiseEvent<Events::EventResizeDisable>();
 	}

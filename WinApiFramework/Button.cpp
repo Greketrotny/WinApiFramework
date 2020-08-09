@@ -5,6 +5,7 @@ namespace WinapiFramework
 {
 	Button::Button(ParentWindow* parent, const ConStruct<Button>& conStruct)
 		: BaseWindow(parent)
+		, HasSubclassProcedure(this, &Button::SubclassProcedure)
 	{
 		m_rect = conStruct.rect;
 		m_caption = conStruct.caption;
@@ -17,6 +18,19 @@ namespace WinapiFramework
 		DestroyWinapiWindow();
 	}
 
+	LRESULT Button::SubclassProcedure(
+		HWND hWnd,
+		UINT msg,
+		WPARAM wParam, LPARAM lParam,
+		UINT_PTR uIDSubClass, DWORD_PTR dwRefData)
+	{
+		// We do not return after succesful mouse event handling
+		// becuase DefSubclassProc must be called for button
+		// from Framework SubclassProcedure
+		HandleMouseEvent(msg, wParam, lParam);
+
+		return 1;
+	}
 	LRESULT Button::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
 		UINT event = HIWORD(wParam);
@@ -78,6 +92,11 @@ namespace WinapiFramework
 			return false;
 		}
 
+		SetWindowSubclass(m_hWindow, GetSubclassProcedure(), 0, 0);
+
+		// set pointer to non-static std::function to receive WM_ messages
+		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_subclass_procedure);
+
 		HFONT hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 		SendMessage(m_hWindow, WM_SETFONT, (WPARAM)hFont, 0);
 
@@ -86,6 +105,7 @@ namespace WinapiFramework
 	void Button::DestroyWinapiWindow()
 	{
 		::DestroyWindow(m_hWindow);
+		RemoveWindowSubclass(m_hWindow, GetSubclassProcedure(), 0);
 	}
 
 	void Button::SetCaption(std::wstring newCaption)

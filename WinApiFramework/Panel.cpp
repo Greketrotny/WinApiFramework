@@ -8,7 +8,7 @@ namespace WinapiFramework
 		, HasWindowProcedure(this, &Panel::WindowProcedure)
 	{
 		m_rect = conStruct.rect;
-		m_window_class_name = mp_parent->GetWindowClassName() + L"PanelClass" + std::to_wstring(int(this));
+		m_window_class_name = mp_parent->GetWindowClassName() + L"PanelClass" + std::to_wstring(size_t(this));
 
 		CreateWinapiWindow();
 	}

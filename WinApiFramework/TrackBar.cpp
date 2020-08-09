@@ -2,6 +2,7 @@
 #include "winapi_framework.h"
 
 #include <algorithm>	// std::clamp()
+#include <algorithm>
 
 
 namespace WinapiFramework
@@ -9,6 +10,7 @@ namespace WinapiFramework
 	TrackBar::TrackBar(ParentWindow* parent, const ConStruct< TrackBar>& conStruct)
 		: BaseWindow(parent)
 	{
+
 		m_rect = conStruct.rect;
 
 		m_trackRange = conStruct.trackRange;

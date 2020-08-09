@@ -26,12 +26,7 @@ namespace WinapiFramework
 	{
 		if (HandleMouseEvent(msg, wParam, lParam) == 0) return 0;
 
-		switch (msg)
-		{
-			default: return 1;
-		}
-
-		return 0;
+		return 1;
 	}
 	LRESULT GraphicsBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
@@ -100,12 +95,9 @@ namespace WinapiFramework
 	void GraphicsBox::Resize(int newWidth, int newHeight)
 	{
 		m_graphics.Resize(newWidth - 2, newHeight - 2);
-		DoResize(newWidth, newHeight);
-
-		RaiseEventByHandler<Events::EventResize>();
+		BaseWindow::Resize(newWidth, newHeight);
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 
 	// ~~~~~~~~ [CLASS] GBGraphics ~~~~~~~~

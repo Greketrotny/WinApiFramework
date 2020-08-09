@@ -72,7 +72,7 @@ namespace WinapiFramework
 		std::wstring caption;
 		Label::TextAlignment textAlignment;
 
-		ConStruct(const Rect& rect,
+		ConStruct(const Rect& rect = Rect(50, 50, 100, 50),
 			const std::wstring& caption = L"caption",
 			Label::TextAlignment textAlignment = Label::TextAlignment::Left)
 			: rect(rect)

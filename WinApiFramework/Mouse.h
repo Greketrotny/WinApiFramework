@@ -58,7 +58,7 @@ namespace WinapiFramework
 			struct EventMiddleDPress : public BaseEvent {};
 			struct EventWheel : public BaseEvent
 			{
-				const int delta;
+				int delta;
 
 				EventWheel(int d)
 					: delta(d)
@@ -66,7 +66,7 @@ namespace WinapiFramework
 			};
 			struct EventMove : public BaseEvent
 			{
-				const Point position;
+				Point position;
 
 				EventMove(const Point& pos)
 					: position(pos)

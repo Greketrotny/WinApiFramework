@@ -53,8 +53,8 @@ public:
 	WAF::TrackBar* trackBar = nullptr;
 	WAF::GroupBox* groupBox = nullptr;
 	WAF::Panel* panel = nullptr;
-
-	WAF::Label* label2 = nullptr;
+	WAF::ComboBox* comboBox = nullptr;
+	WAF::EditComboBox* editComboBox = nullptr;
 
 	std::vector<WAF::Button*> panel_buttons;
 
@@ -90,11 +90,12 @@ public:
 		MainWindow->BindEventFunc<WAF::Window::Events::EventClose>(&MainForm::MainWindow_OnClose, this);
 
 		MainWindow->BindEventFunc<WAF::Window::Events::EventMouseMove>(&MainForm::MainWindow_OnMouseMove, this);
-
+		MainWindow->BindEventFunc<WAF::Window::Events::EventMouseHover>(&MainForm::MainWindow_OnMouseHover, this);
+		MainWindow->BindEventFunc<WAF::Window::Events::EventMouseLeave>(&MainForm::MainWindow_OnMouseLeave, this);
 
 		// lbEventLog
 		lbEventLog = MainWindow->CreateChild<WAF::Label>(WAF::ConStruct<WAF::Label>(
-			WAF::Rect(WAF::Point(620, 10), WAF::Size(280, 380)),
+			WAF::Rect(WAF::Point(620, 10), WAF::Size(260, 380)),
 			L"event log",
 			WAF::Label::TextAlignment::Left));
 		lbEventLog->BindEventFunc<WAF::Label::Events::EventMouseLButtonPress>(&MainForm::lbEventLog_OnClicked, this);
@@ -108,6 +109,8 @@ public:
 			WAF::Button::CaptionPosition::Center));
 		button1->BindEventFunc<WAF::Button::Events::EventClick>(&MainForm::Button1_OnClick, this);
 		button1->BindEventFunc<WAF::Button::Events::EventDoubleClick>(&MainForm::Button1_OnDoubleClick, this);
+		button1->BindEventFunc<WAF::Button::Events::EventMouseLButtonPress>(&MainForm::Button1_OnMouseClick, this);
+		button1->BindEventFunc<WAF::Button::Events::EventMouseMove>(&MainForm::Button1_OnMouseMove, this);
 
 		// checkBox1
 		checkBox1 = MainWindow->CreateChild<WAF::CheckBox>(WAF::ConStruct<WAF::CheckBox>(
@@ -171,6 +174,8 @@ public:
 			WAF::Rect(620, 400, 300, 200)));
 		panel->BindEventFunc<WAF::Panel::Events::EventResize>(&MainForm::Panel_OnResize, this);
 		panel->BindEventFunc<WAF::Panel::Events::EventMouseMove>(&MainForm::Panel_OnMouseMove, this);
+		panel->BindEventFunc<WAF::Panel::Events::EventMouseHover>(&MainForm::Panel_OnMouseHover, this);
+		panel->BindEventFunc<WAF::Panel::Events::EventMouseLeave>(&MainForm::Panel_OnMouseLeave, this);
 
 		// panel buttons
 		const int grid_x = 3;
@@ -188,13 +193,43 @@ public:
 			}
 		}
 
-		// label2
-		label2 = MainWindow->CreateChild<WAF::Label>(WAF::ConStruct<WAF::Label>(
-			WAF::Rect(WAF::Point(950, 10), WAF::Size(100, 50)),
-			L"label2",
-			WAF::Label::TextAlignment::Left));
-		label2->BindEventFunc<WAF::Label::Events::EventMouseMove>(&MainForm::Label2_OnMouseMove, this);
+		// comboBox
+		comboBox = MainWindow->CreateChild<WAF::ComboBox>(WAF::ConStruct<WAF::ComboBox>(
+			WAF::Rect(WAF::Point(900, 10), WAF::Size(100, 100))));
+		comboBox->SetMinDropWidth(200);
+		comboBox->SetVisibleItemsCount(10);
 
+		for (int i = 0; i < 50; i++)
+		{
+			comboBox->AddItem(L"item " + std::to_wstring(i));
+		}
+
+		comboBox->BindEventFunc<WAF::ComboBox::Events::EventCloseUp>(&MainForm::ComboBox_OnCloseUp, this);
+		comboBox->BindEventFunc<WAF::ComboBox::Events::EventDropDown>(&MainForm::ComboBox_OnDropDown, this);
+		comboBox->BindEventFunc<WAF::ComboBox::Events::EventSetFocus>(&MainForm::ComboBox_OnSetFocus, this);
+		comboBox->BindEventFunc<WAF::ComboBox::Events::EventKillFocus>(&MainForm::ComboBox_OnKillFocus, this);
+
+		comboBox->BindEventFunc<WAF::ComboBox::Events::EventAddItem>(&MainForm::ComboBox_OnAddItem, this);
+		comboBox->BindEventFunc<WAF::ComboBox::Events::EventMouseMove>(&MainForm::ComboBox_OnMouseMove, this);
+
+		// editComboBox
+		editComboBox = MainWindow->CreateChild(WAF::ConStruct<WAF::EditComboBox>(
+			WAF::Rect(WAF::Point(1010, 10), WAF::Size(100, 100))));
+		editComboBox->SetMinDropWidth(200);
+		editComboBox->SetVisibleItemsCount(10);
+		editComboBox->SetCueBanner(L"cue banner");
+
+
+		for (int i = 0; i < 50; i++)
+		{
+			editComboBox->AddItem(L"Item " + std::to_wstring(i));
+		}
+
+		editComboBox->BindEventFunc<WAF::EditComboBox::Events::EditChange>(&MainForm::EditComboBox_OnEditChange, this);
+		editComboBox->BindEventFunc<WAF::EditComboBox::Events::EditUpdate>(&MainForm::EditComboBox_OnEditUpdate, this);
+		editComboBox->BindEventFunc<WAF::EditComboBox::Events::EventSelectionChange>(&MainForm::EditComboBox_OnSelectionChange, this);
+		editComboBox->BindEventFunc<WAF::EditComboBox::Events::EventSelectionCancel>(&MainForm::EditComboBox_OnSelectionCancel, this);
+		editComboBox->BindEventFunc<WAF::EditComboBox::Events::EventSelectionAccept>(&MainForm::EditComboBox_OnSelectionDok, this);
 	}
 	~MainForm()
 	{
@@ -256,6 +291,14 @@ public:
 			L":" + std::to_wstring(event.mouse_pos.y) +
 			L"]");
 	}
+	void MainWindow_OnMouseHover(WAF::Window::Events::EventMouseHover& event)
+	{
+		LogEvent(L"MainWindow: mouse hover");
+	}
+	void MainWindow_OnMouseLeave(WAF::Window::Events::EventMouseLeave& event)
+	{
+		LogEvent(L"MainWindow: mouse leave");
+	}
 
 	// ~~ lbEventLog ~~
 	void lbEventLog_OnClicked(WAF::Label::Events::EventMouseLButtonPress& event)
@@ -281,16 +324,16 @@ public:
 		event_counter++;
 
 		while (eventHistory.size() > 24)
-   		{
+		{
 			eventHistory.erase(eventHistory.begin());
-   		}
-   
-   		std::wstring events = L"";
-   		for (size_t i = 0; i < eventHistory.size(); i++)
-   		{
-   			events += L"#" + std::to_wstring(event_counter + i - eventHistory.size()) + L": " + eventHistory[i] + L"\n";
-   		}
-   		if (lbEventLog) lbEventLog->SetCaption(events);
+		}
+
+		std::wstring events = L"";
+		for (size_t i = 0; i < eventHistory.size(); i++)
+		{
+			events += L"#" + std::to_wstring(event_counter + i - eventHistory.size()) + L": " + eventHistory[i] + L"\n";
+		}
+		if (lbEventLog) lbEventLog->SetCaption(events);
 	}
 
 	// ~~ button1 ~~
@@ -298,13 +341,42 @@ public:
 	{
 		LogEvent(L"button1: clicked");
 		button1->SetCaption(L"button1 clicked!");
+
+		// -------------------------
+		COLORREF acrCustClr[16];
+
+		CHOOSECOLOR cc;
+		ZeroMemory(&cc, sizeof(cc));
+		cc.lStructSize = sizeof(CHOOSECOLOR);
+		cc.hwndOwner = button1->GetWindowHandle();
+		cc.Flags = CC_RGBINIT | CC_SOLIDCOLOR;
+		//cc.lCustData = 0;
+		cc.lpCustColors = (LPDWORD)acrCustClr;
+		cc.lpfnHook;
+		//cc.lpTemplateName = L"Name";
+		//cc.rgbResult;
+
+		ChooseColor(&cc);
+		// -------------------------
 	}
 	void Button1_OnDoubleClick(WAF::Button::Events::EventDoubleClick& event)
 	{
 		LogEvent(L"button1: double clicked");
 		button1->SetCaption(L"button1 double clicked!");
 	}
-	
+	void Button1_OnMouseClick(WAF::Button::Events::EventMouseLButtonPress& event)
+	{
+		LogEvent(L"button1: mouse lbutton press");
+	}
+	void Button1_OnMouseMove(WAF::Button::Events::EventMouseMove& event)
+	{
+		LogEvent(
+			L"button1: mouse move [" +
+			std::to_wstring(event.mouse_pos.x) +
+			L":" + std::to_wstring(event.mouse_pos.y) +
+			L"]");
+	}
+
 	// ~~ checkBox1 ~~ 
 	void CheckBox1_OnSetCaption(WAF::CheckBox::Events::EventSetCaption& event)
 	{
@@ -405,6 +477,14 @@ public:
 			L":" + std::to_wstring(event.mouse_pos.y) + 
 			L"]");
 	}
+	void Panel_OnMouseHover(WAF::Panel::Events::EventMouseHover& event)
+	{
+		LogEvent(L"panel: mouse hover");
+	}
+	void Panel_OnMouseLeave(WAF::Panel::Events::EventMouseLeave& event)
+	{
+		LogEvent(L"panel: mouse leave");
+	}
 
 	// ~~ label2 ~~
 	void Label2_OnMouseMove(WAF::Label::Events::EventMouseMove& event)
@@ -416,6 +496,60 @@ public:
 		L"]");
 	}
 
+	// ~~ combobox ~~
+	void ComboBox_OnCloseUp(WAF::ComboBox::Events::EventCloseUp& event)
+	{
+		LogEvent(L"combobox: close up");
+	}
+	void ComboBox_OnDropDown(WAF::ComboBox::Events::EventDropDown& event)
+	{
+		LogEvent(L"combobox: drop down");
+	}
+	void ComboBox_OnSetFocus(WAF::ComboBox::Events::EventSetFocus& event)
+	{
+		LogEvent(L"combobox: set focus");
+	}
+	void ComboBox_OnKillFocus(WAF::ComboBox::Events::EventKillFocus& event)
+	{
+		LogEvent(L"combobox: kill focus");
+	}
+	
+	void ComboBox_OnAddItem(WAF::ComboBox::Events::EventAddItem& event)
+	{
+		LogEvent(L"combobox: add item");
+	}
+
+	void ComboBox_OnMouseMove(WAF::ComboBox::Events::EventMouseMove& event)
+	{
+		LogEvent(
+			L"combobox: mouse move [" +
+			std::to_wstring(event.mouse_pos.x) +
+			L":" + std::to_wstring(event.mouse_pos.y) +
+			L"]");
+	}
+
+	// ~~ editcombobox ~~
+	void EditComboBox_OnEditChange(WAF::EditComboBox::Events::EditChange& event)
+	{
+		LogEvent(L"editcombobox: edit change");
+	}
+	void EditComboBox_OnEditUpdate(WAF::EditComboBox::Events::EditUpdate& event)
+	{
+		LogEvent(L"editcombobox: edit update");
+	}
+	void EditComboBox_OnSelectionChange(WAF::EditComboBox::Events::EventSelectionChange& event)
+	{
+		LogEvent(L"editcombobox: selection change");
+	}
+	void EditComboBox_OnSelectionCancel(WAF::EditComboBox::Events::EventSelectionCancel& event)
+	{
+		LogEvent(L"editcombobox: selection cancel");
+	}
+	void EditComboBox_OnSelectionDok(WAF::EditComboBox::Events::EventSelectionAccept& event)
+	{
+		LogEvent(L"editcombobox: process selection");
+	}
+	
 
 	// ~~ Framework::keyboard ~~
 	void Keyboard_OnKeyPress(WAF::Keyboard::Events::EventKeyPress& event)
@@ -433,6 +567,29 @@ public:
 
 			case WAF::Keyboard::Key::Dot:
 				if (progressBar) progressBar->StepIt(10);
+				break;
+
+			case WAF::Keyboard::Key::Equals:
+				comboBox->AddItem(L"item #" + std::to_wstring(comboBox->GetItemCount()));
+				break;
+
+			case WAF::Keyboard::Key::Digit1:
+				comboBox->RemoveItem(0);
+				break;
+			case WAF::Keyboard::Key::Digit2:
+				comboBox->RemoveItem(1);
+				break;
+
+			case WAF::Keyboard::Key::V:
+				comboBox->DropDownList();
+				break;
+
+			case WAF::Keyboard::Key::Digit5:
+				comboBox->SelectItem(4);
+				break;
+
+			case WAF::Keyboard::Key::Digit6:
+				LogEvent(L"got item at index 6: " + editComboBox->GetItem(6));
 				break;
 		}
 	}

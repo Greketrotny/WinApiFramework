@@ -137,7 +137,7 @@ namespace WinapiFramework
 		TrackBar::ToolTipsStyle toolTipsStyle;
 
 		ConStruct(
-			const Rect& rect,
+			const Rect& rect = Rect(50, 50, 100, 50),
 			const Range& trackRange = Range(0, 100),
 			int startPosition = 0,
 			unsigned int smallStep = 1u, unsigned int largeStep = 5u,

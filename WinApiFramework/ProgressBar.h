@@ -106,7 +106,7 @@ namespace WinapiFramework
 
 
 		ConStruct(
-			const Rect& rect,
+			const Rect& rect = Rect(50, 50, 100, 50),
 			Range range = Range(0, 100),
 			int position = 0,
 			ProgressBar::BarState barState = ProgressBar::BarState::Normal,

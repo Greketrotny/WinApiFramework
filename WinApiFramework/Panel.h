@@ -55,7 +55,7 @@ namespace WinapiFramework
 	{
 		Rect rect;
 
-		ConStruct(const Rect& rect)
+		ConStruct(const Rect& rect = Rect(50, 50, 100, 50))
 			: rect(rect)
 		{}
 	};

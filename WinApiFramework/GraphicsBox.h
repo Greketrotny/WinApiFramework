@@ -394,7 +394,7 @@ namespace WinapiFramework
 		Rect rect;
 		GraphicsBox::GBGraphics::ConStruct graphics;
 
-		ConStruct(const Rect& rect,
+		ConStruct(const Rect& rect = Rect(50, 50, 100, 50),
 			GraphicsBox::GBGraphics::ConStruct graphicsConStruct = GraphicsBox::GBGraphics::ConStruct())
 			: rect(rect)
 			, graphics(graphicsConStruct)

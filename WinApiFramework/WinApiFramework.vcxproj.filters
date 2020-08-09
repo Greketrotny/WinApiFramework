@@ -87,6 +87,9 @@
     <ClCompile Include="window_modules.cpp">
       <Filter>Source Files\WinApiFramework\BaseClasses</Filter>
     </ClCompile>
+    <ClCompile Include="combobox.cpp">
+      <Filter>Source Files\WinApiFramework\Controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="event.h">
@@ -145,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="window_modules.h">
       <Filter>Header Files\WinApiFramework\BaseClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="combobox.h">
+      <Filter>Header Files\WinApiFramework\Controls</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

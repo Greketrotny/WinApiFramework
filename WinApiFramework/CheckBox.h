@@ -77,7 +77,7 @@ namespace WinapiFramework
 		bool isTripleState;
 		CheckBox::BoxState boxState;
 
-		ConStruct(const Rect& rect,
+		ConStruct(const Rect& rect = Rect(50, 50, 100, 50),
 				  const std::wstring& caption = L"caption",
 				  bool isTripleState = false,
 				  CheckBox::BoxState boxState = CheckBox::BoxState::Uncheck)

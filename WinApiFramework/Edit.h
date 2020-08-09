@@ -59,7 +59,7 @@ namespace WinapiFramework
 			struct EventSetNumberMode : public BaseEvent {};
 			struct EventSetReadOnlyMode : public BaseEvent {};
 			struct EventSetTextLengthLimit : public BaseEvent {};
-			struct EventSetSelection : public BaseEvent {};
+			struct SetSelection : public BaseEvent {};
 			struct EventSelectAll : public BaseEvent {};
 			struct EventRemoveSelection : public BaseEvent {};
 			struct EventReplaceSelection : public BaseEvent {};
@@ -148,7 +148,7 @@ namespace WinapiFramework
 		wchar_t passwordChar = L'\x25CF';
 		Edit::ScrollingStyle scrollingStyle;
 
-		ConStruct(const Rect& rect,
+		ConStruct(const Rect& rect = Rect(50, 50, 100, 50),
 			const std::wstring& text = L"",
 			const std::wstring& cueText = L"",
 			Edit::TextAlignment textAlignment = Edit::TextAlignment::Left,

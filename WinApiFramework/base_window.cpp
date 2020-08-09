@@ -105,20 +105,23 @@ namespace WinapiFramework
 	
 	LRESULT BaseWindow::HandleMouseEvent(UINT msg, WPARAM wParam, LPARAM lParam)
 	{
+		Point pos(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+
 		switch (msg)
 		{
 			case WM_LBUTTONDOWN:
 			//case WM_NCLBUTTONDOWN:
 			{
-				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButton::Left);
+				m_mouse_captor.StartMouseCapture(Mouse::MouseButton::Left);
 				RaiseEventByHandler<BaseWindowEvents::EventMouseLButtonPress>();
 				break;
 			}
 			case WM_LBUTTONUP:
 			//case WM_NCLBUTTONUP:
 			{
+				m_mouse_captor.StopTrackingMouse();
 				m_mouse_captor.StopMouseCapture(Mouse::MouseButton::Left);
-				RaiseEventByHandler<BaseWindowEvents::EventMouseLButtonRelease>();				
+				RaiseEventByHandler<BaseWindowEvents::EventMouseLButtonRelease>();
 				break;
 			}
 			case WM_LBUTTONDBLCLK:
@@ -131,13 +134,14 @@ namespace WinapiFramework
 			case WM_RBUTTONDOWN:
 			//case WM_NCRBUTTONDOWN:
 			{
-				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButton::Right);
+				m_mouse_captor.StartMouseCapture(Mouse::MouseButton::Right);
 				RaiseEventByHandler<BaseWindowEvents::EventMouseRButtonPress>();
 				break;
 			}
 			case WM_RBUTTONUP:
 			//case WM_NCRBUTTONUP:
 			{
+				m_mouse_captor.StopTrackingMouse();
 				m_mouse_captor.StopMouseCapture(Mouse::MouseButton::Right);
 				RaiseEventByHandler<BaseWindowEvents::EventMouseRButtonRelease>();
 				break;
@@ -152,13 +156,14 @@ namespace WinapiFramework
 			case WM_MBUTTONDOWN:
 			//case WM_NCMBUTTONDOWN:
 			{
-				m_mouse_captor.StartMouseCapture(m_hWindow, Mouse::MouseButton::Middle);
+				m_mouse_captor.StartMouseCapture(Mouse::MouseButton::Middle);
 				RaiseEventByHandler<BaseWindowEvents::EventMouseMButtonPress>();
 				break;
 			}
 			case WM_MBUTTONUP:
 			//case WM_NCMBUTTONUP:
 			{
+				m_mouse_captor.StopTrackingMouse();
 				m_mouse_captor.StopMouseCapture(Mouse::MouseButton::Middle);
 				RaiseEventByHandler<BaseWindowEvents::EventMouseMButtonRelease>();
 				break;
@@ -173,8 +178,21 @@ namespace WinapiFramework
 			case WM_MOUSEMOVE:
 			//case WM_NCMOUSEMOVE:
 			{
-				Point pos(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				if (!m_mouse_captor.IsTrackingMouse())
+				{
+					m_mouse_captor.StartTrackingMouse(m_hWindow);
+					RaiseEventByHandler<BaseWindowEvents::EventMouseHover>();
+				}
+
 				RaiseEventByHandler<BaseWindowEvents::EventMouseMove>(pos);
+				break;
+			}
+
+			case WM_MOUSELEAVE:
+			{
+				m_mouse_captor.CheckCaptureOnLeave(m_hWindow);
+				m_mouse_captor.StopTrackingMouse();
+				RaiseEventByHandler<BaseWindowEvents::EventMouseLeave>();
 				break;
 			}
 
@@ -282,16 +300,10 @@ namespace WinapiFramework
 		return;
 	}
 
-	Point ParentWindow::GetMousePosition() const
-	{
-		assert(mp_parent);
-		return mp_parent->GetMousePosition() - m_rect.position;
-	}
 	Point ParentWindow::GetCanvasPosition() const
 	{
 		return Point(0, 0);
 	}
-
 	const Rect& ParentWindow::GetClientRect() const
 	{
 		return m_client_rect;
@@ -301,6 +313,7 @@ namespace WinapiFramework
 	{
 		for (BaseWindow*& child : m_children)
 		{
+			if (child == nullptr) continue;
 			if (child->GetWindowHandle() == (HWND)lParam)
 			{
 				child->ControlProcedure(wParam, lParam);

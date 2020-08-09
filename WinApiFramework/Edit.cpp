@@ -331,7 +331,7 @@ namespace WinapiFramework
 
 		SendMessage(m_hWindow, EM_SETSEL, startIndex, endIndex);
 
-		RaiseEventByHandler<Events::EventSetSelection>();
+		RaiseEventByHandler<Events::SetSelection>();
 	}
 	void Edit::SetSelection(Range selectionRange)
 	{
@@ -344,7 +344,7 @@ namespace WinapiFramework
 	}
 	void Edit::RemoveSelection()
 	{
-		SendMessage(m_hWindow, EM_SETSEL, -1, -1);
+		SendMessage(m_hWindow, EM_SETSEL, WPARAM(-1), LPARAM(-1));
 		RaiseEventByHandler<Events::EventRemoveSelection>();
 	}
 	void Edit::ReplaceSelection(const std::wstring& text)
