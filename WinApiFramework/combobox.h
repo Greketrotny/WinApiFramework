@@ -80,6 +80,7 @@ namespace WinapiFramework
 
 		int GetMinDropWidth();
 		unsigned int GetItemCount();
+		std::wstring GetSelectedItem();
 		unsigned int GetSelectedItemIndex();
 		bool IsAnyItemSelected();
 		bool IsDroppedDown();

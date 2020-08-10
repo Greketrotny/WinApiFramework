@@ -520,7 +520,7 @@ namespace WinapiFramework
 		// vertical scroll
 		si.nMin = m_canvas_rect.top;
 		si.nMax = m_canvas_rect.bottom;
-		si.nPage = m_client_rect.size.height;
+		si.nPage = m_client_rect.size.height + 1;
 		si.nPos = m_canvas_drift.y;
 		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 		SetScrollInfo(m_hWindow, SB_VERT, &si, TRUE);
@@ -528,7 +528,7 @@ namespace WinapiFramework
 		// horizontal scroll
 		si.nMin = m_canvas_rect.left;
 		si.nMax = m_canvas_rect.right;
-		si.nPage = m_client_rect.size.width;
+		si.nPage = m_client_rect.size.width + 1;
 		si.nPos = m_canvas_drift.x;
 		si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 		SetScrollInfo(m_hWindow, SB_HORZ, &si, TRUE);

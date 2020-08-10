@@ -708,9 +708,8 @@ void CallBackFunction()
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, INT ncmd)
 {
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
-
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	INITCOMMONCONTROLSEX icc;
 	icc.dwSize = sizeof(INITCOMMONCONTROLSEX);
@@ -727,6 +726,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 	WAF::Framework::ProcessMessages();
 
 	delete MF;
+
+	int* a = new int[10];
+
+	
 
 	delete texture1;
 	delete texture2;

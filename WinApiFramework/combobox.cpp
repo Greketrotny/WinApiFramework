@@ -182,6 +182,10 @@ namespace WinapiFramework
 		m_item_count = SendMessage(m_hWindow, CB_GETCOUNT, 0, 0);
 		return m_item_count;
 	}
+	std::wstring ComboBoxBase::GetSelectedItem()
+	{
+		return GetItem(GetSelectedItemIndex());
+	}
 	unsigned int ComboBoxBase::GetSelectedItemIndex()
 	{
 		return SendMessage(m_hWindow, CB_GETCURSEL, 0, 0);
