@@ -67,12 +67,12 @@ namespace WinapiFramework
 		LRESULT result = SendMessage(m_hWindow, CB_ADDSTRING, WPARAM(0), LPARAM(str.c_str()));
 		if (result == CB_ERR)
 		{
-			Framework::ShowGlobalMessageBox(L"ComboBox error", L"Failed to add item",
+			Framework::GetInstance().ShowGlobalMessageBox(L"ComboBox error", L"Failed to add item",
 				MessBoxButtonLayout::Ok, MessBoxIcon::Error);
 		}
 		else if (result == CB_ERRSPACE)
 		{
-			Framework::ShowGlobalMessageBox(L"ComboBox error", L"Failed to add item (insufficient space)",
+			Framework::GetInstance().ShowGlobalMessageBox(L"ComboBox error", L"Failed to add item (insufficient space)",
 				MessBoxButtonLayout::Ok, MessBoxIcon::Error);
 		}
 
@@ -86,12 +86,12 @@ namespace WinapiFramework
 			LRESULT result = SendMessage(m_hWindow, CB_INSERTSTRING, WPARAM(index), LPARAM(str.c_str()));
 			if (result == CB_ERR)
 			{
-				Framework::ShowGlobalMessageBox(L"ComboBox error", L"Failed to insert item",
+				Framework::GetInstance().ShowGlobalMessageBox(L"ComboBox error", L"Failed to insert item",
 					MessBoxButtonLayout::Ok, MessBoxIcon::Error);
 			}
 			else if (result == CB_ERRSPACE)
 			{
-				Framework::ShowGlobalMessageBox(L"ComboBox error", L"Failed to insert item (insufficient space)",
+				Framework::GetInstance().ShowGlobalMessageBox(L"ComboBox error", L"Failed to insert item (insufficient space)",
 					MessBoxButtonLayout::Ok, MessBoxIcon::Error);
 			}
 
@@ -249,7 +249,7 @@ namespace WinapiFramework
 			m_rect.position.x - mp_parent->GetCanvasPosition().x,
 			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			mp_parent->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+			mp_parent->GetWindowHandle(), nullptr, Framework::GetInstance().GetProgramInstance(), nullptr);
 
 		if (!m_hWindow)
 		{
@@ -342,7 +342,7 @@ namespace WinapiFramework
 			m_rect.position.x - mp_parent->GetCanvasPosition().x,
 			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			mp_parent->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+			mp_parent->GetWindowHandle(), nullptr, Framework::GetInstance().GetProgramInstance(), nullptr);
 
 		if (!m_hWindow)
 		{

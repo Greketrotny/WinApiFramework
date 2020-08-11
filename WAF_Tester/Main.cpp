@@ -3,12 +3,14 @@
 #include <crtdbg.h>  
 
 #include "winapi_framework.h"
+namespace WAF = WinapiFramework;
+WAF::Framework* Winwork = nullptr;
+
 
 #include <math.h>
 #include <time.h>
 #include <sstream>
 
-namespace WAF = WinapiFramework;
 
 
 Graphics::Bitmap* texture1 = nullptr, *texture2 = nullptr;
@@ -61,16 +63,16 @@ public:
 public:
 	MainForm()
 	{
-		WAF::Framework::Keyboard.BindEventFunc<WAF::Keyboard::Events::EventKeyPress>(&MainForm::Keyboard_OnKeyPress, this);
+		Winwork->Keyboard.BindEventFunc<WAF::Keyboard::Events::EventKeyPress>(&MainForm::Keyboard_OnKeyPress, this);
 
-		WAF::Framework::Mouse.BindEventFunc<WAF::Mouse::Events::EventLeftPress>(&MainForm::Mouse_OnLeftPress, this);
-		WAF::Framework::Mouse.BindEventFunc<WAF::Mouse::Events::EventRightPress>(&MainForm::Mouse_OnRightPress, this);
-		WAF::Framework::Mouse.BindEventFunc<WAF::Mouse::Events::EventMove>(&MainForm::Mouse_OnMove, this);
-		WAF::Framework::Mouse.BindEventFunc<WAF::Mouse::Events::EventWheel>(&MainForm::Mouse_OnWheel, this);
+		Winwork->Mouse.BindEventFunc<WAF::Mouse::Events::EventLeftPress>(&MainForm::Mouse_OnLeftPress, this);
+		Winwork->Mouse.BindEventFunc<WAF::Mouse::Events::EventRightPress>(&MainForm::Mouse_OnRightPress, this);
+		Winwork->Mouse.BindEventFunc<WAF::Mouse::Events::EventMove>(&MainForm::Mouse_OnMove, this);
+		Winwork->Mouse.BindEventFunc<WAF::Mouse::Events::EventWheel>(&MainForm::Mouse_OnWheel, this);
 
 
 		// MainWindow
-		MainWindow = WAF::Framework::CreateNewWindow(
+		MainWindow = Winwork->CreateNewWindow(
 			WAF::ConStruct<WAF::Window>(
 				L"WinApiFramework test",
 				WAF::Rect(50, 50, 1200, 700),
@@ -92,6 +94,32 @@ public:
 		MainWindow->BindEventFunc<WAF::Window::Events::EventMouseMove>(&MainForm::MainWindow_OnMouseMove, this);
 		MainWindow->BindEventFunc<WAF::Window::Events::EventMouseHover>(&MainForm::MainWindow_OnMouseHover, this);
 		MainWindow->BindEventFunc<WAF::Window::Events::EventMouseLeave>(&MainForm::MainWindow_OnMouseLeave, this);
+
+
+		// panel
+		panel = MainWindow->CreateChild<WAF::Panel>(WAF::ConStruct<WAF::Panel>(
+			WAF::Rect(620, 400, 300, 200)));
+		panel->BindEventFunc<WAF::Panel::Events::EventResize>(&MainForm::Panel_OnResize, this);
+		panel->BindEventFunc<WAF::Panel::Events::EventMouseMove>(&MainForm::Panel_OnMouseMove, this);
+		panel->BindEventFunc<WAF::Panel::Events::EventMouseHover>(&MainForm::Panel_OnMouseHover, this);
+		panel->BindEventFunc<WAF::Panel::Events::EventMouseLeave>(&MainForm::Panel_OnMouseLeave, this);
+
+		// panel buttons
+		const int grid_x = 3;
+		const int grid_y = 6;
+		const int b_width = panel->GetWindowRect().size.width / grid_x;
+		const int b_height = panel->GetWindowRect().size.height / grid_y;
+		for (int x = 0; x < grid_x; x++)
+		{
+			for (int y = 0; y < grid_y - 3; y++)
+			{
+				WAF::Button* panel_button = panel->CreateChild<WAF::Button>(WAF::ConStruct<WAF::Button>(
+					WAF::Rect(WAF::Point(x * b_width, y * b_height), WAF::Size(b_width, b_height))));
+
+				//panel_button->BindEventFunc(&MainForm::Button1_OnClick, this);
+				panel_buttons.push_back(panel_button);
+			}
+		}
 
 		// lbEventLog
 		lbEventLog = MainWindow->CreateChild<WAF::Label>(WAF::ConStruct<WAF::Label>(
@@ -146,8 +174,9 @@ public:
 			WAF::ProgressBar::BarDisplayStyle::SmoothReversed));
 
 		// trackbar
-		trackBar = MainWindow->CreateChild<WAF::TrackBar>(WAF::ConStruct<WAF::TrackBar>(
-			WAF::Rect(20, 550, 200, 50),
+		trackBar = panel->CreateChild<WAF::TrackBar>(WAF::ConStruct<WAF::TrackBar>(
+			//WAF::Rect(20, 550, 200, 50),
+			WAF::Rect(20, 150, 200, 50),
 			WAF::Range(0, 100),
 			50, 1, 5,
 			WAF::TrackBar::Orientation::Horizontal,
@@ -168,30 +197,7 @@ public:
 			WAF::Rect(10, 400, 300, 200),
 			L"group box caption",
 			WAF::GroupBox::CaptionPosition::Center));
-		
-		// panel
-		panel = MainWindow->CreateChild<WAF::Panel>(WAF::ConStruct<WAF::Panel>(
-			WAF::Rect(620, 400, 300, 200)));
-		panel->BindEventFunc<WAF::Panel::Events::EventResize>(&MainForm::Panel_OnResize, this);
-		panel->BindEventFunc<WAF::Panel::Events::EventMouseMove>(&MainForm::Panel_OnMouseMove, this);
-		panel->BindEventFunc<WAF::Panel::Events::EventMouseHover>(&MainForm::Panel_OnMouseHover, this);
-		panel->BindEventFunc<WAF::Panel::Events::EventMouseLeave>(&MainForm::Panel_OnMouseLeave, this);
 
-		// panel buttons
-		const int grid_x = 3;
-		const int grid_y = 6;
-		const int b_width = panel->GetWindowRect().size.width / grid_x;
-		const int b_height = panel->GetWindowRect().size.height / grid_y;
-		for (int x = 0; x < grid_x; x++)
-		{
-			for (int y = 0; y < grid_y - 3; y++)
-			{
-				WAF::Button* panel_button = panel->CreateChild<WAF::Button>(WAF::ConStruct<WAF::Button>(
-					WAF::Rect(WAF::Point(x * b_width, y * b_height), WAF::Size(b_width, b_height))));
-
-				panel_buttons.push_back(panel_button);
-			}
-		}
 
 		// comboBox
 		comboBox = MainWindow->CreateChild<WAF::ComboBox>(WAF::ConStruct<WAF::ComboBox>(
@@ -275,10 +281,10 @@ public:
 			event.AbortClosing();
 		else
 		{
-			lbEventLog->Destroy();
+			//lbEventLog->Destroy();
 			lbEventLog = nullptr;
 
-			MainWindow->Destroy();
+			//MainWindow->Destroy();
 
 			//MainWindow = nullptr;
 		}
@@ -558,7 +564,7 @@ public:
 		{
 			case WAF::Keyboard::Key::Esc:
 				lbEventLog = nullptr;
-				WAF::Framework::Exit(0);
+				Winwork->Exit(0);
 				break;
 
 			case WAF::Keyboard::Key::Comma:
@@ -601,7 +607,7 @@ public:
 	}
 	void Mouse_OnRightPress(WAF::Mouse::Events::EventRightPress& event)
 	{
-		if (WAF::Framework::Keyboard.KeyPressed(WAF::Keyboard::Key::Control) || true)
+		if (Winwork->Keyboard.KeyPressed(WAF::Keyboard::Key::Control) || true)
 		{
 			panel->Resize(
 				std::max(2 * panel->GetMousePosition().x, 100),
@@ -610,7 +616,7 @@ public:
 	}
 	void Mouse_OnMove(WAF::Mouse::Events::EventMove& event)
 	{
-		if (WAF::Framework::Keyboard.KeyPressed(WAF::Keyboard::Key::Control))
+		if (Winwork->Keyboard.KeyPressed(WAF::Keyboard::Key::Control))
 		{
 			panel->Move(
 				MainWindow->GetCanvasMousePosition() -
@@ -670,15 +676,15 @@ void CallBackFunction()
 	if (MF->gfxBox->IsMouseInside()) MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0x00, 0xFF, 0x00));
 	else MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0xFF, 0x00, 0x00));
 
-	if (WAF::Framework::Mouse.LeftPressed) MF->gfxBox->Gfx.DrawLine(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(200.0f, 200.0f), 5.0f);
+	if (Winwork->Mouse.LeftPressed) MF->gfxBox->Gfx.DrawLine(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(200.0f, 200.0f), 5.0f);
 
-	if (WAF::Framework::Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
+	if (Winwork->Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
 		*texture1,
 		Graphics::Rect<float>(mouseX, mouseY, mouseX + texture1->Width, mouseY + texture1->Height),
 		Graphics::Rect<float>(0.0f, 0.0f, texture1->Width, texture1->Height),
 		1.0f, WAF::GraphicsBox::InterpolationMode::NearestNeighbor);
 
-	if (WAF::Framework::Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
+	if (Winwork->Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
 		*texture2,
 		Graphics::Rect<float>(50.0f, 50.0f, 50.0f + texture2->Width, 50.0f + texture2->Height),
 		Graphics::Rect<float>(0.0f, 0.0f, texture2->Width, texture2->Height),
@@ -702,7 +708,7 @@ void CallBackFunction()
 	MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0x00, 0x00, 0x00), 1.0f);
 	MF->gfxBox->Gfx.DrawString(os.str(), Graphics::Rect<float>(10.0f, 10.0f, mouseX - 10.0f, mouseY - 10.0f));
 
-	if (WAF::Framework::Mouse.LeftPressed) MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(20.0f, 20.0f));
+	if (Winwork->Mouse.LeftPressed) MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(20.0f, 20.0f));
 	MF->gfxBox->Gfx.EndDraw();
 }
 
@@ -717,19 +723,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 	InitCommonControlsEx(&icc);
 	//InitCommonControls();
 
+	Winwork = &WAF::Framework::GetInstance();
+
 	MF = new MainForm();
 
 	texture1 = GenerateTexture(200, 100, Graphics::Color::Red);
 	texture2 = GenerateTexture(200, 100, Graphics::Color::Green);
 
-	WAF::Framework::SetCallBackFunction(CallBackFunction);
-	WAF::Framework::ProcessMessages();
+	Winwork->SetCallBackFunction(CallBackFunction);
+	Winwork->ProcessMessages();
 
-	delete MF;
-
-	int* a = new int[10];
-
-	
+	delete MF;	
 
 	delete texture1;
 	delete texture2;

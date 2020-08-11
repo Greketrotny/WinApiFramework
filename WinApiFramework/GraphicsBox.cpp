@@ -44,7 +44,7 @@ namespace WinapiFramework
 		WNDCLASSEX wc;
 		ZeroMemory(&wc, sizeof(WNDCLASSEX));
 
-		wc.hInstance = Framework::GetProgramInstance();
+		wc.hInstance = Framework::GetInstance().GetProgramInstance();
 		wc.lpfnWndProc = GetFrameworkProcedure();
 		wc.lpszClassName = m_window_class_name.c_str();
 		wc.lpszMenuName = nullptr;
@@ -72,7 +72,7 @@ namespace WinapiFramework
 			m_rect.position.x - mp_parent->GetCanvasPosition().x,
 			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			mp_parent->GetWindowHandle(), nullptr, Framework::GetProgramInstance(), nullptr);
+			mp_parent->GetWindowHandle(), nullptr, Framework::GetInstance().GetProgramInstance(), nullptr);
 
 		// check control creation
 		if (!m_hWindow)
@@ -89,7 +89,7 @@ namespace WinapiFramework
 	void GraphicsBox::DestroyWinapiWindow()
 	{
 		::DestroyWindow(m_hWindow);
-		UnregisterClass(m_window_class_name.c_str(), Framework::GetProgramInstance());
+		UnregisterClass(m_window_class_name.c_str(), Framework::GetInstance().GetProgramInstance());
 	}
 
 	void GraphicsBox::Resize(int newWidth, int newHeight)

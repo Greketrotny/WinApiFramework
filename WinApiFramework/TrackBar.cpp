@@ -10,7 +10,6 @@ namespace WinapiFramework
 	TrackBar::TrackBar(ParentWindow* parent, const ConStruct< TrackBar>& conStruct)
 		: BaseWindow(parent)
 	{
-
 		m_rect = conStruct.rect;
 
 		m_trackRange = conStruct.trackRange;
@@ -86,6 +85,7 @@ namespace WinapiFramework
 	{
 		m_window_style |= WS_CHILD | WS_VISIBLE;
 
+
 		// [>] Set TrackBar styles
 		// set orienttaion
 		if (m_orientation == TrackBar::Orientation::Horizontal)		m_window_style |= TBS_HORZ;
@@ -116,7 +116,7 @@ namespace WinapiFramework
 			m_rect.position.x - mp_parent->GetCanvasPosition().x,
 			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			mp_parent->GetWindowHandle(), nullptr, Framework::ProgramInstance, nullptr);
+			mp_parent->GetWindowHandle(), nullptr, Framework::GetInstance().GetProgramInstance(), nullptr);
 
 		if (!m_hWindow)
 		{
@@ -134,9 +134,9 @@ namespace WinapiFramework
 
 		//// create and set side labels
 		//hLabel1 = CreateWindow(L"STATIC", labels.label1.c_str(), SS_CENTER | WS_CHILD | WS_VISIBLE,
-		//	0, 0, 50, 10, parentWindow->WndHandle, NULL, Framework::ProgramInstance, NULL);
+		//	0, 0, 50, 10, parentWindow->WndHandle, NULL, Framework::GetInstance().GetProgramInstance(), NULL);
 		//hLabel2 = CreateWindow(L"STATIC", labels.label2.c_str(), SS_CENTER | WS_CHILD | WS_VISIBLE,
-		//	0, 0, 50, 10, parentWindow->WndHandle, NULL, Framework::ProgramInstance, NULL);
+		//	0, 0, 50, 10, parentWindow->WndHandle, NULL, Framework::GetInstance().GetProgramInstance(), NULL);
 
 		//HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 		//SendMessage(hLabel1, WM_SETFONT, (WPARAM)hNormalFont, TRUE);

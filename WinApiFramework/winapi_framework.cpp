@@ -39,18 +39,20 @@ namespace WinapiFramework
 
 
 	// ~~~~~~~~ [CLASS] Framework ~~~~~~~~
-	// ~~ Framework::fields ~~
-	HINSTANCE Framework::hProgramInstance = GetModuleHandle(NULL);
-	const HINSTANCE& Framework::ProgramInstance(hProgramInstance);
-	std::vector<Window*> Framework::m_windows;
-	Window* Framework::m_pRootWindow(nullptr);
-	Framework::PendingActionList Framework::m_pending_actions;
-	std::function<void()> Framework::callBack = nullptr;
-	HHOOK Framework::InputHook = SetWindowsHookEx(WH_GETMESSAGE, Framework::InputProcedure, NULL, GetThreadId(GetCurrentThread()));
-	Mouse Framework::mouse;
-	Keyboard Framework::keyboard;
-	Mouse& Framework::Mouse(Framework::mouse);
-	Keyboard& Framework::Keyboard(Framework::keyboard);
+	Framework::Framework()
+		: m_hProgram_instance(GetModuleHandle(NULL))
+		, m_input_hook(SetWindowsHookEx(WH_GETMESSAGE, Framework::InputProcedure, NULL, GetThreadId(GetCurrentThread())))
+		, Mouse(m_mouse)
+		, Keyboard(m_keyboard)
+		, mp_root_window(nullptr)
+		, callBack(nullptr)
+	{
+
+	}
+	Framework::~Framework()
+	{
+		DestroyAllWindows();
+	}
 
 	LRESULT WINAPI Framework::WinApiProcedure(
 		HWND hWnd, 
@@ -70,11 +72,11 @@ namespace WinapiFramework
 		{
 			if (!(*windProc)(hWnd, msg, wParam, lParam))
 			{
-				m_pending_actions.InvokeActions();
+				GetInstance().m_pending_actions.InvokeActions();
 				return 0;
 			}
 		}
-		m_pending_actions.InvokeActions();
+		GetInstance().m_pending_actions.InvokeActions();
 		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
 	LRESULT WINAPI Framework::SubclassProcedure(
@@ -97,11 +99,11 @@ namespace WinapiFramework
 		{
 			if (!(*sub_proc)(hWnd, msg, wParam, lParam, idSubClass, refData))
 			{
-				m_pending_actions.InvokeActions();
+				GetInstance().m_pending_actions.InvokeActions();
 				return 0;
 			}
 		}
-		m_pending_actions.InvokeActions();
+		GetInstance().m_pending_actions.InvokeActions();
 
 		return DefSubclassProc(hWnd, msg, wParam, lParam);
 	}
@@ -111,19 +113,24 @@ namespace WinapiFramework
 		{
 			MSG *msg = (MSG*)lParam;
 
-			if (Mouse.HandleMessage(msg->message, wParam, lParam) == 0)
-				return CallNextHookEx(InputHook, code, wParam, lParam);
+			if (GetInstance().Mouse.HandleMessage(msg->message, wParam, lParam) == 0)
+				return CallNextHookEx(GetInstance().m_input_hook, code, wParam, lParam);
 
-			if (Keyboard.HandleMessage(wParam, lParam) == 0)
-				return CallNextHookEx(InputHook, code, wParam, lParam);
+			if (GetInstance().Keyboard.HandleMessage(wParam, lParam) == 0)
+				return CallNextHookEx(GetInstance().m_input_hook, code, wParam, lParam);
 
 		}
-		return CallNextHookEx(InputHook, code, wParam, lParam);
+		return CallNextHookEx(GetInstance().m_input_hook, code, wParam, lParam);
 	}
 	
+	Framework& Framework::GetInstance()
+	{
+		static Framework instance;
+		return instance;
+	}
 	HINSTANCE Framework::GetProgramInstance()
 	{
-		return hProgramInstance;
+		return m_hProgram_instance;
 	}
 	Window* Framework::CreateNewWindow(const ConStruct<Window>& conStruct)
 	{
@@ -141,9 +148,9 @@ namespace WinapiFramework
 		window->CreateWinapiWindow();
 
 		// first window is main automaticly
-		if (m_pRootWindow == nullptr)
+		if (mp_root_window == nullptr)
 		{
-			m_pRootWindow = window;
+			mp_root_window = window;
 			window->isMainWindow = true;
 		}
 
@@ -153,10 +160,9 @@ namespace WinapiFramework
 	bool Framework::DestroyWindow(Window* const window)
 	{
 		if (window == nullptr) return false;
-		if (window == m_pRootWindow)
+		if (window == mp_root_window)
 		{
 			Framework::Exit(0);
-			return true;
 		}
 
 		for (size_t i = 0; i < m_windows.size(); ++i)
@@ -173,10 +179,7 @@ namespace WinapiFramework
 	}
 	void Framework::DestroyAllWindows()
 	{
-		for (size_t i = 0; i < m_windows.size(); ++i)
-		{
-			delete m_windows[i];
-		}
+		for (auto* wnd : m_windows) delete wnd;
 		m_windows.clear();
 	}
 	size_t Framework::GetWindowCount()
@@ -185,11 +188,11 @@ namespace WinapiFramework
 	}
 	const Window* Framework::GetRootWindow()
 	{
-		return m_pRootWindow;
+		return mp_root_window;
 	}
 	void Framework::SetAsMainWindow(Window *window)
 	{
-		if (window == m_pRootWindow) return;
+		if (window == mp_root_window) return;
 
 		for (Window *w : m_windows)
 		{
@@ -200,7 +203,7 @@ namespace WinapiFramework
 			}
 		}
 
-		m_pRootWindow = window;
+		mp_root_window = window;
 		window->isMainWindow = true;
 		window->SetCaption(window->GetCaption());
 	}
@@ -256,7 +259,6 @@ namespace WinapiFramework
 	}
 	void Framework::Exit(int return_value)
 	{
-		DestroyAllWindows();
 		PostQuitMessage(return_value);
 	}
 

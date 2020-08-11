@@ -26,8 +26,22 @@ namespace WinapiFramework
 		{
 			case WM_COMMAND:
 			case WM_NOTIFY:
-				// try to find and process message by child controls
+				// try to find and process message by child control
 				return ProcessChildMessage(wParam, lParam);
+
+			case WM_VSCROLL:
+			{
+				// try to find and process message by child control
+				if (!ProcessChildMessage(wParam, lParam)) return 0;
+				break;
+			}
+
+			case WM_HSCROLL:
+			{
+				// try to find and process message by child control
+				if (!ProcessChildMessage(wParam, lParam)) return 0;
+				break;
+			}
 
 			default: return 1;
 		}
@@ -43,7 +57,7 @@ namespace WinapiFramework
 		WNDCLASSEX wc;
 		ZeroMemory(&wc, sizeof(WNDCLASSEX));
 
-		wc.hInstance = Framework::GetProgramInstance();
+		wc.hInstance = Framework::GetInstance().GetProgramInstance();
 		wc.lpfnWndProc = GetFrameworkProcedure();
 		wc.lpszClassName = m_window_class_name.c_str();
 		wc.lpszMenuName = nullptr;
@@ -54,7 +68,7 @@ namespace WinapiFramework
 		wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 		wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 		wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-		wc.hbrBackground = (HBRUSH)(COLOR_DESKTOP);
+		wc.hbrBackground = (HBRUSH)(COLOR_WINDOW);
 
 		// register class
 		if (!RegisterClassEx(&wc))
@@ -66,11 +80,11 @@ namespace WinapiFramework
 		// [>] Create window
 		m_hWindow = CreateWindow((LPCWSTR)m_window_class_name.c_str(), L"caption",
 			//m_controlStyle, 
-			WS_VISIBLE | WS_BORDER | WS_CHILD | WS_CLIPCHILDREN,
+			WS_VISIBLE | WS_BORDER | WS_CHILD/* | WS_CLIPCHILDREN*/,
 			m_rect.position.x - mp_parent->GetCanvasPosition().x,
 			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
-			mp_parent->GetWindowHandle(), nullptr, Framework::GetProgramInstance(), nullptr);
+			mp_parent->GetWindowHandle(), nullptr, Framework::GetInstance().GetProgramInstance(), nullptr);
 
 		if (!m_hWindow)
 		{
@@ -86,6 +100,6 @@ namespace WinapiFramework
 	void Panel::DestroyWinapiWindow()
 	{
 		::DestroyWindow(m_hWindow);
-		UnregisterClass(m_window_class_name.c_str(), Framework::GetProgramInstance());
+		UnregisterClass(m_window_class_name.c_str(), Framework::GetInstance().GetProgramInstance());
 	}
 }

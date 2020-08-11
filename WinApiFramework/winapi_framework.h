@@ -16,12 +16,11 @@ namespace WinapiFramework
 {
 	class Framework
 	{
-		// ~~ Framework::fields ~~ //
 	private:
-		static HINSTANCE hProgramInstance;
+		HINSTANCE m_hProgram_instance;
 
-		static std::vector<Window*> m_windows;
-		static Window* m_pRootWindow;
+		std::vector<Window*> m_windows;
+		Window* mp_root_window;
 
 		struct PendingActionList
 		{
@@ -38,21 +37,24 @@ namespace WinapiFramework
 			void AppendAction(BaseAction* action);
 			void InvokeActions();
 		};
-		static PendingActionList m_pending_actions;
+		PendingActionList m_pending_actions;
 
-		static HHOOK InputHook;
-		static Mouse mouse;
-		static Keyboard keyboard;
+		HHOOK m_input_hook;
+		Mouse m_mouse;
+		Keyboard m_keyboard;
 
-		static std::function<void()> callBack;
+		std::function<void()> callBack;
+	private:
+		Framework();
 	public:
 		Framework(const Framework &framework) = delete;
 		Framework(const Framework &&framework) = delete;
+		~Framework();
 
 
 	public:
 		Framework& operator=(const Framework &framework) = delete;
-		Framework& operator=(const Framework &&framework) = delete;
+		Framework& operator=(Framework &&framework) = delete;
 
 
 	private:
@@ -68,25 +70,26 @@ namespace WinapiFramework
 			int code, 
 			WPARAM wParam, LPARAM lParam);
 	public:
-		static HINSTANCE GetProgramInstance();
-		static Window* CreateNewWindow(const ConStruct<Window>& conStruct);
-		static bool DestroyWindow(Window* const window);
-		static void DestroyAllWindows();
-		static size_t GetWindowCount();
-		static const Window* GetRootWindow();
-		static void SetAsMainWindow(Window *window);
+		static Framework& GetInstance();
+		HINSTANCE GetProgramInstance();
+		Window* CreateNewWindow(const ConStruct<Window>& conStruct);
+		bool DestroyWindow(Window* const window);
+		void DestroyAllWindows();
+		size_t GetWindowCount();
+		const Window* GetRootWindow();
+		void SetAsMainWindow(Window *window);
 	private:
-		static void AppendAction(BaseAction* action);
+		void AppendAction(BaseAction* action);
 	public:
-		static UINT ProcessMessages();
-		static void Exit(int return_value);
-		static MessBoxButtonPressed ShowGlobalMessageBox(
+		UINT ProcessMessages();
+		void Exit(int return_value);
+		MessBoxButtonPressed ShowGlobalMessageBox(
 			const std::wstring& caption = L"default caption",
 			const std::wstring& text = L"default text",
 			MessBoxButtonLayout buttons = MessBoxButtonLayout::Ok,
 			MessBoxIcon icon = MessBoxIcon::Information);
 
-		static void SetCallBackFunction(void(*callBackFunction)())
+		void SetCallBackFunction(void(*callBackFunction)())
 		{
 			if (callBackFunction == nullptr)
 			{
@@ -100,7 +103,7 @@ namespace WinapiFramework
 			}
 		}
 		template <class ReceivingObject>
-		static void SetCallBackFunction(ReceivingObject* receivingObject, void(ReceivingObject::*callBackFunction)())
+		void SetCallBackFunction(ReceivingObject* receivingObject, void(ReceivingObject::*callBackFunction)())
 		{
 			if (receivingObject == nullptr || callBackFunction == nullptr)
 			{
@@ -115,9 +118,8 @@ namespace WinapiFramework
 
 
 	public:
-		static const HINSTANCE &ProgramInstance;
-		static Mouse &Mouse;
-		static Keyboard &Keyboard;
+		Mouse &Mouse;
+		Keyboard &Keyboard;
 
 
 		friend class BaseWindow;

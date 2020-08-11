@@ -244,7 +244,7 @@ namespace WinapiFramework
 	}
 	void BaseWindow::AppendAction(BaseAction* action) const
 	{
-		Framework::AppendAction(action);
+		Framework::GetInstance().AppendAction(action);
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

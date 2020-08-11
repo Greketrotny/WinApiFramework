@@ -29,7 +29,7 @@ namespace WinapiFramework
 	{
 		DestroyAllChildren();
 		DestroyWinapiWindow();
-		UnregisterClass(m_window_class_name.c_str(), Framework::GetProgramInstance());
+		UnregisterClass(m_window_class_name.c_str(), Framework::GetInstance().GetProgramInstance());
 	}
 
 
@@ -230,7 +230,7 @@ namespace WinapiFramework
 		WNDCLASSEX wc;
 		ZeroMemory(&wc, sizeof(WNDCLASSEX));
 
-		wc.hInstance = Framework::GetProgramInstance();
+		wc.hInstance = Framework::GetInstance().GetProgramInstance();
 		wc.lpfnWndProc = GetFrameworkProcedure();
 		wc.lpszClassName = m_window_class_name.c_str();
 		wc.lpszMenuName = nullptr;
@@ -263,7 +263,7 @@ namespace WinapiFramework
 		m_hWindow = CreateWindow((LPCWSTR)m_window_class_name.c_str(), (LPCWSTR)m_caption.c_str(),
 			m_window_style,
 			m_rect.position.x, m_rect.position.y, m_rect.size.width, m_rect.size.height,
-			nullptr, nullptr, Framework::GetProgramInstance(), nullptr);
+			nullptr, nullptr, Framework::GetInstance().GetProgramInstance(), nullptr);
 
 		if (!m_hWindow)
 		{
@@ -361,7 +361,7 @@ namespace WinapiFramework
 	}
 	void Window::SetAsMainWindow()
 	{
-		Framework::SetAsMainWindow(this);
+		Framework::GetInstance().SetAsMainWindow(this);
 	}
 
 	void Window::EnableResize()
@@ -457,11 +457,15 @@ namespace WinapiFramework
 	}
 	Point Window::GetWindowMousePosition() const
 	{
-		return Point(Framework::Mouse.X - m_rect.position.x, Framework::Mouse.Y - m_rect.position.y);
+		return Point(
+			Framework::GetInstance().Mouse.X - m_rect.position.x, 
+			Framework::GetInstance().Mouse.Y - m_rect.position.y);
 	}
 	Point Window::GetClientMousePosition() const
 	{
-		return Point(Framework::Mouse.X - m_client_rect.position.x, Framework::Mouse.Y - m_client_rect.position.y);
+		return Point(
+			Framework::GetInstance().Mouse.X - m_client_rect.position.x, 
+			Framework::GetInstance().Mouse.Y - m_client_rect.position.y);
 	}
 	Point Window::GetCanvasMousePosition() const
 	{
@@ -479,7 +483,7 @@ namespace WinapiFramework
 
 	void Window::DestroyAction::Invoke()
 	{
-		if (m_pWindow) Framework::DestroyWindow(m_pWindow);
+		if (m_pWindow) Framework::GetInstance().DestroyWindow(m_pWindow);
 	}
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
