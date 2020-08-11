@@ -26,7 +26,7 @@ namespace WinapiFramework
 	{
 		if (HandleMouseEvent(msg, wParam, lParam) == 0) return 0;
 
-		return 1;
+		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
 	LRESULT GraphicsBox::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{

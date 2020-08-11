@@ -70,14 +70,15 @@ namespace WinapiFramework
 
 		if (windProc)
 		{
-			if (!(*windProc)(hWnd, msg, wParam, lParam))
-			{
-				GetInstance().m_pending_actions.InvokeActions();
-				return 0;
-			}
+			LRESULT result = (*windProc)(hWnd, msg, wParam, lParam);
+			GetInstance().m_pending_actions.InvokeActions();
+			return result;
 		}
-		GetInstance().m_pending_actions.InvokeActions();
-		return DefWindowProc(hWnd, msg, wParam, lParam);
+		else
+		{
+			GetInstance().m_pending_actions.InvokeActions();
+			return DefWindowProc(hWnd, msg, wParam, lParam);
+		}
 	}
 	LRESULT WINAPI Framework::SubclassProcedure(
 		HWND hWnd, 

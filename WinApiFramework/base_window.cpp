@@ -19,6 +19,10 @@ namespace WinapiFramework
 	{
 		return LRESULT(TRUE);
 	}
+	LRESULT	BaseWindow::NotifyProcedure(WPARAM wParam, LPARAM lParam)
+	{
+		return LRESULT(TRUE);
+	}
 	
 	void BaseWindow::Destroy()
 	{
@@ -321,6 +325,20 @@ namespace WinapiFramework
 			}
 		}
 		return 1;
+	}
+	LRESULT ParentWindow::ProcessChildNotify(WPARAM wParam, LPARAM lParam)
+	{
+		LPNMHDR nmh = (LPNMHDR)lParam;
+
+		for (BaseWindow*& child : m_children)
+		{
+			if (child == nullptr) continue;
+			if (child->GetWindowHandle() == nmh->hwndFrom)
+			{
+				return child->NotifyProcedure(wParam, lParam);
+			}
+		}
+		return 0;
 	}
 	const std::vector<BaseWindow*>& ParentWindow::GetChildren()
 	{

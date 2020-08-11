@@ -138,6 +138,7 @@ namespace WinapiFramework
 
 	protected:
 		virtual LRESULT ControlProcedure(WPARAM wParam, LPARAM lParam);
+		virtual LRESULT NotifyProcedure(WPARAM wParam, LPARAM lParam);
 		virtual bool CreateWinapiWindow() = 0;
 		virtual void DestroyWinapiWindow() = 0;
 	public:
@@ -232,6 +233,7 @@ namespace WinapiFramework
 		const Rect& GetClientRect() const;
 	protected:
 		LRESULT ProcessChildMessage(WPARAM wParam, LPARAM lParam);
+		LRESULT ProcessChildNotify(WPARAM wParam, LPARAM lParam);
 		const std::vector<BaseWindow*>& GetChildren();
 	};
 	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

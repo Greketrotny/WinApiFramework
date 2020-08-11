@@ -8,7 +8,9 @@ namespace WinapiFramework
 	class TrackBar;
 	template <> struct ConStruct<TrackBar>;
 
-	class TrackBar : public BaseWindow
+	class TrackBar 
+		: public BaseWindow
+		, public HasSubclassProcedure<TrackBar>
 	{
 	public:
 		enum class Orientation
@@ -69,6 +71,7 @@ namespace WinapiFramework
 		};
 
 
+
 	private:
 		TrackBar(const TrackBar &TrackBar) = delete;
 		TrackBar(const TrackBar &&TrackBar) = delete;
@@ -82,7 +85,13 @@ namespace WinapiFramework
 
 
 	private:
+		LRESULT SubclassProcedure(
+			HWND hWnd,
+			UINT msg,
+			WPARAM wParam, LPARAM lParam,
+			UINT_PTR uIDSubClass, DWORD_PTR dwRefData) override;
 		LRESULT ControlProcedure(WPARAM wParam, LPARAM lParam) override;
+		LRESULT NotifyProcedure(WPARAM wParam, LPARAM lParam) override;
 		bool CreateWinapiWindow() override;
 		void DestroyWinapiWindow() override;
 	public:

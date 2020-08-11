@@ -180,7 +180,7 @@ public:
 			WAF::Range(0, 100),
 			50, 1, 5,
 			WAF::TrackBar::Orientation::Horizontal,
-			WAF::TrackBar::TickStyle::Bottom,	10,
+			WAF::TrackBar::TickStyle::Both,	10,
 			true, WAF::Range(20, 80),
 			WAF::TrackBar::ToolTipsStyle::Top));
 		trackBar->BindEventFunc<WAF::TrackBar::Events::EventLineUp>(&MainForm::TrackBar_OnLineUp, this);
@@ -362,7 +362,7 @@ public:
 		//cc.lpTemplateName = L"Name";
 		//cc.rgbResult;
 
-		ChooseColor(&cc);
+		//ChooseColor(&cc);
 		// -------------------------
 	}
 	void Button1_OnDoubleClick(WAF::Button::Events::EventDoubleClick& event)

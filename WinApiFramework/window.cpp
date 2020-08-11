@@ -41,8 +41,13 @@ namespace WinapiFramework
 		switch (msg)
 		{
 			case WM_COMMAND:
+				if (ProcessChildMessage(wParam, lParam) == 1)
+					return DefWindowProc(hWnd, msg, wParam, lParam);
+				else
+					return 0;
+
 			case WM_NOTIFY:
-				return ProcessChildMessage(wParam, lParam);
+				return ProcessChildNotify(wParam, lParam);
 
 			case WM_VSCROLL:
 			{
@@ -190,7 +195,7 @@ namespace WinapiFramework
 				return 0;
 			}
 		}
-		return 1;
+		return DefWindowProc(hWnd, msg, wParam, lParam);
 	}
 	//LRESULT Window::ProcessChildMessage(WPARAM wParam, LPARAM lParam)
 	//{

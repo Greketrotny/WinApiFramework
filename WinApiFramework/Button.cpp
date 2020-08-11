@@ -24,9 +24,8 @@ namespace WinapiFramework
 		WPARAM wParam, LPARAM lParam,
 		UINT_PTR uIDSubClass, DWORD_PTR dwRefData)
 	{
-		// We do not return after succesful mouse event handling
-		// becuase DefSubclassProc must be called for button
-		// from Framework SubclassProcedure
+		// We do not return after succesful mouse event handling becuase DefSubclassProc 
+		// must be called from Framework SubclassProcedure
 		HandleMouseEvent(msg, wParam, lParam);
 
 		return 1;
@@ -93,8 +92,6 @@ namespace WinapiFramework
 		}
 
 		SetWindowSubclass(m_hWindow, GetSubclassProcedure(), 0, 0);
-
-		// set pointer to non-static std::function to receive WM_ messages
 		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_subclass_procedure);
 
 		HFONT hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);

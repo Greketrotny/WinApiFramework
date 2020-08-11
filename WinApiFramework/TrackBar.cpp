@@ -9,6 +9,7 @@ namespace WinapiFramework
 {
 	TrackBar::TrackBar(ParentWindow* parent, const ConStruct< TrackBar>& conStruct)
 		: BaseWindow(parent)
+		, HasSubclassProcedure(this, &TrackBar::SubclassProcedure)
 	{
 		m_rect = conStruct.rect;
 
@@ -30,6 +31,27 @@ namespace WinapiFramework
 		DestroyWinapiWindow();
 	}
 
+	LRESULT TrackBar::SubclassProcedure(
+		HWND hWnd,
+		UINT msg,
+		WPARAM wParam, LPARAM lParam,
+		UINT_PTR uIDSubClass, DWORD_PTR dwRefData)
+	{
+		// We do not return after succesful mouse event handling becuase DefSubclassProc 
+		// must be called from Framework SubclassProcedure
+		HandleMouseEvent(msg, wParam, lParam);
+
+		switch (msg)
+		{
+			case WM_ERASEBKGND:
+			{
+				int a = 10;
+				break;
+			}
+		}
+
+		return 1;
+	}
 	LRESULT TrackBar::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
 		UINT event = LOWORD(wParam);
@@ -81,6 +103,77 @@ namespace WinapiFramework
 		}
 		return 0;
 	}
+	LRESULT TrackBar::NotifyProcedure(WPARAM wParam, LPARAM lParam)
+	{
+		LPNMHDR nmh = (LPNMHDR)lParam;
+
+		switch (nmh->code)
+		{
+			case NM_CUSTOMDRAW:
+			{
+				LPNMCUSTOMDRAW cd = (LPNMCUSTOMDRAW)lParam;
+				switch (cd->dwDrawStage)
+				{
+					case CDDS_PREPAINT:
+					{
+						return CDRF_NOTIFYITEMDRAW | CDRF_DOERASE;
+					}
+
+					case CDDS_POSTPAINT:
+					{
+						int a = 10;
+						break;
+					}
+
+					case CDDS_PREERASE:
+					{
+						int a = 10;
+						break;
+					}
+
+					case CDDS_POSTERASE:
+					{
+						int a = 10;
+						break;
+					}
+
+					case CDDS_ITEMPREPAINT:
+					{
+						switch (cd->dwItemSpec)
+						{
+							case TBCD_CHANNEL:
+							{
+								// uItemState
+								//CDIS_FOCUS, CDIS_GRAYED, CDIS_HOT, ....
+
+								//SetBkColor(cd->hdc, RGB(0, 255, 0));
+								COLORREF c = GetBkColor(cd->hdc);
+								
+								HBRUSH brush = CreateSolidBrush(RGB(128, 0, 0));
+								FillRect(cd->hdc, &cd->rc, brush);
+								return CDRF_SKIPDEFAULT;
+							}
+							case TBCD_THUMB:
+							{
+								HBRUSH brush = CreateSolidBrush(RGB(255, 0, 0));
+								FillRect(cd->hdc, &cd->rc, brush);
+								return CDRF_SKIPDEFAULT;
+							}
+							case TBCD_TICS:
+							{
+								return CDRF_NOTIFYITEMDRAW;
+							}
+						}
+					}
+
+					default: return CDRF_SKIPDEFAULT;
+				}
+			}
+		}
+
+		return 0;
+	}
+
 	bool TrackBar::CreateWinapiWindow()
 	{
 		m_window_style |= WS_CHILD | WS_VISIBLE;
@@ -124,6 +217,9 @@ namespace WinapiFramework
 			return false;
 		}
 
+		SetWindowSubclass(m_hWindow, GetSubclassProcedure(), 0, 0);
+		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_subclass_procedure);
+
 		SetTrackRange(m_trackRange);
 		SetSelectRange(m_selectRange);
 		SetToolTipsStyle(m_toolTipsStyle);
@@ -150,6 +246,7 @@ namespace WinapiFramework
 	void TrackBar::DestroyWinapiWindow()
 	{
 		::DestroyWindow(m_hWindow);
+		RemoveWindowSubclass(m_hWindow, GetSubclassProcedure(), 0);
 	}
 	void TrackBar::EnableSelectRange()
 	{
