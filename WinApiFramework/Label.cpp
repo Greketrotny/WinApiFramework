@@ -28,7 +28,12 @@ namespace WinapiFramework
 	{
 		if (HandleMouseEvent(msg, wParam, lParam) == 0) return 0;
 
-		return 1;
+		switch (msg)
+		{
+			default: return DefSubclassProc(hWnd, msg, wParam, lParam);
+		}
+		
+		return 0;
 	}
 	LRESULT Label::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
@@ -72,6 +77,7 @@ namespace WinapiFramework
 		HFONT hNormalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 		SendMessage(m_hWindow, WM_SETFONT, (WPARAM)hNormalFont, 0);
 
+		UpdateWindow(m_hWindow);
 		return true;
 	}
 	void Label::DestroyWinapiWindow()

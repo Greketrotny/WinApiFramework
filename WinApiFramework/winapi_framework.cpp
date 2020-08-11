@@ -96,17 +96,12 @@ namespace WinapiFramework
 			WPARAM wParam, LPARAM lParam, 
 			UINT_PTR idSubClass, DWORD_PTR refData)>*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
 
-		if (sub_proc)
-		{
-			if (!(*sub_proc)(hWnd, msg, wParam, lParam, idSubClass, refData))
-			{
-				GetInstance().m_pending_actions.InvokeActions();
-				return 0;
-			}
-		}
-		GetInstance().m_pending_actions.InvokeActions();
+		LRESULT result;
+		if (sub_proc)	result = (*sub_proc)(hWnd, msg, wParam, lParam, idSubClass, refData);
+		else			result = DefSubclassProc(hWnd, msg, wParam, lParam);
 
-		return DefSubclassProc(hWnd, msg, wParam, lParam);
+		GetInstance().m_pending_actions.InvokeActions();
+		return result;
 	}
 	LRESULT WINAPI Framework::InputProcedure(int code, WPARAM wParam, LPARAM lParam)
 	{

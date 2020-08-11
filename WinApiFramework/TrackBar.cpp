@@ -43,14 +43,10 @@ namespace WinapiFramework
 
 		switch (msg)
 		{
-			case WM_ERASEBKGND:
-			{
-				int a = 10;
-				break;
-			}
+			default: return DefSubclassProc(hWnd, msg, wParam, lParam);
 		}
 
-		return 1;
+		return 0;
 	}
 	LRESULT TrackBar::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
@@ -105,6 +101,8 @@ namespace WinapiFramework
 	}
 	LRESULT TrackBar::NotifyProcedure(WPARAM wParam, LPARAM lParam)
 	{
+		return 0;
+
 		LPNMHDR nmh = (LPNMHDR)lParam;
 
 		switch (nmh->code)
@@ -116,7 +114,8 @@ namespace WinapiFramework
 				{
 					case CDDS_PREPAINT:
 					{
-						return CDRF_NOTIFYITEMDRAW | CDRF_DOERASE;
+						return CDRF_NOTIFYITEMDRAW;
+						//return CDRF_SKIPDEFAULT;
 					}
 
 					case CDDS_POSTPAINT:
@@ -161,17 +160,18 @@ namespace WinapiFramework
 							}
 							case TBCD_TICS:
 							{
-								return CDRF_NOTIFYITEMDRAW;
 							}
 						}
 					}
 
-					default: return CDRF_SKIPDEFAULT;
+					default: return CDRF_SKIPPOSTPAINT;
 				}
+
+				return CDRF_SKIPPOSTPAINT;
 			}
 		}
 
-		return 0;
+		return CDRF_SKIPPOSTPAINT;
 	}
 
 	bool TrackBar::CreateWinapiWindow()
@@ -217,6 +217,7 @@ namespace WinapiFramework
 			return false;
 		}
 
+
 		SetWindowSubclass(m_hWindow, GetSubclassProcedure(), 0, 0);
 		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_subclass_procedure);
 
@@ -240,6 +241,8 @@ namespace WinapiFramework
 
 		//SendMessage(hControl, TBM_SETBUDDY, TRUE, (LPARAM)hLabel1);
 		//SendMessage(hControl, TBM_SETBUDDY, FALSE, (LPARAM)hLabel2);
+
+		UpdateWindow(m_hWindow);
 
 		return true;
 	}

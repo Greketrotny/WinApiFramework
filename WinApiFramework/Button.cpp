@@ -28,7 +28,7 @@ namespace WinapiFramework
 		// must be called from Framework SubclassProcedure
 		HandleMouseEvent(msg, wParam, lParam);
 
-		return 1;
+		return DefSubclassProc(hWnd, msg, wParam, lParam);
 	}
 	LRESULT Button::ControlProcedure(WPARAM wParam, LPARAM lParam)
 	{
@@ -97,6 +97,7 @@ namespace WinapiFramework
 		HFONT hFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 		SendMessage(m_hWindow, WM_SETFONT, (WPARAM)hFont, 0);
 
+		UpdateWindow(m_hWindow);
 		return true;
 	}
 	void Button::DestroyWinapiWindow()

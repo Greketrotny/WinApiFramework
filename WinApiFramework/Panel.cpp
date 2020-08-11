@@ -84,7 +84,7 @@ namespace WinapiFramework
 		// [>] Create window
 		m_hWindow = CreateWindow((LPCWSTR)m_window_class_name.c_str(), L"caption",
 			//m_controlStyle, 
-			WS_VISIBLE | WS_BORDER | WS_CHILD/* | WS_CLIPCHILDREN*/,
+			WS_VISIBLE | WS_BORDER | WS_CHILD | WS_CLIPCHILDREN,
 			m_rect.position.x - mp_parent->GetCanvasPosition().x,
 			m_rect.position.y - mp_parent->GetCanvasPosition().y,
 			m_rect.size.width, m_rect.size.height,
@@ -99,6 +99,7 @@ namespace WinapiFramework
 		// set pointer to non-static std::function to receive WM_ messages
 		SetWindowLongPtr(m_hWindow, GWLP_USERDATA, (LONG_PTR)&m_window_procedure);
 
+		UpdateWindow(m_hWindow);
 		return true;
 	}
 	void Panel::DestroyWinapiWindow()

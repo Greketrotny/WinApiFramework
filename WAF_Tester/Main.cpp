@@ -176,7 +176,7 @@ public:
 		// trackbar
 		trackBar = panel->CreateChild<WAF::TrackBar>(WAF::ConStruct<WAF::TrackBar>(
 			//WAF::Rect(20, 550, 200, 50),
-			WAF::Rect(20, 150, 200, 50),
+			WAF::Rect(20, 150, 200, 60),
 			WAF::Range(0, 100),
 			50, 1, 5,
 			WAF::TrackBar::Orientation::Horizontal,
