@@ -271,7 +271,7 @@ namespace WinapiFramework
 		// [>] Create bitmap
 		CComPtr<ID2D1Bitmap> pBitmap;
 		HRESULT hr = m_pHwndRenderTarget->CreateBitmap(
-			D2D1::SizeU(bitmap.Width, bitmap.Height),
+			D2D1::SizeU(bitmap.GetWidth(), bitmap.GetHeight()),
 			D2D1::BitmapProperties(
 				D2D1::PixelFormat(
 					DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM,
@@ -281,9 +281,9 @@ namespace WinapiFramework
 
 		// [>] Copy G::bitmap to pBitmap
 		pBitmap->CopyFromMemory(
-			&D2D1::RectU(0, 0, bitmap.Width, bitmap.Height),
+			&D2D1::RectU(0, 0, bitmap.GetWidth(), bitmap.GetHeight()),
 			bitmap.GetMapAddress(),
-			bitmap.Width * sizeof(*bitmap.GetMapAddress()));
+			bitmap.GetWidth() * sizeof(*bitmap.GetMapAddress()));
 
 
 		// [>] create bitmap drawing configuration
@@ -368,9 +368,12 @@ namespace WinapiFramework
 	}
 	void GraphicsBox::GBGraphics::FillRectangle(const G::Point<float>& topLeft, const G::Point<float>& bottomRight)
 	{
+		/*m_pHwndRenderTarget->FillRectangle(
+			D2D1::RectF(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y),
+			*m_ppBrush);*/
 		m_pHwndRenderTarget->FillRectangle(
 			D2D1::RectF(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y),
-			*m_ppBrush);
+			m_pSolidBrush);
 	}
 	void GraphicsBox::GBGraphics::FillRoundedRectangle(
 		const G::Point<float>& topLeft,

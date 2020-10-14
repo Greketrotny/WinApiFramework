@@ -17,9 +17,9 @@ Graphics::Bitmap* texture1 = nullptr, *texture2 = nullptr;
 Graphics::Bitmap* GenerateTexture(int width, int height, Graphics::Color color)
 {
 	Graphics::Bitmap* tex = new Graphics::Bitmap(300, 200);
-	for (int x = 0; x < tex->Width; ++x)
+	for (int x = 0; x < tex->GetWidth(); ++x)
 	{
-		for (int y = 0; y < tex->Height; ++y)
+		for (int y = 0; y < tex->GetHeight(); ++y)
 		{
 			if ((x % 2 == 0) ^ (y % 2 == 0))
 			{
@@ -680,14 +680,14 @@ void CallBackFunction()
 
 	if (Winwork->Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
 		*texture1,
-		Graphics::Rect<float>(mouseX, mouseY, mouseX + texture1->Width, mouseY + texture1->Height),
-		Graphics::Rect<float>(0.0f, 0.0f, texture1->Width, texture1->Height),
+		Graphics::Rect<float>(mouseX, mouseY, mouseX + texture1->GetWidth(), mouseY + texture1->GetHeight()),
+		Graphics::Rect<float>(0.0f, 0.0f, texture1->GetWidth(), texture1->GetHeight()),
 		1.0f, WAF::GraphicsBox::InterpolationMode::NearestNeighbor);
 
 	if (Winwork->Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
 		*texture2,
-		Graphics::Rect<float>(50.0f, 50.0f, 50.0f + texture2->Width, 50.0f + texture2->Height),
-		Graphics::Rect<float>(0.0f, 0.0f, texture2->Width, texture2->Height),
+		Graphics::Rect<float>(50.0f, 50.0f, 50.0f + texture2->GetWidth(), 50.0f + texture2->GetHeight()),
+		Graphics::Rect<float>(0.0f, 0.0f, texture2->GetWidth(), texture2->GetHeight()),
 		1.0f, WAF::GraphicsBox::InterpolationMode::NearestNeighbor);
 
 	//MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(100.0f, 50.0f));

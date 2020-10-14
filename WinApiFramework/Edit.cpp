@@ -111,7 +111,7 @@ namespace WinapiFramework
 
 
 		// [>] Create window
-		m_hWindow = CreateWindow(L"EDIT", m_text.c_str(),
+		m_hWindow = CreateWindow(WC_EDIT, m_text.c_str(),
 			m_window_style,
 			m_rect.position.x - mp_parent->GetCanvasPosition().x,
 			m_rect.position.y - mp_parent->GetCanvasPosition().y,
