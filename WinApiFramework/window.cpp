@@ -429,14 +429,7 @@ namespace WinapiFramework
 	{
 		::ShowWindow(m_hWindow, SW_MINIMIZE);
 	}
-	void Window::Show()
-	{
-		::ShowWindow(m_hWindow, SW_SHOW);
-	}
-	void Window::Hide()
-	{
-		::ShowWindow(m_hWindow, SW_HIDE);
-	}
+	
 	unsigned int Window::GetId() const
 	{
 		return window_id;

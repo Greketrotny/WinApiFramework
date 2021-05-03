@@ -38,6 +38,24 @@ namespace WinapiFramework
 		DoDisable();
 		RaiseEventByHandler<BaseWindowEvents::EventDisable>();
 	}
+	bool BaseWindow::IsEnabled()
+	{
+		return IsWindowEnabled(m_hWindow);
+	}
+	void BaseWindow::Show()
+	{
+		DoShow();
+		RaiseEventByHandler<BaseWindowEvents::EventShow>();
+	}
+	void BaseWindow::Hide()
+	{
+		DoHide();
+		RaiseEventByHandler<BaseWindowEvents::EventHide>();
+	}
+	bool BaseWindow::IsVisible()
+	{
+		return IsWindowVisible(m_hWindow);
+	}
 	void BaseWindow::Move(int x, int y)
 	{
 		assert(mp_parent);
@@ -92,6 +110,14 @@ namespace WinapiFramework
 	{
 		::EnableWindow(m_hWindow, FALSE);
 	}	
+	void BaseWindow::DoShow()
+	{
+		::ShowWindow(m_hWindow, SW_SHOWNOACTIVATE);
+	}
+	void BaseWindow::DoHide()
+	{
+		::ShowWindow(m_hWindow, SW_HIDE);
+	}
 	void BaseWindow::DoMove(int x, int y)
 	{
 		SetWindowPos(m_hWindow, nullptr,

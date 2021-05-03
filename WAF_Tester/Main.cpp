@@ -6,11 +6,9 @@
 namespace WAF = WinapiFramework;
 WAF::Framework* Winwork = nullptr;
 
-
 #include <math.h>
 #include <time.h>
 #include <sstream>
-
 
 
 Graphics::Bitmap* texture1 = nullptr, *texture2 = nullptr;
@@ -80,6 +78,16 @@ public:
 				WAF::Size(1600, 800),
 				WAF::Size(800, 400)));
 		MainWindow->MoveToCenter();
+
+		WAF::Window* sec_window = Winwork->CreateNewWindow(
+			WAF::ConStruct<WAF::Window>(
+				L"Second Window",
+				WAF::Rect(50, 50, 1200, 700),
+				WAF::Size(200, 200),
+				WAF::Size(1600, 800),
+				WAF::Size(800, 400)));
+
+		MainWindow->SetAsMainWindow();
 
 		MainWindow->BindEventFunc<WAF::Window::Events::EventActivate>(&MainForm::MainWindow_OnActivated, this);
 		MainWindow->BindEventFunc<WAF::Window::Events::EventDeactivate>(&MainForm::MainWindow_OnDeactivated, this);
@@ -596,6 +604,21 @@ public:
 
 			case WAF::Keyboard::Key::Digit6:
 				LogEvent(L"got item at index 6: " + editComboBox->GetItem(6));
+				break;
+
+			case WAF::Keyboard::Key::T:
+				//if (MainWindow) MainWindow->Hide();
+				if (button1)
+				{
+					if (button1->IsVisible())
+						button1->Hide();
+					else
+						button1->Show();
+				}
+				break;
+
+			case WAF::Keyboard::Key::Y:
+				if (MainWindow) MainWindow->Show();
 				break;
 		}
 	}

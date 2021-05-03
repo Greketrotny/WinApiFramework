@@ -32,6 +32,8 @@ namespace WinapiFramework
 			struct EventDisable : public BaseEvent {};
 			struct EventMove : public BaseEvent {};
 			struct EventResize : public BaseEvent {};
+			struct EventShow : public BaseEvent {};
+			struct EventHide : public BaseEvent {};
 
 			struct EventMouseLButtonPress : public BaseEvent {};
 			struct EventMouseLButtonRelease : public BaseEvent {};
@@ -145,6 +147,10 @@ namespace WinapiFramework
 		virtual void Destroy();
 		virtual void Enable();
 		virtual void Disable();
+		bool IsEnabled();
+		virtual void Show();
+		virtual void Hide();
+		bool IsVisible();
 		virtual void Move(int x, int y);
 		void Move(const Point& position);		
 		virtual void Resize(int width, int height);
@@ -154,6 +160,8 @@ namespace WinapiFramework
 		void DoDestroy();
 		void DoEnable();
 		void DoDisable();
+		void DoShow();
+		void DoHide();
 		void DoMove(int x, int y);
 		void DoResize(int width, int height);
 

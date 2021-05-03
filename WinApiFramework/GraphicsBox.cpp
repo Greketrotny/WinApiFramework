@@ -280,8 +280,9 @@ namespace WinapiFramework
 
 
 		// [>] Copy G::bitmap to pBitmap
+		D2D1_RECT_U r = D2D1::RectU(0, 0, bitmap.GetWidth(), bitmap.GetHeight());
 		pBitmap->CopyFromMemory(
-			&D2D1::RectU(0, 0, bitmap.GetWidth(), bitmap.GetHeight()),
+			&r,
 			bitmap.GetMapAddress(),
 			bitmap.GetWidth() * sizeof(*bitmap.GetMapAddress()));
 

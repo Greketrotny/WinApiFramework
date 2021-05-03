@@ -36,8 +36,6 @@ namespace WinapiFramework
 		{
 			struct EventActivate : public BaseEvent {};
 			struct EventDeactivate : public BaseEvent {};
-			struct EventShow : public BaseEvent {};
-			struct EventHide : public BaseEvent {};
 			struct EventMaximize : public BaseEvent {};
 			struct EventMinimize : public BaseEvent {};
 			struct EventHScrolled : public BaseEvent {};
@@ -139,8 +137,6 @@ namespace WinapiFramework
 		void Activate();
 		void Maximize();
 		void Minimize();
-		void Show();
-		void Hide();
 
 		unsigned int GetId() const;
 
