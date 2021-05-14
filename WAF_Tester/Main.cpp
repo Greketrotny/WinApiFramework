@@ -14,18 +14,19 @@ WAF::Framework* Winwork = nullptr;
 Graphics::Bitmap* texture1 = nullptr, *texture2 = nullptr;
 Graphics::Bitmap* GenerateTexture(int width, int height, Graphics::Color color)
 {
-	Graphics::Bitmap* tex = new Graphics::Bitmap(300, 200);
+	Graphics::Bitmap* tex = new Graphics::Bitmap(30, 20);
 	for (int x = 0; x < tex->GetWidth(); ++x)
 	{
 		for (int y = 0; y < tex->GetHeight(); ++y)
 		{
 			if ((x % 2 == 0) ^ (y % 2 == 0))
 			{
-				tex->SetPixel(x, y, color);
+				tex->Value(x, y) = color;
 			}
 			else
 			{
-				tex->SetPixel(x, y, Graphics::Color(color.GetR(), color.GetG(), color.GetB(), 0x00));
+				//tex->SetPixel(x, y, Graphics::Color(color.GetR(), color.GetG(), color.GetB(), 0x00));
+				tex->Value(x, y) = Graphics::Color(255, 0, 255, 0x00);
 			}
 			//unsigned char value = ((x % 2 == 0) ^ (y % 2 == 0)) ? 255 : 0;
 			////texture->SetPixel(x, y, Graphics::Color(value, value, value, 0xFF));
@@ -260,7 +261,7 @@ public:
 	}
 	void MainWindow_OnDeactivated(WAF::Window::Events::EventDeactivate& event)
 	{
-		MainWindow->SetCaption(L"Window Deactivated!!!");
+		MainWindow->SetCaption(L"First Window");
 		LogEvent(L"MainWindow: deactivated");
 	}
 	void MainWindow_OnResized(WAF::Window::Events::EventResize& event)
@@ -694,26 +695,26 @@ void CallBackFunction()
 	// [>] Begin Drawing
 	MF->gfxBox->Gfx.BeginDraw();
 	/*MF->gfxBox->Gfx.Clear(Graphics::Color(0xA0, 0xA0, 0xA0, 0xFF));*/
-	MF->gfxBox->Gfx.Clear(Graphics::Color::White);
+	MF->gfxBox->Gfx.Clear(Graphics::Color::Palette::White);
 
 	if (MF->gfxBox->IsMouseInside()) MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0x00, 0xFF, 0x00));
 	else MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0xFF, 0x00, 0x00));
 
-	if (Winwork->Mouse.LeftPressed) MF->gfxBox->Gfx.DrawLine(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(200.0f, 200.0f), 5.0f);
+	//if (Winwork->Mouse.LeftPressed) MF->gfxBox->Gfx.DrawLine(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(200.0f, 200.0f), 5.0f);
 
-	if (Winwork->Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
-		*texture1,
-		Graphics::Rect<float>(mouseX, mouseY, mouseX + texture1->GetWidth(), mouseY + texture1->GetHeight()),
-		Graphics::Rect<float>(0.0f, 0.0f, texture1->GetWidth(), texture1->GetHeight()),
-		1.0f, WAF::GraphicsBox::InterpolationMode::NearestNeighbor);
-
-	if (Winwork->Mouse.RightPressed) MF->gfxBox->Gfx.DrawBitmap(
+	/*if (Winwork->Mouse.RightPressed)*/ MF->gfxBox->Gfx.DrawBitmap(
 		*texture2,
-		Graphics::Rect<float>(50.0f, 50.0f, 50.0f + texture2->GetWidth(), 50.0f + texture2->GetHeight()),
-		Graphics::Rect<float>(0.0f, 0.0f, texture2->GetWidth(), texture2->GetHeight()),
+		Graphics::Rect<float>(50.0f, 50.0f, 50.0f + texture2->GetWidth() * 10.0f, 50.0f + texture2->GetHeight() * 10.0f),
+		Graphics::Rect<float>(0.0f, 0.0f, texture2->GetWidth() * 10.0f, texture2->GetHeight() * 10.0f),
+		1.0f, WAF::GraphicsBox::InterpolationMode::NearestNeighbor);
+	/*if (Winwork->Mouse.RightPressed)*/ MF->gfxBox->Gfx.DrawBitmap(
+		*texture1,
+		Graphics::Rect<float>(mouseX, mouseY, mouseX + texture1->GetWidth() * 10.0f, mouseY + texture1->GetHeight() * 10.0f),
+		Graphics::Rect<float>(0.0f, 0.0f, texture1->GetWidth() * 10.0f, texture1->GetHeight() * 10.0f),
 		1.0f, WAF::GraphicsBox::InterpolationMode::NearestNeighbor);
 
-	//MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(100.0f, 50.0f));
+
+	MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(10.0f, 10.0f));
 	MF->gfxBox->Gfx.DrawRoundedRectangle(Graphics::Point<float>(0.0f, 0.0f), Graphics::Point<float>(mouseX, mouseY), 50.0f, 50.0f, 10.0f);
 
 	std::wostringstream os;
@@ -729,9 +730,10 @@ void CallBackFunction()
 		L"maximus, mauris eu finibus suscipit, ligula dui ultricies libero, at efficitur sem ligula sed sapien.";
 
 	MF->gfxBox->Gfx.SetSolidBrush(Graphics::Color(0x00, 0x00, 0x00), 1.0f);
-	MF->gfxBox->Gfx.DrawString(os.str(), Graphics::Rect<float>(10.0f, 10.0f, mouseX - 10.0f, mouseY - 10.0f));
+	MF->gfxBox->Gfx.DrawString(os.str(), Graphics::Rect<float>(10.0f, 10.0f, mouseX + 100.0f, mouseY + 100.0f));
 
-	if (Winwork->Mouse.LeftPressed) MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(20.0f, 20.0f));
+	if (Winwork->Mouse.LeftPressed) 
+		MF->gfxBox->Gfx.FillEllipse(Graphics::Point<float>(mouseX, mouseY), Graphics::Point<float>(20.0f, 20.0f));
 	MF->gfxBox->Gfx.EndDraw();
 }
 
@@ -750,8 +752,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR args, I
 
 	MF = new MainForm();
 
-	texture1 = GenerateTexture(200, 100, Graphics::Color::Red);
-	texture2 = GenerateTexture(200, 100, Graphics::Color::Green);
+	texture1 = GenerateTexture(200, 100, G::Color::Palette::GreenYellow);
+	texture2 = GenerateTexture(200, 100, G::Color::Palette::LightBlue);
 
 	Winwork->SetCallBackFunction(CallBackFunction);
 	Winwork->ProcessMessages();

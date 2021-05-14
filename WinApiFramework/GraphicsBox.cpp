@@ -11,7 +11,7 @@ namespace WinapiFramework
 		, Gfx(m_graphics)
 	{
 		m_rect = conStruct.rect;
-		m_window_class_name = mp_parent->GetWindowClassName() + L"GraphicsBoxClass" + std::to_wstring(int(this));
+		m_window_class_name = mp_parent->GetWindowClassName() + L"GraphicsBoxClass" + std::to_wstring(size_t(this));
 
 		CreateWinapiWindow();
 
@@ -105,7 +105,6 @@ namespace WinapiFramework
 		: Width(m_width)
 		, Height(m_height)
 		, mp_control(control)
-		, m_renderType(conStruct.renderType)
 		, m_presentOption(conStruct.presentOption)
 		, m_interpolationMode(conStruct.interpolationMode)
 	{
@@ -129,9 +128,9 @@ namespace WinapiFramework
 		// [>] Create render target
 		m_pD2DFactory->CreateHwndRenderTarget(
 			D2D1::RenderTargetProperties(
-				static_cast<D2D1_RENDER_TARGET_TYPE>(m_renderType),
+				D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_HARDWARE,
 				D2D1::PixelFormat(
-					DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM,
+					DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM,
 					D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_PREMULTIPLIED),
 				96.0f, 96.0f,
 				D2D1_RENDER_TARGET_USAGE::D2D1_RENDER_TARGET_USAGE_NONE,
@@ -222,7 +221,7 @@ namespace WinapiFramework
 	}
 	void GraphicsBox::GBGraphics::SetSolidBrush(const G::Color& brushColor, const float opacity)
 	{
-		m_pSolidBrush->SetColor(D2D1::ColorF((brushColor.GetR() << 16) | (brushColor.GetG() << 8) | (brushColor.GetB()), brushColor.GetA()));
+		m_pSolidBrush->SetColor(D2D1::ColorF((brushColor.red << 16) | (brushColor.green << 8) | (brushColor.blue), brushColor.alpha));
 		m_pSolidBrush->SetOpacity(opacity);
 	}
 
@@ -236,7 +235,7 @@ namespace WinapiFramework
 	}
 	void GraphicsBox::GBGraphics::Clear(const G::Color& color)
 	{
-		m_pHwndRenderTarget->Clear(D2D1::ColorF((color.GetR() << 16) | (color.GetG() << 8) | color.GetB(), 1.0f));
+		m_pHwndRenderTarget->Clear(D2D1::ColorF((color.red << 16) | (color.green << 8) | color.blue, 1.0f));
 	}
 
 	void GraphicsBox::GBGraphics::DrawString(std::wstring text, G::Rect<float> rect)
@@ -274,13 +273,13 @@ namespace WinapiFramework
 			D2D1::SizeU(bitmap.GetWidth(), bitmap.GetHeight()),
 			D2D1::BitmapProperties(
 				D2D1::PixelFormat(
-					DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM,
+					DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM,
 					D2D1_ALPHA_MODE::D2D1_ALPHA_MODE_PREMULTIPLIED)),
 			&pBitmap);
 
 
 		// [>] Copy G::bitmap to pBitmap
-		D2D1_RECT_U r = D2D1::RectU(0, 0, bitmap.GetWidth(), bitmap.GetHeight());
+		D2D1_RECT_U r = D2D1::RectU(0u, 0u, bitmap.GetWidth(), bitmap.GetHeight());
 		pBitmap->CopyFromMemory(
 			&r,
 			bitmap.GetMapAddress(),

@@ -108,12 +108,6 @@ namespace WinapiFramework
 			Uniform = DWRITE_LINE_SPACING_METHOD_UNIFORM
 		};
 
-		enum class RenderType
-		{
-			Default = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_DEFAULT,
-			Software = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_SOFTWARE,
-			Hardware = D2D1_RENDER_TARGET_TYPE::D2D1_RENDER_TARGET_TYPE_HARDWARE
-		};
 		enum class PresentOption
 		{
 			WaitForDisplay = D2D1_PRESENT_OPTIONS::D2D1_PRESENT_OPTIONS_NONE,
@@ -239,7 +233,6 @@ namespace WinapiFramework
 		private:
 			GraphicsBox *const mp_control;
 			unsigned int m_width = 0u, m_height = 0u;
-			const RenderType m_renderType;
 			const PresentOption m_presentOption;
 			InterpolationMode m_interpolationMode;
 		private:
@@ -260,22 +253,18 @@ namespace WinapiFramework
 		public:
 			struct ConStruct
 			{
-				RenderType renderType;
 				PresentOption presentOption;
 				InterpolationMode interpolationMode;
 				TextFormatDescription defaultTextFormatDesc;
 
 				ConStruct(
-					RenderType renderType = RenderType::Default,
 					PresentOption presentOption = PresentOption::WaitForDisplay,
 					InterpolationMode interpolationMode = InterpolationMode::Linear,
 					TextFormatDescription defaultTextFormatDesc = TextFormatDescription())
-					: renderType(renderType)
-					, presentOption(presentOption)
+					: presentOption(presentOption)
 					, interpolationMode(interpolationMode)
 					, defaultTextFormatDesc(defaultTextFormatDesc)
-				{
-				}
+				{}
 			};
 
 
