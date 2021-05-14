@@ -51,4 +51,4 @@ Simple Win32 OOP wrapper with basic windows, panels, controls and graphics.
 - event and loop driven system
 
 ## Requirements
-WinapiFramework uses small graphics library developed separately. Can be found in top folder in the repository.
+WinapiFramework uses small graphics library developed separately. Can be found in [this folder](https://github.com/Greketrotny/WinApiFramework/tree/master/GraphicsLib) in the repository.
