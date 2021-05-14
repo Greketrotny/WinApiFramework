@@ -2,7 +2,6 @@
 Simple Win32 OOP wrapper with basic windows, panels, controls and graphics.
 
 ![screen1](https://user-images.githubusercontent.com/38960244/118317385-48ba7380-b4f8-11eb-8670-ca67cf207c55.png)
-![screen2](https://user-images.githubusercontent.com/38960244/118318027-1bba9080-b4f9-11eb-88ab-156bb4b5ae7d.png)
 
 ## Usage
 
